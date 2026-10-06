@@ -50,6 +50,9 @@ input.ok{border-color:var(--ok)}
 input.bad{border-color:var(--bad)}
 .hint{font-size:.8rem;font-weight:400;min-height:1.2em}
 .hint.bad{color:var(--bad)}
+.dblink{display:inline-flex;align-items:center;gap:6px;justify-self:start;font:700 .95rem var(--f-display);letter-spacing:.03em;background:var(--accent);color:var(--accent-ink);text-decoration:none;border-radius:6px;padding:8px 14px}
+.dblink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dblink.small{font-size:.8rem;padding:4px 10px;margin-top:4px}
 .btn.plain{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .status{font-size:.9rem;color:var(--muted);min-height:1.4em}
 .banner{border-left:4px solid var(--warn);background:var(--warn-soft);padding:12px 14px;border-radius:0 8px 8px 0;font-size:.95rem}
@@ -179,7 +182,7 @@ async function api(path,params){
 /* Bahnhofsliste: alle DB-Stationen (Name, Breite, Länge, Gewicht), eingebettet */
 const STATIONS=/*STATIONS*/[];
 const norm=s=>s.toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/hauptbahnhof/g,"hbf").replace(/[^a-z0-9]+/g," ").trim();
-const IDX=STATIONS.map(r=>({name:r[0],lat:r[1],lon:r[2],w:r[3],n:norm(r[0]),hbf:/(^| )hbf( |$)/.test(norm(r[0]))}));
+const IDX=STATIONS.map(r=>({name:r[0],lat:r[1],lon:r[2],w:r[3],eva:r[4],n:norm(r[0]),hbf:/(^| )hbf( |$)/.test(norm(r[0]))}));
 function suggest(q,limit=8){
   const n=norm(q); if(!n) return [];
   const parts=n.split(" ");
@@ -232,7 +235,27 @@ function stationFor(id){
   hint.textContent=top?`Bitte aus der Liste wählen – meintest du „${top.name}“?`:"Bahnhof nicht gefunden – bitte aus der Liste wählen.";
   return null;
 }
-const placeOf=s=>({name:s.name,place:`${s.lat},${s.lon}`});
+/* bahn.de-Suchlink (Deep Link). Parameter wie in der bahn.de-Suchmaske:
+   dltv = „Deutschland-Ticket vorhanden“ (bepreist nur die Fernverkehrsteile), dlt = nur D-Ticket-Verbindungen */
+function nearestStation(lat,lon){
+  let best=null,bd=Infinity;
+  for(const s of IDX){const d=(s.lat-lat)**2+((s.lon-lon)*0.63)**2;if(d<bd){bd=d;best=s}}
+  return bd<0.00015?best:null; // ~1 km
+}
+function berlinLocal(iso){
+  const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(new Date(iso));
+  const g=k=>p.find(x=>x.type===k).value;
+  return `${g("year")}-${g("month")}-${g("day")}T${g("hour")}:${g("minute")}:00`;
+}
+function dbLink(from,to,iso,{dltv=false,dlt=false}={}){
+  const id=s=>encodeURIComponent(`A=1@O=${s.name}@L=${s.eva}@`);
+  return "https://www.bahn.de/buchung/fahrplan/suche#"+[
+    "sts=true",`so=${encodeURIComponent(from.name)}`,`zo=${encodeURIComponent(to.name)}`,"kl=2","r=13:16:KLASSENLOS:1",
+    `soid=${id(from)}`,`zoid=${id(to)}`,"sot=ST","zot=ST",`soei=${from.eva}`,`zoei=${to.eva}`,
+    `hd=${berlinLocal(iso)}`,"hza=D","hz=%5B%5D","ar=false","s=false","d=false","fm=false","bp=false",
+    `dlt=${dlt}`,"nfv=false",`dltv=${dltv}`].join("&");
+}
+const placeOf=s=>({name:s.name,place:`${s.lat},${s.lon}`,st:s});
 async function plan(from,to,time,{arr=false,nv=false,n=5}={}){
   const p={fromPlace:from,toPlace:to,time,numItineraries:n,arriveBy:String(arr)};
   if(nv) p.transitModes=NV;
@@ -316,7 +339,7 @@ async function search(e){
         const at=s.arrival||s.departure;
         const it=(await plan(`${s.lat},${s.lon}`,B.place,at,{nv:true,n:2})).filter(nvOnlyOk).map(analyze).find(x=>new Date(x.start)>=new Date(at));
         if(!it||mins(base.start,it.end)>main.dur+150) return null;
-        const L2=[...base.L.slice(0,base.last),{...lf,to:{...lf.to,name:s.name},endTime:at},...it.L];
+        const L2=[...base.L.slice(0,base.last),{...lf,to:{...lf.to,name:s.name,lat:s.lat,lon:s.lon},endTime:at},...it.L];
         return {kind:"S",name:`ICE nur bis ${s.name}`,L:L2,start:base.start,end:it.end,dur:mins(base.start,it.end),transfers:L2.length-1,
           feederBuf:base.feederBuf,base,fvMin:mins(base.L[base.first].startTime,at)};
       }
@@ -326,7 +349,7 @@ async function search(e){
         if(!it) return null;
         const buf=mins(it.end,dep);
         if(buf<0||mins(it.start,base.end)>main.dur+120) return null;
-        const L2=[...it.L,{...ff,from:{...ff.from,name:s.name},startTime:dep},...base.L.slice(base.first+1)];
+        const L2=[...it.L,{...ff,from:{...ff.from,name:s.name,lat:s.lat,lon:s.lon},startTime:dep},...base.L.slice(base.first+1)];
         return {kind:"S",name:`ICE erst ab ${s.name}`,L:L2,start:it.start,end:base.end,dur:mins(it.start,base.end),transfers:L2.length-1,
           feederBuf:buf,s,itStart:it.start,fvMin:mins(dep,base.L[base.last].endTime)};
       }
@@ -354,6 +377,17 @@ async function search(e){
   }finally{if(live())btn.disabled=false}
 }
 
+function linkFor(v,A,B){
+  if(v.kind==="A") return {href:dbLink(A.st,B.st,v.start),note:"Gesamtstrecke, ohne Deutschland-Ticket-Häkchen."};
+  if(v.kind==="D") return {href:dbLink(A.st,B.st,v.start,{dlt:true,dltv:true}),note:"Filter „nur Deutschland-Ticket-Verbindungen“ ist gesetzt."};
+  const f=v.L.filter(isFV);
+  const s1=nearestStation(f[0].from.lat,f[0].from.lon),s2=nearestStation(f[f.length-1].to.lat,f[f.length-1].to.lon);
+  if(v.base||v.s){ // ICE-Teilstrecke separat buchen
+    if(s1&&s2) return {href:dbLink(s1,s2,f[0].startTime),note:`Nur die ICE-Teilstrecke ${s1.name} → ${s2.name}.`};
+  }
+  return {href:dbLink(A.st,B.st,v.start,{dltv:true}),note:"Häkchen „Deutschland-Ticket vorhanden“ ist gesetzt – bahn.de berechnet nur den ICE-Teil."};
+}
+const linkHTML=(v,A,B,small)=>{const l=linkFor(v,A,B);return `<a class="dblink${small?" small":""}" href="${esc(l.href)}" target="_blank" rel="noopener">Bei bahn.de öffnen →</a>${small?"":`<span class="sub">${esc(l.note)} Alter/BahnCard dort prüfen.</span>`}`};
 function card(cls,label,v,extra,book){
   return `<article class="card ${cls}">
     <div class="head"><span class="eyebrow">${label}</span><span class="time">${fmtT(v.start)} → ${fmtT(v.end)} · ${hm(v.dur)}</span></div>
@@ -362,10 +396,13 @@ function card(cls,label,v,extra,book){
     <div class="risk">${ampHTML(v.risk)}<span>${esc(v.risk.t)}</span></div>
     ${extra?`<p class="sub">${extra}</p>`:""}
     ${book?`<p class="book">${book}</p>`:""}
+    ${CUR?linkHTML(v,CUR.A,CUR.B):""}
   </article>`;
 }
 
+let CUR=null;
 function render({A,B,V,main,tip}){
+  CUR={A,B};
   const date=new Date(V[0].start).toLocaleDateString("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long"});
   const Av=V.find(v=>v.kind==="A");
   const Dv=V.find(v=>v.kind==="D");
@@ -386,11 +423,11 @@ function render({A,B,V,main,tip}){
   }
   if(Av&&!same) html+=card("main","Bester Kompromiss",Av,"Volle Fahrgastrechte für die ganze Strecke. Nimm stattdessen die Spar-Variante nur, wenn sie mindestens 10 € günstiger ist.",bookA);
   html+=`</div>`;
-  if(tip) html+=`<p class="tip"><b>Tipp:</b> Um ${fmtT(tip.start)} gibt es eine schnellere Verbindung (${hm(tip.dur)}, ${main.dur-tip.dur} min kürzer, ${esc(tip.L.filter(l=>isFV(l)).map(legName).join(" + "))}).</p>`;
+  if(tip) html+=`<p class="tip"><b>Tipp:</b> Um ${fmtT(tip.start)} gibt es eine schnellere Verbindung (${hm(tip.dur)}, ${main.dur-tip.dur} min kürzer, ${esc(tip.L.filter(l=>isFV(l)).map(legName).join(" + "))}). <a href="${esc(dbLink(A.st,B.st,tip.start))}" target="_blank" rel="noopener">Bei bahn.de öffnen →</a></p>`;
   html+=`<p class="tip"><b>Rückfahrt:</b> Mit „⇄ Rückfahrt“ neu suchen. Regionalzüge, die hin NACH dem ICE kamen, liegen zurück DAVOR – dort ≥ 30 min Puffer einplanen.</p>`;
   html+=`<details><summary>Alle ${V.length} Varianten vergleichen</summary><div class="tablebox"><table>
     <thead><tr><th>Variante</th><th>Route</th><th>Zeit</th><th>Risiko</th></tr></thead><tbody>
-    ${V.map(v=>`<tr><td><b>${esc(v.name)}</b></td><td><div class="route">${routeHTML(v.L)}</div><span class="t via">${fmtT(v.start)} → ${fmtT(v.end)}</span></td><td class="t">${hm(v.dur)}<div class="via">${v.transfers}× umsteigen</div></td><td>${ampHTML(v.risk)}<div class="via">${esc(v.risk.t)}</div></td></tr>`).join("")}
+    ${V.map(v=>`<tr><td><b>${esc(v.name)}</b></td><td><div class="route">${routeHTML(v.L)}</div><span class="t via">${fmtT(v.start)} → ${fmtT(v.end)}</span></td><td class="t">${hm(v.dur)}<div class="via">${v.transfers}× umsteigen</div></td><td>${ampHTML(v.risk)}<div class="via">${esc(v.risk.t)}</div>${linkHTML(v,A,B,true)}</td></tr>`).join("")}
     </tbody></table></div></details>`;
   $("out").innerHTML=html;
 }
