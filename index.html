@@ -461,7 +461,8 @@ function berlinLocal(iso){
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour")}:${g("minute")}:00`;
 }
 /* Reisende für bahn.de (Code-Aufbau Alter:Ermäßigung:Klasse:Anzahl).
-   Gesichert: 13 = 27–64 Jahre, 16 = keine Ermäßigung; 9 = 15–26 Jahre (beobachtet); 17/23 = BahnCard 25/50 (wie BetterBahn). */
+   Geprüft an echten bahn.de-Links: 13 = 27–64 Jahre, 9 = 15–26 Jahre, 16 = keine Ermäßigung, 17 = BahnCard 25 (mit KLASSE_n);
+   23 = BahnCard 50 wie bei BetterBahn. Hin+Rück: rd/rza/rz/rv wie in der bahn.de-Suchmaske. */
 const TKEY="bbf-travel";
 const AGES={j:{code:9,label:"15–26 Jahre"},e:{code:13,label:"27–64 Jahre"},x:{code:13,label:"Kind/ab 65"}};
 const BCS={"0":{code:16,label:"keine BahnCard"},"25":{code:17,label:"BahnCard 25"},"50":{code:23,label:"BahnCard 50"}};
@@ -477,6 +478,9 @@ function dbLink(from,to,iso,{dltv=false,dlt=false}={}){
     `hd=${berlinLocal(iso)}`,"hza=D","hz=%5B%5D","ar=false","s=false","d=false","fm=false","bp=false",
     `dlt=${dlt}`,"nfv=false",`dltv=${dltv}`].join("&");
 }
+/* Hin- und Rückfahrt in einem bahn.de-Link (Gesamtstrecke, ohne D-Ticket-Häkchen) */
+const VM="00,01,02,03,04,05,06,07,08,09";
+const dbLinkRT=(from,to,iso1,iso2)=>dbLink(from,to,iso1).replace("&hz=%5B%5D",`&hz=%5B%5D&rd=${berlinLocal(iso2)}&rza=D&rz=%5B%5D&rv=${VM}`);
 const placeOf=s=>({name:s.name,place:`${s.lat},${s.lon}`,st:s});
 async function plan(from,to,time,{arr=false,nv=false,n=5,sig}={}){
   const p={fromPlace:from,toPlace:to,time,numItineraries:n,arriveBy:String(arr)};
@@ -692,6 +696,10 @@ function renderOut(){
   if(!DIRS.length){$("out").innerHTML="";return}
   const rt=DIRS.length>1,d0=DIRS[0];
   let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div>`;
+  if(rt&&RES[0]&&RES[1]&&!LOADING){
+    const t1=RES[0].main?.start||DIRS[0].t,t2=RES[1].main?.start||DIRS[1].t;
+    h+=`<div class="ds-row"><a class="ds-btn ds-btn-secondary ds-btn-sm" href="${esc(dbLinkRT(d0.A.st,d0.B.st,t1,t2))}" target="_blank" rel="noopener">Hin + Rück zusammen bei bahn.de${ico("open",16)}</a><span class="ds-supporting">Empfehlung ${fmtT(t1)} hin, ${fmtT(t2)} zurück</span></div>`;
+  }
   if(rt) h+=`<div class="ds-tabs dirtabs" role="tablist">${DIRS.map((d,i)=>`<button type="button" class="ds-tab${i===TAB?" active":""}" role="tab" id="tab${i}" aria-selected="${i===TAB}" aria-controls="panel">${i?"Rückfahrt":"Hinfahrt"}<small>${esc(fmtD(d.t))}${RES[i]?"":LOADING?" · lädt …":""}</small></button>`).join("")}</div>`;
   const r=RES[TAB];
   h+=`<div id="panel" ${rt?`role="tabpanel" aria-labelledby="tab${TAB}"`:""}>${r?dirHTML(r):LOADING?skelHTML(3):""}</div></section>`;
