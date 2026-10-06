@@ -3,7 +3,7 @@
 import struct, zlib
 from pathlib import Path
 
-BG, FG, AC = (21, 23, 28), (233, 235, 240), (143, 162, 255)
+BG, FG, AC = (118, 30, 42), (250, 244, 240), (240, 190, 184)
 
 
 def color(x, y):

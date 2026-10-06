@@ -1,224 +1,320 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bestpreis"><meta name="description" content="Zugverbindungen nach Zeit, Geld und Risiko vergleichen – mit Deutschland-Ticket-Kombis und Risiko-Ampel."></head><body>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="theme-color" content="#faf6f3" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1b1614" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bestpreis"><meta name="description" content="Zugverbindungen nach Zeit, Geld und Risiko vergleichen – mit Deutschland-Ticket-Kombis und Risiko-Ampel."></head><body>
 <title>Bahn-Bestpreis-Finder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: eine schmale Spalte wie eine Reise-App – Suchmaske oben, darunter eine ruhige Ergebnisliste mit großen Uhrzeiten; Details klappen auf. */
+/* Design-System „lively-sweden“ (Better Design, Basis Romanesque): warmer, fast weißer Grund, gedämpftes Weinrot als Akzent,
+   Pillen-Knöpfe mit Relief, weiche Schatten. Layout: eine Spalte wie eine Reise-App – Suchmaske, darunter Fahrten als Bordkarten. */
 :root{
-  --bg:#f3f4f6; --surface:#ffffff; --ink:#15171c; --muted:#5b616e; --faint:#8a909c; --line:#e2e4e9;
-  --accent:#2a44c8; --accent-ink:#ffffff; --accent-soft:#e8ebfb;
-  --ok:#17773f; --ok-soft:#e1f2e7; --warn:#8a5d00; --warn-soft:#fbefcf; --bad:#b3261e; --bad-soft:#fbe3e0;
-  --sk:#e8eaee; --sk2:#f4f5f7;
-  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
-  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --background:oklch(0.975 0.008 50);--foreground:oklch(0.18 0.005 55);
+  --card:oklch(1 0 0);--card-foreground:oklch(0.18 0.005 55);--popover:oklch(1 0 0);--popover-foreground:oklch(0.18 0.005 55);
+  --primary:oklch(0.38 0.13 18);--primary-foreground:oklch(0.98 0.01 60);
+  --secondary:oklch(0.95 0.006 55);--secondary-foreground:oklch(0.18 0.005 55);
+  --muted:oklch(0.95 0.006 55);--muted-foreground:oklch(0.48 0.007 55);
+  --accent:oklch(0.38 0.13 18 / 0.08);--accent-foreground:oklch(0.34 0.12 18);
+  --destructive:oklch(0.53 0.20 27);--destructive-foreground:oklch(1 0 0);
+  --border:oklch(0 0 0 / 0.08);--input:oklch(0 0 0 / 0.05);--ring:oklch(0.38 0.13 18 / 0.4);
+  --radius:1.25rem;
+  --shadow-2xs:0 0.0625rem 0.0625rem oklch(0 0 0 / 0.025);--shadow-xs:0 0.0625rem 0.125rem oklch(0 0 0 / 0.03);
+  --shadow-sm:0 0.0625rem 0.125rem oklch(0 0 0 / 0.035),0 0.125rem 0.375rem oklch(0 0 0 / 0.025);
+  --shadow:0 0.0625rem 0.5rem oklch(0 0 0 / 0.035);--shadow-md:0 0.125rem 0.875rem oklch(0 0 0 / 0.04);
+  --shadow-lg:0 0.375rem 1.5rem oklch(0 0 0 / 0.05);--shadow-xl:0 0.625rem 2rem oklch(0 0 0 / 0.06);
+  --shadow-pillow:oklch(0 0 0 / 0.04) 0 0.375rem 0.875rem 0,oklch(0 0 0 / 0.025) 0 0.125rem 0.375rem 0,oklch(1 0 0) 0 -0.0938rem 0.0938rem 0 inset,oklch(1 0 0) 0 0.0938rem 0.0938rem 0 inset;
+  --primary-rim:color-mix(in oklch,var(--primary) 70%,white 30%);
+  --destructive-rim:color-mix(in oklch,var(--destructive) 70%,white 30%);
+  --shadow-tangerine-inset:inset 0 0.125rem 0 oklch(1 0 0 / 0.40),inset 0 -0.125rem 0.125rem oklch(0 0 0 / 0.20),inset 0 0 0.875rem var(--primary-rim),0 0.125rem 0.25rem oklch(0 0 0 / 0.14);
+  --shadow-primary-inset-sm:inset 0 0.0938rem 0 oklch(1 0 0 / 0.45),inset 0 -0.0938rem 0.0938rem oklch(0 0 0 / 0.22),inset 0 0 0.375rem var(--primary-rim),0 0.0625rem 0.125rem oklch(0 0 0 / 0.12);
+  --font-sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius-sm:calc(var(--radius) - 0.75rem);--radius-md:calc(var(--radius) - 0.5rem);--radius-lg:var(--radius);--radius-xl:calc(var(--radius) + 0.75rem);
+  /* Ampel (Status-Töne des Systems, bewusst getrennt vom Weinrot) */
+  --pop-green:oklch(0.93 0.06 150);--pop-green-foreground:oklch(0.40 0.11 152);
+  --pop-orange:oklch(0.94 0.07 85);--pop-orange-foreground:oklch(0.45 0.10 70);
+  --line-strong:oklch(0 0 0 / 0.16);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0f1115; --surface:#171a20; --ink:#e9ebf0; --muted:#a1a7b3; --faint:#6f7581; --line:#2a2e37;
-  --accent:#8fa2ff; --accent-ink:#0d1230; --accent-soft:#1d2340;
-  --ok:#5cc98b; --ok-soft:#13291c; --warn:#e9b949; --warn-soft:#30260b; --bad:#f2786f; --bad-soft:#3a1714;
-  --sk:#22262e; --sk2:#2b303a; color-scheme:dark}}
+  --background:oklch(0.17 0.006 50);--foreground:oklch(0.95 0.006 60);
+  --card:oklch(0.215 0.007 50);--card-foreground:oklch(0.95 0.006 60);--popover:oklch(0.24 0.008 50);--popover-foreground:oklch(0.95 0.006 60);
+  --primary:oklch(0.72 0.11 18);--primary-foreground:oklch(0.18 0.04 18);
+  --secondary:oklch(0.26 0.008 50);--secondary-foreground:oklch(0.95 0.006 60);
+  --muted:oklch(0.26 0.008 50);--muted-foreground:oklch(0.74 0.01 60);
+  --accent:oklch(0.72 0.11 18 / 0.14);--accent-foreground:oklch(0.82 0.09 18);
+  --destructive:oklch(0.66 0.17 27);--destructive-foreground:oklch(0.15 0.02 27);
+  --border:oklch(1 0 0 / 0.10);--input:oklch(1 0 0 / 0.06);--ring:oklch(0.72 0.11 18 / 0.5);
+  --shadow-pillow:oklch(0 0 0 / 0.35) 0 0.25rem 0.75rem 0,oklch(1 0 0 / 0.06) 0 0.0625rem 0 0 inset;
+  --shadow-md:0 0.125rem 0.875rem oklch(0 0 0 / 0.35);
+  --pop-green:oklch(0.30 0.06 150);--pop-green-foreground:oklch(0.85 0.12 150);
+  --pop-orange:oklch(0.32 0.06 80);--pop-orange-foreground:oklch(0.88 0.11 85);
+  --line-strong:oklch(1 0 0 / 0.22);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1115; --surface:#171a20; --ink:#e9ebf0; --muted:#a1a7b3; --faint:#6f7581; --line:#2a2e37;
-  --accent:#8fa2ff; --accent-ink:#0d1230; --accent-soft:#1d2340;
-  --ok:#5cc98b; --ok-soft:#13291c; --warn:#e9b949; --warn-soft:#30260b; --bad:#f2786f; --bad-soft:#3a1714;
-  --sk:#22262e; --sk2:#2b303a; color-scheme:dark}
-*{box-sizing:border-box}
+  --background:oklch(0.17 0.006 50);--foreground:oklch(0.95 0.006 60);
+  --card:oklch(0.215 0.007 50);--card-foreground:oklch(0.95 0.006 60);--popover:oklch(0.24 0.008 50);--popover-foreground:oklch(0.95 0.006 60);
+  --primary:oklch(0.72 0.11 18);--primary-foreground:oklch(0.18 0.04 18);
+  --secondary:oklch(0.26 0.008 50);--secondary-foreground:oklch(0.95 0.006 60);
+  --muted:oklch(0.26 0.008 50);--muted-foreground:oklch(0.74 0.01 60);
+  --accent:oklch(0.72 0.11 18 / 0.14);--accent-foreground:oklch(0.82 0.09 18);
+  --destructive:oklch(0.66 0.17 27);--destructive-foreground:oklch(0.15 0.02 27);
+  --border:oklch(1 0 0 / 0.10);--input:oklch(1 0 0 / 0.06);--ring:oklch(0.72 0.11 18 / 0.5);
+  --shadow-pillow:oklch(0 0 0 / 0.35) 0 0.25rem 0.75rem 0,oklch(1 0 0 / 0.06) 0 0.0625rem 0 0 inset;
+  --shadow-md:0 0.125rem 0.875rem oklch(0 0 0 / 0.35);
+  --pop-green:oklch(0.30 0.06 150);--pop-green-foreground:oklch(0.85 0.12 150);
+  --pop-orange:oklch(0.32 0.06 80);--pop-orange-foreground:oklch(0.88 0.11 85);
+  --line-strong:oklch(1 0 0 / 0.22);color-scheme:dark}
+
+/* ---------- Baukasten des Design-Systems (unverändert) ---------- */
+*,*::before,*::after{box-sizing:border-box}
+:where(.ds){font-family:var(--font-sans,ui-sans-serif,system-ui,sans-serif);color:var(--foreground);background:var(--background);line-height:1.5}
+.ds :where(h1,h2,h3,h4,h5,h6,p,strong,label,legend,li,dt,dd,small){color:inherit}
+.ds h1,.ds h2,.ds h3,.ds h4{font-family:inherit;font-weight:600;margin:0 0 .5em;color:var(--foreground)}
+.ds .ds-display{font-family:inherit;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin:0;color:var(--foreground)}
+.ds .ds-section-title{font-family:inherit;font-size:1.25rem;font-weight:600;line-height:1.2;letter-spacing:-.01em;margin:0;color:var(--foreground)}
+.ds .ds-supporting{font-size:.875rem;font-weight:400;line-height:1.5;color:var(--muted-foreground);margin:0}
+.ds a{color:var(--primary);text-decoration:none}
+.ds a.ds-btn{color:inherit}
+.ds a.ds-btn:hover{text-decoration:none}
+.ds a.ds-btn-primary{color:var(--primary-foreground)}
+.ds p{margin:0 0 1em}
+.ds-muted{color:var(--muted-foreground)}
+.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font:inherit;font-size:.875rem;font-weight:500;line-height:1;padding:.6rem 1rem;border-radius:var(--radius-md);border:1px solid transparent;cursor:pointer;touch-action:manipulation;transition:opacity .15s,background .15s;text-decoration:none}
+.ds-btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.ds-btn:disabled{background:var(--muted);color:var(--foreground);border-color:var(--border);opacity:1;cursor:not-allowed}
+.ds-btn-primary{background:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-sm)}
+.ds-btn-secondary{background:var(--secondary);color:var(--secondary-foreground);box-shadow:var(--shadow-xs)}
+.ds-btn-outline{background:transparent;color:var(--foreground);border-color:var(--border)}
+.ds-btn-ghost{background:transparent;color:var(--foreground)}
+.ds .ds-btn[aria-pressed="true"],.ds .ds-btn[aria-pressed="true"]:hover{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary);opacity:1}
+.ds-btn-sm{padding:.4rem .7rem;font-size:.8125rem}
+.ds-btn-lg{padding:.75rem 1.4rem;font-size:1rem}
+.ds-label{display:block;font-size:.8125rem;font-weight:500;margin-bottom:.4rem;color:var(--foreground)}
+.ds-input,.ds-textarea,.ds-select{width:100%;font:inherit;font-size:.875rem;padding:.55rem .75rem;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--input);color:var(--foreground);box-shadow:var(--shadow-2xs);transition:border-color .15s,box-shadow .15s}
+.ds-input::placeholder{color:var(--muted-foreground)}
+.ds-input:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in oklab,var(--ring) 35%,transparent)}
+.ds-card{display:flex;flex-direction:column;background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);overflow:hidden}
+.ds-card-header{padding:1.1rem 1.25rem .5rem}
+.ds-card-body{padding:.5rem 1.25rem 1.1rem}
+.ds-card-footer{margin-top:auto;padding:.9rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center}
+.ds-card-title{font-size:1.05rem;margin:0 0 .25rem}
+.ds-card-desc{font-size:.875rem;color:var(--muted-foreground);margin:0}
+.ds-badge{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:600;padding:.15rem .55rem;border-radius:999px;background:var(--secondary);color:var(--secondary-foreground);line-height:1.4}
+.ds-alert{border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1rem;background:var(--card);color:var(--card-foreground);font-size:.875rem}
+.ds-alert-title{font-weight:600;margin:0 0 .2rem}
+.ds-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.ds-field{margin-bottom:1rem}
+.ds-tabs{display:inline-flex;gap:.15rem;padding:.25rem;border-radius:var(--radius-lg);background:var(--muted)}
+.ds-tab{font:inherit;font-size:.8125rem;font-weight:500;padding:.4rem .8rem;border:0;border-radius:var(--radius-md);background:transparent;color:var(--muted-foreground);cursor:pointer;touch-action:manipulation}
+.ds-tab.active{background:var(--background);color:var(--foreground);box-shadow:var(--shadow-sm)}
+.ds-progress{height:.5rem;border-radius:999px;background:var(--muted);overflow:hidden}
+.ds-progress-bar{height:100%;border-radius:999px;background:var(--primary)}
+.ds-chip{display:inline-flex;align-items:center;gap:.35rem;font:inherit;font-size:.8125rem;padding:.3rem .7rem;border-radius:999px;border:1px solid var(--border);background:var(--background);color:var(--foreground);cursor:pointer;touch-action:manipulation;transition:background-color .12s ease,border-color .12s ease,color .12s ease}
+.ds-chip:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+@media (pointer:coarse){.ds-btn,.ds-tab,.ds-chip{min-height:44px}.ds-input,.ds-select{min-height:44px;font-size:1rem}}
+@media (hover:hover) and (pointer:fine){
+  .ds a:hover{text-decoration:underline}
+  .ds-btn:hover:not(:disabled):not([aria-pressed="true"]){opacity:.9}
+  .ds-btn-ghost:hover:not(:disabled):not([aria-pressed="true"]){background:var(--accent);opacity:1}
+  .ds-input:hover:not(:disabled){border-color:color-mix(in oklab,var(--foreground) 20%,transparent)}
+  .ds .ds-chip:hover:not([aria-pressed="true"]){background:color-mix(in oklab,var(--foreground) 4%,var(--background));color:var(--foreground);border-color:color-mix(in oklab,var(--foreground) 28%,var(--border))}
+}
+.ds ::selection{background:var(--primary);color:var(--primary-foreground)}
+/* Material des Systems */
+.ds-btn{border-radius:9999px;position:relative;white-space:nowrap;line-height:1.25rem;transition-property:background,box-shadow,transform;transition-duration:150ms}
+.ds-btn:active{scale:.98}
+.ds .ds-btn-primary{background-color:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-tangerine-inset)}
+.ds .ds-btn-secondary{background-color:var(--card);color:var(--foreground);box-shadow:var(--shadow-pillow)}
+.ds .ds-btn-outline{border-width:1px;border-color:var(--border);background-color:color-mix(in oklab,var(--card) 60%,transparent);color:var(--foreground)}
+.ds .ds-btn-ghost{color:var(--foreground)}
+@media (hover:hover) and (pointer:fine){
+  .ds .ds-btn-primary:hover{background-color:color-mix(in oklch,var(--primary) 82%,black 18%)}
+  .ds .ds-btn-secondary:hover{background-color:color-mix(in oklab,var(--card) 96%,var(--foreground))}
+  .ds .ds-btn-outline:hover{background-color:var(--card)}
+  .ds .ds-btn-ghost:hover{background-color:color-mix(in oklab,var(--foreground) 5%,transparent)}
+  .ds-input:hover{background-color:var(--card)}
+}
+.ds-card{border-radius:1.5rem;box-shadow:var(--shadow-md)}
+.ds-input{background-color:color-mix(in oklab,var(--card) 80%,transparent);border-radius:1rem;padding:.75rem 1rem;font-size:.875rem;box-shadow:var(--shadow-xs)}
+.ds-input:focus-visible{outline:2px solid transparent;border-color:color-mix(in oklab,var(--primary) 40%,transparent);box-shadow:var(--shadow-sm)}
+.ds-badge{border-radius:9999px;font-weight:500;background-color:var(--foreground);color:var(--background)}
+/* Abzeichen-Varianten des Systems (nach dem Material, damit sie greifen) */
+.ds .ds-badge-primary{background:var(--primary);color:var(--primary-foreground)}
+.ds .ds-badge-outline{background:transparent;border:1px solid var(--border);color:var(--foreground)}
+.ds .ds-badge-safe{background:var(--pop-green);color:var(--pop-green-foreground)}
+.ds .ds-badge-warn{background:var(--pop-orange);color:var(--pop-orange-foreground)}
+.ds .ds-badge-danger{background:var(--destructive);color:var(--destructive-foreground)}
+/* Host-Isolation */
+.ds{color:var(--foreground);background:var(--background)}
+.ds :where(h1,h2,h3,h4,h5,h6,p,strong,label,legend,li,dt,dd,small):not(.ds-supporting):not(.ds-card-desc):not(.ds-muted){color:inherit!important}
+
+/* ---------- Layout der App ---------- */
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);margin:0}
-.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:24px 56px;display:grid;gap:18px}
-h1,h2,h3{font-family:var(--f-display);line-height:1.1;margin:0;text-wrap:balance}
-h1{font-size:clamp(1.6rem,6vw,2.1rem);font-weight:800;font-stretch:112%;letter-spacing:-.01em}
-h2{font-size:1.15rem;font-weight:700;font-stretch:105%}
-p{margin:0}
-.lede{color:var(--muted);font-size:.95rem;max-width:60ch}
-.t{font-family:var(--f-display);font-variant-numeric:tabular-nums}
-a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
+body{background:var(--background);color:var(--foreground);margin:0}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:20px 56px;display:grid;gap:20px;font-size:16px}
+.ds .wrap p{margin:0}
+.wrap>*,.ds-card,.ds-card-body,.ds-field,.ds-input{min-width:0}
+.ds-input{max-width:100%}
+.wrap,.search .ds-card-body,.trip .ds-card-body,.res,.list,.prog{grid-template-columns:minmax(0,1fr)}
+.ico{flex:none;vertical-align:middle}
+.t{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .ico{color:var(--primary)}
+.brand h1{margin:0}
 /* Suchmaske */
-form{background:var(--surface);border-radius:14px;padding:16px;display:grid;gap:14px;box-shadow:0 1px 2px rgb(0 0 0 / .06)}
-.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:10px;padding:3px}
-.seg input{position:absolute;opacity:0;pointer-events:none}
-.seg label{display:block;text-align:center;padding:8px 6px;border-radius:8px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer}
-.seg input:checked+label{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / .12)}
-.seg input:focus-visible+label{outline:2px solid var(--accent)}
-.places{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
-.places .stack{display:grid;gap:8px;min-width:0}
-.swap{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1.2rem;cursor:pointer}
-.grid{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
-.fld{display:grid;gap:3px;font-size:.78rem;color:var(--muted);font-weight:700;min-width:0;letter-spacing:.02em}
-input[type=text],input[type=date],input[type=time],input:not([type]){font:16px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid transparent;border-radius:9px;padding:10px 12px;width:100%;min-width:0}
-input.ok{border-color:var(--ok)}
-input.bad{border-color:var(--bad)}
-.combo{position:relative;display:grid;gap:3px;min-width:0}
-.sugg{position:absolute;z-index:5;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgb(0 0 0 / .2);max-height:280px;overflow-y:auto}
-.sugg li{padding:9px 10px;border-radius:7px;cursor:pointer;color:var(--ink);font-weight:400;font-size:.95rem;letter-spacing:0}
-.sugg li[aria-selected="true"],.sugg li:hover{background:var(--accent-soft)}
-.sugg li.none{color:var(--muted);cursor:default}
-.hint{font-size:.8rem;font-weight:400;letter-spacing:0}
+.search .ds-card-body{display:grid;gap:16px;padding:16px}
+.seg{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.ds-field{margin:0}
+.places{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.places .stack{display:grid;gap:12px;min-width:0}
+.swap{width:44px;height:44px;padding:0}
+.grid2{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.combo{position:relative;min-width:0}
+.sugg{position:absolute;z-index:5;left:0;right:0;top:100%;margin:6px 0 0;padding:6px;list-style:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow-xl);max-height:280px;overflow-y:auto}
+.sugg li{padding:10px 12px;border-radius:.75rem;cursor:pointer;font-size:.95rem}
+.sugg li[aria-selected="true"]{background:var(--accent)}
+@media (hover:hover) and (pointer:fine){.sugg li:hover{background:var(--accent)}}
+.sugg li.none{color:var(--muted-foreground);cursor:default}
+.ds-input.ok{border-color:color-mix(in oklab,var(--pop-green-foreground) 55%,transparent)}
+.ds-input.bad{border-color:var(--destructive)}
+.hint{display:block;font-size:.8rem;margin-top:4px}
 .hint:empty{display:none}
-.hint.bad{color:var(--bad)}
-.ret-title{font:700 .78rem var(--f-body);color:var(--muted);letter-spacing:.02em;margin-bottom:-6px}
-.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{font:700 1rem var(--f-display);font-stretch:108%;background:var(--ink);color:var(--surface);border:0;border-radius:10px;padding:12px 20px;cursor:pointer;flex:1 1 auto}
-.btn[disabled]{opacity:.55;cursor:progress}
-.linkbtn{background:none;border:0;color:var(--muted);font:600 .9rem var(--f-body);cursor:pointer;padding:8px 6px;min-height:44px;text-decoration:underline;text-underline-offset:3px}
-
+.hint.bad{color:var(--destructive)}
+.actions{display:flex;gap:8px;align-items:center}
+.actions #go{flex:1;min-width:0}
+.recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.recent .ds-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Fortschritt */
 .prog{display:grid;gap:8px}
-.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
-.bar>i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s ease}
-.prog-row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:.88rem}
-.prog-step{font-weight:700}
-.prog-meta{color:var(--muted)}
-.steps{display:flex;gap:6px;flex-wrap:wrap;margin:0;padding:0;list-style:none;font-size:.78rem}
-.steps li{color:var(--faint)}
-.steps li+li::before{content:"›";margin-right:6px;color:var(--faint)}
-.steps li.done{color:var(--muted)}
-.steps li.now{color:var(--ink);font-weight:700}
-
+.prog .ds-progress-bar{width:0;transition:width .35s ease}
+.prog-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.prog-step{font-weight:600;font-size:.9rem}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:0;padding:0;list-style:none;font-size:.78rem;color:var(--muted-foreground)}
+.steps li+li::before{content:"›";margin-right:6px}
+.steps li.now{color:var(--foreground);font-weight:600}
 /* Meldungen */
-.alert{background:var(--bad-soft);color:var(--ink);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
-.alert b{color:var(--bad)}
-.alert .btn{flex:0 0 auto;justify-self:start;padding:9px 16px;font-size:.95rem}
-.note{background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:.92rem}
-
+.ds-alert{display:grid;gap:10px}
+.ds-alert.bad{border-color:color-mix(in oklab,var(--destructive) 45%,transparent)}
+.ds-alert.bad .ds-alert-title{color:var(--destructive)}
+.ds-alert .ds-btn{justify-self:start}
 /* Ergebnisse */
-.res{display:grid;gap:12px}
-.res-head{display:grid;gap:2px}
-.res-head .sub{color:var(--muted);font-size:.88rem}
-.tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
-.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 6px;font:700 .95rem var(--f-display);font-stretch:105%;color:var(--muted);cursor:pointer;display:grid;gap:1px}
-.tabs button small{font:400 .78rem var(--f-body);color:var(--faint)}
-.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-.list{background:var(--surface);border-radius:14px;box-shadow:0 1px 2px rgb(0 0 0 / .06)}
-.trip{padding:16px;display:grid;gap:8px;min-width:0}
-.trip+.trip{border-top:1px solid var(--line)}
-.tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tag{font:700 .72rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-.tag.best{background:var(--accent);color:var(--accent-ink);border-radius:5px;padding:2px 7px}
-.amp{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.75rem;border-radius:99px;padding:2px 9px;white-space:nowrap}
-.amp::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-.amp.l0{color:var(--ok);background:var(--ok-soft)}
-.amp.l1{color:var(--warn);background:var(--warn-soft)}
-.amp.l2{color:var(--bad);background:var(--bad-soft)}
-.times{display:flex;align-items:center;gap:10px}
-.times .big{font-size:1.65rem;font-weight:700;font-stretch:100%;letter-spacing:-.01em}
-.times .line{flex:1;height:2px;background:var(--line);position:relative;min-width:24px}
-.times .line::before,.times .line::after{content:"";position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;border:2px solid var(--faint);background:var(--surface)}
-.times .line::before{left:0}.times .line::after{right:0}
-.meta{color:var(--muted);font-size:.88rem;display:flex;gap:4px 12px;flex-wrap:wrap}
-.meta b{color:var(--ink);font-weight:700}
-.name{font-weight:700}
-.route{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:.8rem}
-.chip{font:600 .74rem var(--f-display);font-stretch:95%;border-radius:4px;padding:1px 6px;white-space:nowrap}
-.chip.fv{background:var(--ink);color:var(--surface)}
-.chip.nv{background:var(--bg);color:var(--ink)}
-.via{color:var(--faint);font-size:.76rem}
-.risk{font-size:.9rem}
-.row-act{display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap}
-.dblink{display:inline-flex;align-items:center;gap:6px;font:700 .9rem var(--f-display);font-stretch:105%;background:var(--accent-soft);color:var(--accent);text-decoration:none;border-radius:9px;padding:8px 14px;min-height:44px}
-.more summary{cursor:pointer;color:var(--muted);font-size:.88rem;list-style:none;min-height:44px;display:flex;align-items:center}
-.more summary::-webkit-details-marker{display:none}
-.more summary::before{content:"ⓘ ";}
-.more[open] summary{color:var(--ink)}
-.more .body{display:grid;gap:6px;margin-top:8px;font-size:.88rem;color:var(--muted);max-width:60ch}
-.more .body b{color:var(--ink)}
-.tip{font-size:.9rem;color:var(--muted);padding-inline:4px}
-.others>summary{cursor:pointer;font-weight:700;padding:12px 4px;color:var(--muted)}
-
-/* Skelett */
-.sk{background:linear-gradient(90deg,var(--sk) 25%,var(--sk2) 50%,var(--sk) 75%);background-size:200% 100%;animation:sh 1.3s linear infinite;border-radius:6px}
-@keyframes sh{to{background-position:-200% 0}}
-.sk.l1{height:12px;width:30%}.sk.l2{height:26px;width:70%}.sk.l3{height:12px;width:55%}.sk.l4{height:12px;width:85%}
-
-/* FAQ */
-/* Pünktlichkeit, Kalender, Teilen, Früher/Später, zuletzt gesucht */
-.punct{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--muted)}
-.pu{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
-.pu .pb{width:34px;height:5px;border-radius:9px;background:var(--line);overflow:hidden}
-.pu .pb>i{display:block;height:100%;background:currentColor}
-.pu.g{color:var(--ok)}.pu.y{color:var(--warn)}.pu.r{color:var(--bad)}
-.pu b{color:var(--ink);font-weight:700}
-.cal{color:var(--muted);font-size:.88rem;min-height:44px;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:3px}
-.res-head{display:flex!important;justify-content:space-between;align-items:flex-start;gap:10px}
+.res{display:grid;gap:16px}
+.res-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .res-head>div{display:grid;gap:2px;min-width:0}
-.share{flex:0 0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 14px;min-height:40px;font:700 .85rem var(--f-body);cursor:pointer}
+.dirtabs{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.dirtabs .ds-tab{display:grid;gap:1px;padding:.55rem .6rem}
+.dirtabs .ds-tab small{font-size:.75rem;font-weight:400}
 .shift{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.shift button{background:none;border:0;color:var(--accent);font:700 .9rem var(--f-body);cursor:pointer;min-height:44px;padding:0 4px}
-.shift span{color:var(--muted);font-size:.85rem}
-.recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;color:var(--muted)}
-.recent button{background:var(--bg);border:0;border-radius:99px;padding:6px 12px;min-height:36px;font:600 .82rem var(--f-body);color:var(--ink);cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.install{flex:0 0 auto;background:var(--ink);color:var(--surface);border:0;border-radius:99px;padding:8px 14px;min-height:40px;font:700 .82rem var(--f-body);cursor:pointer}
-.faq{display:grid;gap:0}
+.list{display:grid;gap:16px}
+.trip .ds-card-body{display:grid;gap:12px;padding:16px}
+.trip-top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.trip-top .tags{display:flex;gap:8px;flex-wrap:wrap}
+.pass{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:12px;row-gap:4px;align-items:center}
+.pass .stn:last-child{text-align:right;justify-self:end}
+.tm{font-size:1.75rem;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+.stn{font-size:.78rem;color:var(--muted-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.stns{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;min-width:0}
+.stns .stn{max-width:48%}
+.mid{display:grid;justify-items:center;gap:4px;font-size:.78rem;color:var(--muted-foreground);min-width:0;white-space:nowrap}
+.mid .rail{width:100%;height:0;border-top:2px dotted var(--line-strong);position:relative}
+.mid .rail::before,.mid .rail::after{content:"";position:absolute;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--card);border:2px solid var(--line-strong)}
+.mid .rail::before{left:-2px}.mid .rail::after{right:-2px;border-color:var(--primary)}
+.route{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.route .via{font-size:.75rem;color:var(--muted-foreground)}
+.punct{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted-foreground)}
+.pu{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pu .ds-progress{width:40px;height:.35rem}
+.pu.g .ds-progress-bar{background:var(--pop-green-foreground)}
+.pu.y .ds-progress-bar{background:var(--pop-orange-foreground)}
+.pu.r .ds-progress-bar{background:var(--destructive)}
+.pu b{color:var(--foreground);font-weight:600}
+.risk{font-size:.9rem}
+.vname{font-size:.9rem}
+.vname b{font-weight:600}
+.trip .ds-card-body>.vname+.route{margin-top:-6px}
+.more summary{cursor:pointer;color:var(--muted-foreground);font-size:.85rem;list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.more summary::-webkit-details-marker{display:none}
+.more .body{display:grid;gap:6px;margin-top:4px;font-size:.88rem;color:var(--muted-foreground);max-width:60ch}
+.more .body b{color:var(--foreground);font-weight:600}
+.trip .ds-card-footer{flex-wrap:wrap;padding:12px 16px}
+.tip{font-size:.88rem;color:var(--muted-foreground)}
+.others>summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--muted-foreground)}
+.others[open]>summary{margin-bottom:10px}
+/* Skelett */
+.sk{background:linear-gradient(90deg,var(--muted) 25%,color-mix(in oklab,var(--muted) 55%,var(--card)) 50%,var(--muted) 75%);background-size:200% 100%;animation:sh 1.3s linear infinite;border-radius:8px}
+@keyframes sh{to{background-position:-200% 0}}
+.sk.l1{height:12px;width:30%}.sk.l2{height:28px;width:75%}.sk.l3{height:12px;width:55%}.sk.l4{height:12px;width:85%}
+/* FAQ */
+.faq{display:grid}
 .faq h2{margin-bottom:6px}
-.faq details{border-top:1px solid var(--line)}
-.faq details:last-child{border-bottom:1px solid var(--line)}
-.faq summary{cursor:pointer;padding:12px 2px;font-weight:700}
-.faq details p{padding:0 2px 12px;color:var(--muted);font-size:.92rem;max-width:60ch}
-footer{font-size:.78rem;color:var(--faint)}
-footer a{color:var(--muted)}
+.faq details{border-top:1px solid var(--border)}
+.faq details:last-of-type{border-bottom:1px solid var(--border)}
+.faq summary{cursor:pointer;padding:12px 2px;font-weight:500}
+.faq details p{padding:0 2px 12px;max-width:60ch}
+footer{font-size:.78rem}
+footer a{color:var(--muted-foreground)!important;text-decoration:underline!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+<div class="ds">
 <div class="wrap">
-<header style="display:grid;gap:6px">
-  <div class="head-row"><h1>Bahn-Bestpreis-Finder</h1><button class="install" id="install" type="button" hidden>Als App installieren</button></div>
-  <p class="lede">Die schnellste, die günstigste und die sicherste Zugverbindung – mit Deutschland-Ticket-Kombis und Risiko-Ampel.</p>
+<header class="head">
+  <div class="brand"><span data-ico="train" data-size="26"></span><h1 class="ds-section-title">Bahn-Bestpreis-Finder</h1></div>
+  <button class="ds-btn ds-btn-secondary ds-btn-sm" id="install" type="button" hidden><span data-ico="install"></span>Als App</button>
 </header>
 
-<div class="note" id="blocked" hidden>In dieser Ansicht darf die Seite keinen Fahrplan laden. Öffne die eigenständige Version (Webadresse oder HTML-Datei), dann klappt die Suche.</div>
+<div class="ds-alert" id="blocked" hidden><p class="ds-alert-title">Suche hier nicht möglich</p><p class="ds-supporting">In dieser Ansicht darf die Seite keinen Fahrplan laden. Öffne die eigenständige Version (Webadresse oder HTML-Datei).</p></div>
 
-<form id="f" autocomplete="off" novalidate>
-  <div class="seg" role="radiogroup" aria-label="Reiseart">
-    <input type="radio" name="trip" id="t-one" value="one"><label for="t-one">Nur Hinfahrt</label>
-    <input type="radio" name="trip" id="t-rt" value="rt" checked><label for="t-rt">Hin und zurück</label>
-  </div>
-  <div class="places">
-    <div class="stack">
-      <div class="combo"><label class="fld" for="from">Von</label><input id="from" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="from-list" placeholder="Bahnhof, z. B. Lübeck" value="Lübeck Hbf"><ul class="sugg" id="from-list" role="listbox" hidden></ul><span class="hint" id="from-hint"></span></div>
-      <div class="combo"><label class="fld" for="to">Nach</label><input id="to" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="to-list" placeholder="Bahnhof, z. B. Frankfurt" value="Frankfurt (Main) Hbf"><ul class="sugg" id="to-list" role="listbox" hidden></ul><span class="hint" id="to-hint"></span></div>
+<form id="f" class="ds-card search" autocomplete="off" novalidate>
+  <div class="ds-card-body">
+    <div class="ds-tabs seg" role="group" aria-label="Reiseart">
+      <button type="button" class="ds-tab" id="t-one" aria-pressed="false">Nur Hinfahrt</button>
+      <button type="button" class="ds-tab active" id="t-rt" aria-pressed="true">Hin und zurück</button>
     </div>
-    <button class="swap" id="swap" type="button" aria-label="Start und Ziel tauschen" title="Start und Ziel tauschen">⇅</button>
+    <div class="places">
+      <div class="stack">
+        <div class="combo ds-field"><label class="ds-label" for="from">Von</label><input class="ds-input" id="from" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="from-list" placeholder="Bahnhof, z. B. Lübeck" value="Lübeck Hbf"><ul class="sugg" id="from-list" role="listbox" hidden></ul><span class="hint" id="from-hint"></span></div>
+        <div class="combo ds-field"><label class="ds-label" for="to">Nach</label><input class="ds-input" id="to" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="to-list" placeholder="Bahnhof, z. B. Frankfurt" value="Frankfurt (Main) Hbf"><ul class="sugg" id="to-list" role="listbox" hidden></ul><span class="hint" id="to-hint"></span></div>
+      </div>
+      <button class="ds-btn ds-btn-secondary swap" id="swap" type="button" aria-label="Start und Ziel tauschen" title="Start und Ziel tauschen"><span data-ico="swap" data-size="20"></span></button>
+    </div>
+    <div class="grid2">
+      <div class="ds-field"><label class="ds-label" for="date">Hinfahrt am</label><input class="ds-input" id="date" type="date"></div>
+      <div class="ds-field"><label class="ds-label" for="time">Abfahrt ca.</label><input class="ds-input" id="time" type="time" value="09:00"></div>
+    </div>
+    <div class="grid2" id="ret">
+      <div class="ds-field"><label class="ds-label" for="rdate">Rückfahrt am</label><input class="ds-input" id="rdate" type="date"></div>
+      <div class="ds-field"><label class="ds-label" for="rtime">Abfahrt ca.</label><input class="ds-input" id="rtime" type="time" value="17:00"></div>
+    </div>
+    <span class="hint bad" id="form-hint" role="status"></span>
+    <div class="actions">
+      <button class="ds-btn ds-btn-primary ds-btn-lg" id="go" type="submit">Verbindungen finden</button>
+      <button class="ds-btn ds-btn-ghost ds-btn-sm" id="reset" type="button">Zurücksetzen</button>
+    </div>
+    <div class="recent" id="recent" hidden></div>
   </div>
-  <div class="grid">
-    <label class="fld">Hinfahrt am<input id="date" type="date"></label>
-    <label class="fld">Abfahrt ca.<input id="time" type="time" value="09:00"></label>
-  </div>
-  <div class="grid" id="ret">
-    <label class="fld">Rückfahrt am<input id="rdate" type="date"></label>
-    <label class="fld">Abfahrt ca.<input id="rtime" type="time" value="17:00"></label>
-  </div>
-  <span class="hint bad" id="form-hint"></span>
-  <div class="actions">
-    <button class="btn" id="go" type="submit">Verbindungen finden</button>
-    <button class="linkbtn" id="reset" type="button">Zurücksetzen</button>
-  </div>
-  <div class="recent" id="recent" hidden></div>
 </form>
 
 <section class="prog" id="prog" hidden aria-live="polite">
-  <div class="prog-row"><span class="prog-step" id="p-step">Suche startet …</span><span class="prog-meta" id="p-meta"></span></div>
-  <div class="bar" role="progressbar" aria-label="Suchfortschritt" aria-valuemin="0" aria-valuemax="100" id="p-bar"><i></i></div>
-  <div class="prog-row"><ol class="steps" id="p-steps"></ol><button class="linkbtn" id="cancel" type="button">Abbrechen</button></div>
+  <div class="prog-row"><span class="prog-step" id="p-step">Suche startet …</span><span class="ds-supporting" id="p-meta"></span></div>
+  <div class="ds-progress" role="progressbar" aria-label="Suchfortschritt" aria-valuemin="0" aria-valuemax="100" id="p-bar"><div class="ds-progress-bar"></div></div>
+  <div class="prog-row"><ol class="steps" id="p-steps"></ol><button class="ds-btn ds-btn-ghost ds-btn-sm" id="cancel" type="button">Abbrechen</button></div>
 </section>
 
-<div class="alert" id="err" role="alert" hidden><p id="err-msg"></p><button class="btn" id="retry" type="button">Nochmal versuchen</button></div>
+<div class="ds-alert bad" id="err" role="alert" hidden><p class="ds-alert-title" id="err-title">Suche fehlgeschlagen</p><p class="ds-supporting" id="err-msg"></p><button class="ds-btn ds-btn-primary ds-btn-sm" id="retry" type="button"><span data-ico="refresh"></span>Nochmal versuchen</button></div>
 
 <div id="out"></div>
 
 <section class="faq" aria-labelledby="faq-h">
-  <h2 id="faq-h">Kurz erklärt</h2>
-  <details><summary>Was heißt die Ampel?</summary><p><b>Grün:</b> Nichts kann verfallen. <b>Gelb:</b> kleines Risiko, z. B. knapper Umstieg. <b>Rot:</b> Kommt der Regionalzug vor dem ICE zu spät, ist dein Sparpreis weg.</p></details>
-  <details><summary>Warum ist die Teilstrecke billiger?</summary><p>Du kaufst nur den kürzeren ICE-Abschnitt. Den Rest fährst du mit dem Deutschland-Ticket. Lohnt sich ab etwa 10 € Ersparnis.</p></details>
-  <details><summary>Was passiert bei Verspätung?</summary><p>Mit einem durchgehenden Ticket darfst du einfach den nächsten Zug nehmen. Bei getrennten Tickets nur, wenn der Regionalzug erst nach dem ICE kommt.</p></details>
-  <details><summary>Wo sehe ich die Preise?</summary><p>Nur bei bahn.de. Der Knopf „Bei bahn.de öffnen“ startet dort die passende Suche. Fahrzeiten kommen aus dem Fahrplan – Baustellen vorher im DB Navigator prüfen.</p></details>
+  <h2 class="ds-section-title" id="faq-h">Kurz erklärt</h2>
+  <details><summary>Was heißt die Ampel?</summary><p class="ds-supporting">Grün: Nichts kann verfallen. Gelb: kleines Risiko, z. B. knapper Umstieg. Rot: Kommt der Regionalzug vor dem ICE zu spät – oder ist er oft unpünktlich –, kann dein Sparpreis verfallen.</p></details>
+  <details><summary>Warum ist die Teilstrecke billiger?</summary><p class="ds-supporting">Du kaufst nur den kürzeren ICE-Abschnitt. Den Rest fährst du mit dem Deutschland-Ticket. Lohnt sich ab etwa 10 € Ersparnis.</p></details>
+  <details><summary>Was passiert bei Verspätung?</summary><p class="ds-supporting">Mit einem durchgehenden Ticket darfst du einfach den nächsten Zug nehmen. Bei getrennten Tickets nur, wenn der Regionalzug erst nach dem ICE kommt.</p></details>
+  <details><summary>Wo sehe ich die Preise?</summary><p class="ds-supporting">Nur bei bahn.de. „Bei bahn.de öffnen“ startet dort die passende Suche. Baustellen vorher im DB Navigator prüfen.</p></details>
 </section>
 
-<footer>Annahme: Du hast ein Deutschland-Ticket. Fahrplan: <a href="https://transitous.org" target="_blank" rel="noopener">Transitous</a> (offene Daten), Bahnhöfe: <a href="https://github.com/public-transport/db-stations" target="_blank" rel="noopener">db-stations</a>, Pünktlichkeit: <a href="https://github.com/piebro/deutsche-bahn-data" target="_blank" rel="noopener">deutsche-bahn-data</a> (Daten: DB, CC BY 4.0; Anteil Halte mit unter 6 min Verspätung im Vormonat).<span id="ios-hint" hidden> Als App: in Safari „Teilen“ → „Zum Home-Bildschirm“.</span> <a href="https://www.bahn.de/faq/gk/angebot/zeitkarten/deutschland-ticket/fahrgastrechte" target="_blank" rel="noopener">Fahrgastrechte D-Ticket</a> · <a href="https://www.bahn.de/service/fahrplaene/bauarbeiten" target="_blank" rel="noopener">Bauinfos</a>. Inoffizielles Hilfswerkzeug, keine Verbindung zur Deutschen Bahn.</footer>
+<footer class="ds-supporting">Annahme: Du hast ein Deutschland-Ticket. Fahrplan: <a href="https://transitous.org" target="_blank" rel="noopener">Transitous</a>, Bahnhöfe: <a href="https://github.com/public-transport/db-stations" target="_blank" rel="noopener">db-stations</a>, Pünktlichkeit: <a href="https://github.com/piebro/deutsche-bahn-data" target="_blank" rel="noopener">deutsche-bahn-data</a> (Daten: DB, CC BY 4.0; Anteil Halte unter 6 min Verspätung im Vormonat), Icons: Iconoir. <a href="https://www.bahn.de/faq/gk/angebot/zeitkarten/deutschland-ticket/fahrgastrechte" target="_blank" rel="noopener">Fahrgastrechte D-Ticket</a> · <a href="https://www.bahn.de/service/fahrplaene/bauarbeiten" target="_blank" rel="noopener">Bauinfos</a>. Inoffizielles Hilfswerkzeug, keine Verbindung zur Deutschen Bahn.<span id="ios-hint" hidden> Als App: in Safari „Teilen“ → „Zum Home-Bildschirm“.</span></footer>
+</div>
 </div>
 
 <script>
@@ -231,7 +327,11 @@ const isFV=l=>FV.has(l.mode)||FVNAME.test((l.displayName||l.routeShortName||"").
 const NV="REGIONAL_RAIL,REGIONAL_FAST_RAIL,SUBURBAN,SUBWAY,TRAM,BUS,FERRY";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const AMP=["grün","gelb","rot"];
+const AMP=["Grün","Gelb","Rot"],AMPC=["safe","warn","danger"];
+/* Icons: Iconoir (MIT), Originalpfade */
+const ICO={"train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
+const ico=(n,s=18)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" stroke-width="1.5" fill="none" aria-hidden="true">${ICO[n]}</svg>`;
+
 const TIMEOUT_S=60; // je Richtung; der offene Server braucht unter Last bis ~40 s
 
 const fmtT=iso=>new Date(iso).toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"});
@@ -511,25 +611,31 @@ const fileName=(A,B,v)=>`zug-${A.name}-${B.name}-${berlinLocal(v.start).slice(0,
 function punctHTML(L){
   const items=L.map(punctOf).filter(Boolean);
   if(!items.length) return "";
-  return `<div class="punct" title="Anteil Halte mit unter 6 min Verspätung im ${esc(punctMonth())}">Pünktlich (${esc(punctMonth())}): ${items.map(u=>`<span class="pu ${u.p>=80?"g":u.p>=60?"y":"r"}"><b>${esc(u.name)}</b><span class="pb"><i style="width:${u.p}%"></i></span>${u.p} %</span>`).join("")}</div>`;
+  return `<div class="punct" title="Anteil Halte mit unter 6 min Verspätung im ${esc(punctMonth())}"><span>Pünktlich im ${esc(punctMonth())}:</span>${items.map(u=>`<span class="pu ${u.p>=80?"g":u.p>=60?"y":"r"}"><b>${esc(u.name)}</b><span class="ds-progress" aria-hidden="true"><span class="ds-progress-bar" style="display:block;width:${u.p}%"></span></span><span class="t">${u.p} %</span></span>`).join("")}</div>`;
 }
-const routeHTML=L=>L.map((l,i)=>`${i?`<span class="via">${esc(l.from.name)}</span>`:""}<span class="chip ${isFV(l)?"fv":"nv"}">${esc(legName(l))}</span>`).join("");
-const ampHTML=r=>`<span class="amp l${r.lvl}">${AMP[r.lvl]}</span>`;
+const routeHTML=L=>L.map((l,i)=>`${i?`<span class="via">${esc(l.from.name)}</span>`:""}<span class="ds-badge${isFV(l)?"":" ds-badge-outline"}">${esc(legName(l))}</span>`).join("");
+const ampHTML=r=>`<span class="ds-badge ds-badge-${AMPC[r.lvl]}">Risiko ${AMP[r.lvl].toLowerCase()}</span>`;
 function tripHTML(v,A,B,labels,best){
-  const l=linkFor(v,A,B);
-  return `<article class="trip">
-    <div class="tags">${labels.map((t,i)=>`<span class="tag${best&&i===0?" best":""}">${esc(t)}</span>`).join("")}${ampHTML(v.risk)}</div>
-    <div class="times"><span class="t big">${fmtT(v.start)}</span><span class="line" aria-hidden="true"></span><span class="t big">${fmtT(v.end)}</span></div>
-    <div class="meta"><span><b class="t">${hm(v.dur)}</b></span><span>${v.transfers}× umsteigen</span><span class="name">${esc(v.name)}</span></div>
-    <div class="route">${routeHTML(v.L)}</div>
-    ${punctHTML(v.L)}
+  const l=linkFor(v,A,B),L=v.L;
+  return `<article class="ds-card trip"><div class="ds-card-body">
+    <div class="trip-top"><div class="tags">${labels.map((t,i)=>`<span class="ds-badge ${best&&i===0?"ds-badge-primary":"ds-badge-outline"}">${esc(t)}</span>`).join("")}</div>${ampHTML(v.risk)}</div>
+    <div class="pass">
+      <span class="tm t">${fmtT(v.start)}</span>
+      <div class="mid" aria-label="Dauer ${hm(v.dur)}, ${v.transfers} Umstiege"><span class="t">${hm(v.dur)}</span><span class="rail"></span><span>${v.transfers}× umsteigen</span></div>
+      <span class="tm t">${fmtT(v.end)}</span>
+      <div class="stns"><span class="stn">${esc(L[0].from.name)}</span><span class="stn">${esc(L[L.length-1].to.name)}</span></div>
+    </div>
+    <p class="vname"><b>${esc(v.name)}</b></p>
+    <div class="route">${routeHTML(L)}</div>
+    ${punctHTML(L)}
     <p class="risk">${esc(v.risk.t)}</p>
-    <div class="row-act"><a class="dblink" href="${esc(l.href)}" target="_blank" rel="noopener">Bei bahn.de öffnen →</a>
-      <a class="cal" href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">In Kalender</a>
-      <details class="more"><summary>Details</summary><div class="body"><p>${esc(v.risk.d)}</p><p><b>So buchen:</b> ${howTo(v)}</p><p>${esc(l.note)} Alter/BahnCard dort einstellen.</p></div></details></div>
+    <details class="more"><summary>${ico("info",16)}Details und So buchen</summary><div class="body"><p>${esc(v.risk.d)}</p><p><b>So buchen:</b> ${howTo(v)}</p><p>${esc(l.note)} Alter/BahnCard dort einstellen.</p></div></details>
+  </div>
+  <div class="ds-card-footer"><a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener">Bei bahn.de öffnen${ico("open",16)}</a>
+    <a class="ds-btn ds-btn-ghost ds-btn-sm" href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)}In Kalender</a></div>
   </article>`;
 }
-const skelHTML=n=>`<div class="list" aria-hidden="true">${Array.from({length:n},()=>`<div class="trip"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l3"></div><div class="sk l4"></div></div>`).join("")}</div>`;
+const skelHTML=n=>`<div class="list" aria-hidden="true">${Array.from({length:n},()=>`<div class="ds-card trip"><div class="ds-card-body"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l3"></div><div class="sk l4"></div></div></div>`).join("")}</div>`;
 
 function dirHTML(r){
   const {A,B,V,main,tip,partial}=r;
@@ -549,7 +655,7 @@ function dirHTML(r){
   const shown=new Set(rows.map(x=>x[0]));
   const rest=V.filter(v=>!shown.has(v));
   const i=RES.indexOf(r);
-  let h=`<div class="shift"><button type="button" data-shift="-1">‹ Früher</button><span>Abfahrt ab ${fmtT(DIRS[i]?.t||V[0].start)}</span><button type="button" data-shift="1">Später ›</button></div>`;
+  let h=`<div class="shift"><button class="ds-btn ds-btn-ghost ds-btn-sm" type="button" data-shift="-1">${ico("left",16)}Früher</button><span class="ds-supporting">ab ${fmtT(DIRS[i]?.t||V[0].start)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" type="button" data-shift="1">Später${ico("right",16)}</button></div>`;
   h+=`<div class="list">${rows.map(([v,lab,best])=>tripHTML(v,A,B,lab,best)).join("")}</div>`;
   if(partial) h+=`<p class="tip">Spar-Varianten werden noch geprüft …</p>${skelHTML(1)}`;
   if(tip) h+=`<p class="tip">Schneller: ab ${fmtT(tip.start)} in ${hm(tip.dur)} (${main.dur-tip.dur} min kürzer). <a href="${esc(dbLink(A.st,B.st,tip.start))}" target="_blank" rel="noopener">Bei bahn.de öffnen</a></p>`;
@@ -562,8 +668,8 @@ let DIRS=[],RES=[],TAB=0,LOADING=false;
 function renderOut(){
   if(!DIRS.length){$("out").innerHTML="";return}
   const rt=DIRS.length>1,d0=DIRS[0];
-  let h=`<section class="res"><div class="res-head"><div><h2>${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="sub">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="share" id="share" type="button">Teilen</button></div>`;
-  if(rt) h+=`<div class="tabs" role="tablist">${DIRS.map((d,i)=>`<button type="button" role="tab" id="tab${i}" aria-selected="${i===TAB}" aria-controls="panel">${i?"Rückfahrt":"Hinfahrt"}<small>${esc(fmtD(d.t))}${RES[i]?"":LOADING?" · lädt …":""}</small></button>`).join("")}</div>`;
+  let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div>`;
+  if(rt) h+=`<div class="ds-tabs dirtabs" role="tablist">${DIRS.map((d,i)=>`<button type="button" class="ds-tab${i===TAB?" active":""}" role="tab" id="tab${i}" aria-selected="${i===TAB}" aria-controls="panel">${i?"Rückfahrt":"Hinfahrt"}<small>${esc(fmtD(d.t))}${RES[i]?"":LOADING?" · lädt …":""}</small></button>`).join("")}</div>`;
   const r=RES[TAB];
   h+=`<div id="panel" ${rt?`role="tabpanel" aria-labelledby="tab${TAB}"`:""}>${r?dirHTML(r):LOADING?skelHTML(3):""}</div></section>`;
   $("out").innerHTML=h;
@@ -590,8 +696,9 @@ async function shareSearch(){
   const url=searchURL(),b=$("share"),d=DIRS[0];
   const text=`Zug ${d.A.name} ${DIRS.length>1?"⇄":"→"} ${d.B.name}, ${fmtD(d.t)}`;
   try{if(navigator.share){await navigator.share({title:"Bahn-Bestpreis-Finder",text,url});return}}catch(e){if(e.name==="AbortError")return}
-  try{await navigator.clipboard.writeText(url);b.textContent="Link kopiert ✓"}catch{b.textContent="Link steht oben in der Adresszeile"}
-  setTimeout(()=>{if($("share"))$("share").textContent="Teilen"},2500);
+  const lab=b.querySelector("span");
+  try{await navigator.clipboard.writeText(url);lab.textContent="Link kopiert"}catch{lab.textContent="Link steht in der Adresszeile"}
+  setTimeout(()=>{const x=$("share")?.querySelector("span");if(x)x.textContent="Teilen"},2500);
 }
 /* Zuletzt gesucht (nur in diesem Browser) */
 const RKEY="bbf-recent";
@@ -605,7 +712,7 @@ const byEva=e=>IDX.find(s=>String(s.eva)===String(e));
 function paintRecent(){
   const list=loadRecent().map(x=>[byEva(x.f),byEva(x.t)]).filter(([a,b])=>a&&b),box=$("recent");
   box.hidden=!list.length;
-  box.innerHTML=list.length?`Zuletzt: ${list.map(([a,b],i)=>`<button type="button" data-r="${i}">${esc(a.name)} → ${esc(b.name)}</button>`).join("")}`:"";
+  box.innerHTML=list.length?`<span class="ds-supporting">Zuletzt:</span>${list.map(([a,b],i)=>`<button class="ds-chip" type="button" data-r="${i}">${esc(a.name)} → ${esc(b.name)}</button>`).join("")}`:"";
   box.querySelectorAll("[data-r]").forEach(btn=>btn.onclick=()=>{const [a,b]=list[+btn.dataset.r];choose("from",a);choose("to",b);search()});
 }
 
@@ -622,8 +729,9 @@ function showProg(frac,label,stats,stepIdx){
 
 let runId=0,ctrl=null,timer=null;
 function stop(reason){if(ctrl&&!ctrl.signal.aborted)ctrl.abort(reason);clearTimeout(timer)}
-function showErr(msg){$("err-msg").innerHTML=msg;$("err").hidden=false}
-function rtOn(){return $("t-rt").checked}
+function showErr(title,msg=""){$("err-title").textContent=title;$("err-msg").textContent=msg;$("err-msg").hidden=!msg;$("err").hidden=false}
+function rtOn(){return $("t-rt").getAttribute("aria-pressed")==="true"}
+function setTrip(rt){for(const [id,on] of [["t-rt",rt],["t-one",!rt]]){$(id).setAttribute("aria-pressed",String(on));$(id).classList.toggle("active",on)}$("ret").hidden=!rt}
 const EST=()=>DIRS.length>1?"dauert ca. 30–80 s":"dauert ca. 15–40 s";
 
 async function search(e,only){
@@ -686,11 +794,11 @@ async function runDirs(idxs,my,live){
     RES=RES.map(r=>r&&r.partial?{...r,partial:false}:r);
     if(!RES.some(Boolean)) DIRS=[];
     renderOut();
-    if(err instanceof StopError&&!err.timeout){showErr("Suche abgebrochen.");return}
-    if(err instanceof StopError) showErr(`<b>${esc(err.message)}</b> Meist hilft es, es in einer Minute nochmal zu versuchen.`);
+    if(err instanceof StopError&&!err.timeout){showErr("Suche abgebrochen");return}
+    if(err instanceof StopError) showErr(err.message,"Meist hilft es, es in einer Minute nochmal zu versuchen.");
     else if(err instanceof NetError&&/claude\.ai|claudeusercontent/.test(location.hostname)){$("blocked").hidden=false;$("err").hidden=true}
-    else if(err instanceof NetError) showErr(`<b>${esc(err.message)}</b> Der Server ist vermutlich kurz überlastet. Bitte in einer Minute nochmal versuchen.`);
-    else showErr(`<b>${esc(err.message)}</b>`);
+    else if(err instanceof NetError) showErr(err.message,"Der Server ist vermutlich kurz überlastet. Bitte in einer Minute nochmal versuchen.");
+    else showErr(err.message);
   }finally{if(live()){$("go").disabled=false;clearTimeout(timer)}}
 }
 
@@ -698,8 +806,10 @@ $("f").addEventListener("submit",search);
 $("retry").onclick=()=>search();
 $("cancel").onclick=()=>stop(new StopError("abgebrochen"));
 $("swap").onclick=()=>{const a=chosen.from,b=chosen.to,va=$("from").value;$("from").value=$("to").value;$("to").value=va;choose("from",b);choose("to",a)};
-const syncTrip=()=>{$("ret").hidden=!rtOn()};
-for(const r of document.querySelectorAll('input[name=trip]')) r.addEventListener("change",syncTrip);
+const syncTrip=()=>setTrip(rtOn());
+$("t-rt").onclick=()=>setTrip(true);$("t-one").onclick=()=>setTrip(false);
+// Icons in die festen Knöpfe setzen
+for(const el of document.querySelectorAll("[data-ico]")) el.outerHTML=ico(el.dataset.ico,+(el.dataset.size||18));
 const today=()=>new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Berlin"});
 const plusDays=(d,n)=>{const x=new Date(d+"T12:00:00Z");x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
 $("date").addEventListener("change",()=>{if($("rdate").value<$("date").value)$("rdate").value=$("date").value});
@@ -719,7 +829,7 @@ if(q&&q.get("von")&&q.get("nach")){
   const a=byEva(q.get("von")),b=byEva(q.get("nach")),ok=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||""),okT=x=>/^\d{2}:\d{2}$/.test(x||"");
   if(a) choose("from",a); if(b) choose("to",b);
   if(ok(q.get("d"))) $("date").value=q.get("d"); if(okT(q.get("t"))) $("time").value=q.get("t");
-  const hasR=ok(q.get("rd"));$("t-rt").checked=hasR;$("t-one").checked=!hasR;
+  const hasR=ok(q.get("rd"));setTrip(hasR);
   if(hasR){$("rdate").value=q.get("rd");if(okT(q.get("rt")))$("rtime").value=q.get("rt")}
 }
 syncTrip();paintRecent();
