@@ -265,6 +265,34 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .more-times{justify-self:start}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .go{grid-column:2;justify-self:start}}
+/* Reiseleiste */
+.chain{display:grid;gap:3px;margin-top:4px;min-width:0}
+.seg{height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-size:.72rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.seg.nv{background:var(--pop-green);color:var(--pop-green-foreground)}
+.seg.fv{background:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-primary-inset-sm)}
+.seg.flix{background:var(--pop-orange);color:var(--pop-orange-foreground)}
+.seg.wait{border:1.5px dashed var(--line-strong);color:var(--muted-foreground);font-weight:500;background:transparent}
+.seg.wait.bad{border-color:var(--destructive);color:var(--destructive)}
+.chain-st{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--muted-foreground);min-width:0}
+.chain-st>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chain-tr{font-size:.78rem;color:var(--muted-foreground)}
+.chain-tr .bad{color:var(--destructive);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{display:inline-block;width:18px;height:10px;border-radius:4px}
+.lg.nv{background:var(--pop-green)}.lg.fv{background:var(--primary)}
+.lg.wait{border:1.5px dashed var(--line-strong)}.lg.wait.bad{border-color:var(--destructive)}
+/* Fahrtverlauf (ausgeklappt) */
+.tl{list-style:none;margin:4px 0 8px;padding:0;display:grid}
+.tl li{display:grid;grid-template-columns:3.2rem minmax(0,1fr);gap:10px;align-items:center;font-size:.86rem}
+.tl .t{font-variant-numeric:tabular-nums;color:var(--foreground);font-weight:600;line-height:1.25}
+.tl-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.tl-name b{color:var(--foreground);font-weight:600}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--foreground);background:var(--card);flex:none;margin-left:-1px}
+.tl-leg .tl-bar{border-left:4px solid var(--pop-green-foreground);margin-left:3px;padding:8px 0 8px 14px}
+.tl-leg.fv .tl-bar{border-left-color:var(--primary)}
+.tl-leg.flix .tl-bar{border-left-color:var(--pop-orange-foreground)}
+.tl-bar b{color:var(--foreground);font-weight:600}
 /* Skelett */
 .sk{background:linear-gradient(90deg,var(--muted) 25%,color-mix(in oklab,var(--muted) 55%,var(--card)) 50%,var(--muted) 75%);background-size:200% 100%;animation:sh 1.3s linear infinite;border-radius:8px}
 @keyframes sh{to{background-position:-200% 0}}
@@ -734,23 +762,50 @@ const SEL=new Set();let SHOWALL=false;
 const SORTFN={ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
+/* Wie die Verbindung aufgebaut ist: Regionalzug (D-Ticket) / ICE (Ticket) / Umstieg */
+const legType=l=>isFlix(l)?"flix":isFV(l)?"fv":"nv";
+const shortSt=n=>String(n).replace(/\s+Hauptbahnhof\b/,"").replace(/\s+Hbf\b/,"").replace(/\s+Bahnhof\b/,"").replace(/^Bahnhof\s+/,"");
+const typeLabel=(t,kind)=>t==="fv"?(kind==="S"?"Ticket kaufen":"ICE/IC"):t==="flix"?"eigenes Ticket":(kind==="A"?"im Ticket":"D-Ticket");
+function chainHTML(v){
+  const L=v.L,items=[];
+  L.forEach((l,i)=>{
+    if(i){const w=mins(L[i-1].endTime,l.startTime);items.push({w,bad:v.kind==="S"&&i===v.iceIdx&&w<30,at:l.from.name})}
+    items.push({l,m:Math.max(1,mins(l.startTime,l.endTime))});
+  });
+  const cols=items.map(it=>it.l?`minmax(34px,${it.m}fr)`:`minmax(24px,${Math.max(it.w,6)}fr)`).join(" ");
+  const aria=items.map(it=>it.l?`${legName(it.l)} (${typeLabel(legType(it.l),v.kind)})`:`Umstieg ${it.at} ${it.w} Minuten`).join(", ");
+  const segs=items.map(it=>it.l
+    ?`<span class="seg ${legType(it.l)}" title="${esc(legName(it.l))}: ${fmtT(it.l.startTime)} ${esc(it.l.from.name)} → ${fmtT(it.l.endTime)} ${esc(it.l.to.name)}">${esc(shortName(it.l))}</span>`
+    :`<span class="seg wait${it.bad?" bad":""}" title="${it.w} min Umstieg in ${esc(it.at)}">${it.w}′</span>`).join("");
+  const tr=items.filter(it=>!it.l).map(it=>`<span${it.bad?' class="bad"':""}>${esc(shortSt(it.at))} ${it.w} min</span>`).join(" · ");
+  return `<div class="chain" style="grid-template-columns:${cols}" role="img" aria-label="${esc(aria)}">${segs}</div>
+    <div class="chain-st"><span>${esc(shortSt(L[0].from.name))}</span><span>${esc(shortSt(L[L.length-1].to.name))}</span></div>
+    ${tr?`<div class="chain-tr">Umstieg: ${tr}</div>`:""}`;
+}
+function timelineHTML(v){
+  const L=v.L;
+  return `<ol class="tl">${L.map((l,i)=>{
+    const t=legType(l),pu=punctOf(l);
+    const st=i===0?`<li class="tl-st"><span class="t">${fmtT(l.startTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.from.name)}</b></span></li>`
+      :`<li class="tl-st"><span class="t">${fmtT(L[i-1].endTime)}<br>${fmtT(l.startTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.from.name)}</b> <span class="ds-supporting">· ${mins(L[i-1].endTime,l.startTime)} min Umstieg</span></span></li>`;
+    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar"><b>${esc(legName(l))}</b> <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich im ${esc(punctMonth())}`:""}</span></span></li>`;
+    const end=i===L.length-1?`<li class="tl-st"><span class="t">${fmtT(l.endTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.to.name)}</b></span></li>`:"";
+    return st+leg+end;}).join("")}</ol>`;
+}
 function rowHTML(v,A,B,tags){
   const l=linkFor(v,A,B),pre=v.kind==="S"?v.L.slice(0,v.iceIdx):[],post=v.kind==="S"?v.L.slice(v.iceEnd+1):[];
   const what=v.kind==="S"
-    ?`<b>${esc(v.ice.name)}</b> ${esc(v.ice.from.name)} → ${esc(v.ice.to.name)} <span class="ds-supporting">· ICE ${hm(v.fvMin)}</span>`
-    :v.kind==="A"?`<b>${esc(v.name)}</b>`:`<span>${esc(v.L.map(shortName).join(" · "))}</span>`;
-  const extra=v.kind==="S"
-    ?[pre.length?`vorher ${pre.map(shortName).join(" + ")}`:"",post.length?`danach ${post.map(shortName).join(" + ")}`:""].filter(Boolean).join(" · ")+" (D-Ticket)"
-    :`${v.transfers}× umsteigen`;
+    ?`<span class="ds-supporting">Ticket kaufen:</span> <b>${esc(v.ice.name)} ${esc(shortSt(v.ice.from.name))} → ${esc(shortSt(v.ice.to.name))}</b> <span class="ds-supporting">(${hm(v.fvMin)})${pre.length||post.length?" · Rest mit D-Ticket":""}</span>`
+    :v.kind==="A"?`<span class="ds-supporting">Ein Ticket für alles:</span> <b>${esc(v.name)}</b>`:`<span class="ds-supporting">Kein Ticket nötig – alles mit dem D-Ticket</span>`;
   const checked=SEL.has(l.href)?" checked":"";
   return `<li class="row">
     <input class="pick" type="checkbox" aria-label="Für Preisvergleich auswählen" data-href="${esc(l.href)}"${checked}>
     <div class="row-main">
       <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}${ampHTML(v.risk)}</div>
+      ${chainHTML(v)}
       <div class="row-l2">${what}</div>
-      <div class="ds-supporting">${esc(extra)}</div>
       <p class="why">${esc(v.risk.why)}</p>
-      <details class="more"><summary>${ico("info",16)}So buchen</summary><div class="body"><p>${howTo(v)}</p><div class="route">${routeHTML(v.L)}</div>${punctHTML(v.L)}<p>${esc(l.note)} Reisende: ${esc(travLabel())}${TRAV.age==="x"?" – Alter auf bahn.de anpassen":""}.</p><p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p></div></details>
+      <details class="more"><summary>${ico("info",16)}Fahrtverlauf und So buchen</summary><div class="body">${timelineHTML(v)}<p><b>So buchen:</b> ${howTo(v)}</p><p>${esc(l.note)} Reisende: ${esc(travLabel())}${TRAV.age==="x"?" – Alter auf bahn.de anpassen":""}.</p><p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p></div></details>
     </div>
     <a class="ds-btn ds-btn-primary ds-btn-sm go" href="${esc(l.href)}" target="_blank" rel="noopener" aria-label="Bei bahn.de öffnen">bahn.de${ico("open",14)}</a>
   </li>`;
@@ -765,6 +820,7 @@ function dirHTML(r){
   const shown=SHOWALL?list:list.slice(0,30);
   let h=`<div class="list-head"><span class="ds-supporting">${list.length} Möglichkeit${list.length===1?"":"en"} · Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span>
     <label class="sort"><span class="sr-only">Sortieren</span><select class="ds-input ds-select" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label></div>`;
+  h+=`<div class="legend ds-supporting" aria-hidden="true">${MODE!=="whole"?`<span><i class="lg nv"></i>Regionalzug · D-Ticket</span>`:`<span><i class="lg nv"></i>Regionalzug</span>`}${MODE!=="dt"?`<span><i class="lg fv"></i>ICE/IC${MODE==="spar"?" · Ticket kaufen":""}</span>`:""}<span><i class="lg wait"></i>Umstieg (min)</span>${MODE==="spar"?`<span><i class="lg wait bad"></i>knapp</span>`:""}</div>`;
   h+=`<div class="open-bar"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="open-sel" type="button"${SEL.size?"":" disabled"}>${ico("open",16)}Ausgewählte öffnen (${SEL.size})</button>
     <span class="ds-supporting">Tipp: <kbd>⌘</kbd>-Klick (Mac) bzw. <kbd>Strg</kbd>-Klick öffnet einen Link im Hintergrund.</span></div>`;
   if(MODE==="spar"&&r.partial) h+=`<p class="tip" role="status">Spar-Kombis werden berechnet …</p>${skelRows(2)}`;
@@ -969,10 +1025,13 @@ $("reset").onclick=()=>{stop(new StopError("ersetzt"));runId++;$("go").disabled=
 setupCombo("from");setupCombo("to");
 for(const id of ["from","to"]){const ex=IDX.find(s=>s.n===norm($(id).value));if(ex)choose(id,ex)}
 
-// Start: geteilte Suche aus der Webadresse – sonst Beispielsuche Freitag hin, Sonntag zurück
-const now=new Date();const fri=new Date(now);fri.setDate(now.getDate()+((5-now.getDay()+7)%7||7));
-$("date").value=fri.toLocaleDateString("sv-SE",{timeZone:"Europe/Berlin"});
+// Start: Formular mit heute und der nächsten Viertelstunde vorbelegen. Gesucht wird erst beim Abschicken –
+// außer bei einem geteilten Link, in dem die Suche schon steht.
+$("date").value=today();
+{const hm=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date()).split(":").map(Number);
+ let m=Math.ceil((hm[0]*60+hm[1]+1)/15)*15;if(m>=24*60)m=23*60+45;$("time").value=`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
 $("rdate").value=plusDays($("date").value,2);
+let shared=false;
 let q=null;try{q=new URLSearchParams(location.search)}catch{}
 if(q&&q.get("von")&&q.get("nach")){
   const a=byEva(q.get("von")),b=byEva(q.get("nach")),ok=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||""),okT=x=>/^\d{2}:\d{2}$/.test(x||"");
@@ -980,9 +1039,10 @@ if(q&&q.get("von")&&q.get("nach")){
   if(ok(q.get("d"))) $("date").value=q.get("d"); if(okT(q.get("t"))) $("time").value=q.get("t");
   const hasR=ok(q.get("rd"));setTrip(hasR);
   if(hasR){$("rdate").value=q.get("rd");if(okT(q.get("rt")))$("rtime").value=q.get("rt")}
+  shared=!!(a&&b);
 }
 syncTrip();paintRecent();
-search();
+if(shared) search();
 
 // Installierbar als App (Startbildschirm); offline zeigt die Seite wenigstens die Suchmaske
 if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude/.test(location.hostname)) navigator.serviceWorker.register("sw.js").catch(()=>{});
