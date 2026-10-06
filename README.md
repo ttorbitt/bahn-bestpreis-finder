@@ -5,3 +5,7 @@ Kleine Web-App für Zugreisen in Deutschland: Start, Ziel, Datum und ungefähre 
 - Fahrplan: offener Sollfahrplan von [Transitous](https://transitous.org). Es gibt keine offene Preis-Schnittstelle, Preise also auf bahn.de prüfen.
 - Läuft komplett im Browser, ohne Server und ohne Anmeldung.
 - Inoffizielles Hilfswerkzeug, keine Verbindung zur Deutschen Bahn.
+
+## Entwicklung
+
+`app.html` ist die Quelle, `stations.json` die Bahnhofsliste (DB-Stationsdaten über [db-stations](https://github.com/public-transport/db-stations)). `python3 build.py` erzeugt daraus `index.html` (GitHub Pages) und `artifact.html`.
