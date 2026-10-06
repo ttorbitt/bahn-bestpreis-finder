@@ -789,7 +789,7 @@ function linkFor(v,A,B){
 function howTo(v){
   if(v.kind==="A") return `Auf bahn.de die Verbindung ab ${fmtT(v.start)} wählen (${esc(v.name)}), Super Sparpreis.`;
   if(v.kind==="D") return "Kein Ticket nötig. Im DB Navigator „Nur Nahverkehr“ wählen.";
-  return `Nur ${esc(v.ice.from.name)} → ${esc(v.ice.to.name)} buchen (${esc(v.ice.name)} um ${fmtT(v.ice.dep)}), Super Sparpreis. Die Regionalzüge davor und danach fährst du mit dem Deutschland-Ticket.`;
+  return `Nur ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))} buchen (${esc(v.ice.name)} um ${fmtT(v.ice.dep)}), Super Sparpreis. Die Regionalzüge davor und danach fährst du mit dem Deutschland-Ticket.`;
 }
 /* Kalendereintrag (.ics) als data:-Link – klappt ohne Server */
 function icsFor(v,A,B){
@@ -822,10 +822,10 @@ const MODES={
 let MODE="spar";try{const m=localStorage.getItem("bbf-mode");if(MODES[m])MODE=m}catch{}
 const SORT={spar:"rec",whole:"rec",dt:"rec"};
 /* „Empfohlen“: Punkte in Minuten, kleiner = besser.
-   Reisezeit + Risiko-Aufschlag (gelb +25, rot +90) + 10 je Umstieg + halbe ICE-Fahrzeit (längere ICE-Strecke = meist teurer). */
-const RISKPEN=[0,25,90];
+   Reisezeit + Risiko-Aufschlag (gelb +20, rot +150 – Rot nur oben, wenn es nichts Sicheres gibt) + 10 je Umstieg + halbe ICE-Fahrzeit. */
+const RISKPEN=[0,20,150];
 const scoreOf=v=>v.dur+RISKPEN[v.risk.lvl]+10*v.transfers+(v.kind==="S"?Math.round(v.fvMin/2):0);
-const REC_HELP="„Empfohlen“ verrechnet Reisezeit, Sicherheit und Preis: Reisezeit in Minuten, dazu 25 min Aufschlag bei gelbem und 90 min bei rotem Risiko (knapper Puffer, seltener oder unpünktlicher Zubringer), 10 min je Umstieg und – bei Spar-Kombis – die halbe ICE-Fahrzeit, weil eine längere ICE-Strecke meist mehr kostet. Der kleinste Wert steht oben.";
+const REC_HELP="„Empfohlen“ verrechnet Reisezeit, Sicherheit und Preis: Reisezeit in Minuten, dazu 20 min Aufschlag bei gelbem und 150 min bei rotem Risiko (knapper Puffer, seltener oder unpünktlicher Zubringer), 10 min je Umstieg und – bei Spar-Kombis – die halbe ICE-Fahrzeit, weil eine längere ICE-Strecke meist mehr kostet. Der kleinste Wert steht oben.";
 const SEL=new Map();let SHOWALL=false; // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
