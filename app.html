@@ -243,6 +243,20 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .tip{font-size:.88rem;color:var(--muted-foreground)}
 .others>summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--muted-foreground)}
 .others[open]>summary{margin-bottom:10px}
+/* Stundenübersicht und Gruppen */
+.hours{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
+.hour{flex:none;display:grid;grid-template-columns:auto auto;align-items:center;gap:2px 8px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px 12px;text-decoration:none!important;color:var(--foreground)!important;box-shadow:var(--shadow-xs)}
+.hour-h{font-size:.75rem;color:var(--muted-foreground);grid-column:1/-1}
+.hour .t{font-weight:700}
+.hdot{width:10px;height:10px;border-radius:50%}
+.hdot.l0{background:var(--pop-green-foreground)}.hdot.l1{background:var(--pop-orange-foreground)}.hdot.l2{background:var(--destructive)}
+.hgroup{display:grid;gap:8px;scroll-margin-top:12px}
+.hhead{display:flex;align-items:baseline;gap:10px;padding-top:10px;border-top:1px solid var(--border)}
+.hmore>summary{cursor:pointer;color:var(--muted-foreground);font-size:.88rem;padding:4px 2px;list-style:none}
+.hmore>summary::-webkit-details-marker{display:none}
+.hmore>summary::before{content:"+ "}
+.hmore[open]>summary::before{content:"– "}
+.hmore[open]>summary{margin-bottom:8px}
 /* Vergleichsliste: ruhige Kopfzeile, Zeitleiste, schwebende Auswahl */
 .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .toolbar .count{font-weight:600;margin-right:auto}
@@ -837,7 +851,7 @@ const scoreOf=v=>v.dur+RISKPEN[v.risk.lvl]+10*v.transfers+(v.kind==="S"?Math.rou
 /* Hilfe in Alltagssprache (Rechnung für „Empfohlen“ steht oben bei scoreOf) */
 const helpHTML=()=>`<div class="help-card" id="list-help" hidden>
   <p><b>So liest du eine Verbindung:</b> <span class="sw nv"></span> Regionalzug – fährst du mit dem Deutschland-Ticket. <span class="sw fv"></span> ICE – dafür kaufst du ein Ticket. <span class="sw wait"></span> Umsteigen, die Zahl sind Minuten. Rot umrandet heißt: knapp.</p>
-  <p><b>Empfohlen</b> steht oben, wenn die Fahrt schnell ist, sicher klappt und meist wenig kostet. Fahrten mit knappem Umstieg rutschen nach unten.</p>
+  <p><b>Empfohlen</b> zeigt die Verbindungen nach Abfahrtsstunde. In jeder Stunde steht die beste oben – schnell, sicher und meist günstig. Die Kacheln ganz oben zeigen je Stunde die beste Fahrzeit; der Punkt ist grün, gelb oder rot je nach Umsteige-Risiko.</p>
   ${MODE==="spar"?`<p><b>„ICE-Ticket“ und „Normal“:</b> „ICE-Ticket“ zeigt den Preis nur für den ICE – den Rest fährst du mit dem Deutschland-Ticket. „Normal“ zeigt dieselbe Fahrt mit einem Ticket für alles. So siehst du, wie viel du sparst.</p>`:""}
   <p><b>Mehrere Preise vergleichen:</b> Hake Verbindungen an und tippe auf „Alle öffnen“. Beim ersten Mal fragt dein Browser, ob er mehrere Fenster öffnen darf – bitte erlauben.</p>
 </div>`;
@@ -939,9 +953,26 @@ function dirHTML(r){
   </div>
   ${helpHTML()}
   <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button">${ico("left",16)}Früher</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button">Später${ico("right",16)}</button></div>`;
-  if(shown.length) h+=`<ul class="rows ds-card">${shown.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>`;
-  else h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
-  if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
+  if(!list.length) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
+  else if(SORT[MODE]==="rec"){
+    /* „Empfohlen“: nach Abfahrtsstunde gruppiert – je Stunde die beste zuerst, Rest eingeklappt.
+       Oben eine Stundenübersicht, um 8, 10 oder 11 Uhr ohne Scrollen zu vergleichen. */
+    const hourOf=v=>berlinLocal(v.start).slice(11,13),groups=new Map();
+    for(const v of list){const k=hourOf(v);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(v)}
+    const keys=[...groups.keys()].sort((a,b)=>(a<b?-1:1)); // Mitternacht: Fenster überschreitet selten 0 Uhr
+    const nx=k=>String((+k+1)%24).padStart(2,"0");
+    h+=`<nav class="hours" aria-label="Beste Verbindung je Stunde">${keys.map(k=>{const b=groups.get(k)[0];
+      return `<a class="hour" href="#g${k}"><span class="hour-h">${k} Uhr</span><span class="t">${hm(b.dur)}</span><i class="hdot l${b.risk.lvl}" title="${esc(b.risk.t)}"></i></a>`}).join("")}</nav>`;
+    for(const k of keys){
+      const g=groups.get(k),top=g.slice(0,2),rest=g.slice(2);
+      h+=`<section class="hgroup" id="g${k}"><div class="hhead"><b>${k}–${nx(k)} Uhr</b><span class="ds-supporting">${g.length} Verbindung${g.length===1?"":"en"}</span></div>
+        <ul class="rows ds-card">${top.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>
+        ${rest.length?`<details class="hmore"><summary>${rest.length} weitere ab ${k} Uhr anzeigen</summary><ul class="rows ds-card">${rest.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul></details>`:""}</section>`;
+    }
+  }else{
+    h+=`<ul class="rows ds-card">${shown.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>`;
+    if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
+  }
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
   h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button">Spätere Verbindungen (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
   return h;
