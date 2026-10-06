@@ -243,7 +243,18 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .tip{font-size:.88rem;color:var(--muted-foreground)}
 .others>summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--muted-foreground)}
 .others[open]>summary{margin-bottom:10px}
-/* Vergleichsliste */
+/* Vergleichsliste: ruhige Kopfzeile, Zeitleiste, schwebende Auswahl */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolbar .count{font-weight:600;margin-right:auto}
+.sort-sel{font:500 .85rem var(--font-sans);color:var(--foreground);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:.4rem .9rem;max-width:100%;box-shadow:var(--shadow-xs)}
+.help-btn{margin-left:0}
+.help-card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:12px 14px;display:grid;gap:8px;font-size:.88rem;color:var(--muted-foreground)}
+.help-card b{color:var(--foreground);font-weight:600}
+.sw{display:inline-block;width:16px;height:9px;border-radius:3px;vertical-align:1px}
+.sw.nv{background:var(--pop-green)}.sw.fv{background:var(--primary)}.sw.wait{border:1.5px dashed var(--line-strong)}
+.timebar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem;color:var(--muted-foreground)}
+.selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:12px;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:999px;padding:8px 8px 8px 18px;box-shadow:var(--shadow-xl);max-width:calc(100% - 32px)}
+.selbar .tgl{margin-left:0}
 .modes-wrap{display:grid;gap:6px}
 .modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
 .modes .ds-tab{padding:.5rem .4rem}
@@ -614,11 +625,11 @@ function riskOf(v){
   const after=v.iceEnd<v.L.length-1?` Nach dem ICE ist eine Verspätung egal: Mit dem D-Ticket nimmst du den nächsten Regionalzug${v.postTakt?` (fährt etwa alle ${v.postTakt} min)`:""}.`:"";
   if(v.feederBuf==null) return {lvl:0,t:"Kein Zubringer",why:`Du steigst direkt am Start in den ICE.${after||" Danach kein Umstieg mehr."}`};
   const b=v.feederBuf,k=v.feederTakt,fl=v.L[v.iceIdx-1],pu=fl?punctOf(fl):null,fn=fl?shortName(fl):"Der Regionalzug";
-  let lvl=1,t=`${b} min Puffer`;const why=[];
-  if(b<30){lvl=2;t=`Nur ${b} min Puffer`;why.push(`${fn} kommt nur ${b} min vor dem ICE an.`)}else why.push(`${fn} kommt ${b} min vor dem ICE an.`);
-  if(k&&k>=50){why.push(`Er fährt nur etwa alle ${k} min – der nächste käme zu spät.`);if(b<60&&lvl<2){lvl=2;t=`Stundentakt, ${b} min Puffer`}}
-  if(pu&&pu.p<70){why.push(`Er war im ${punctMonth()} nur zu ${pu.p} % pünktlich.`);if(lvl<2){lvl=2;t=`Zubringer oft unpünktlich`}}
-  if(v.L.slice(0,v.iceIdx).some(isSEV)){why.push("Ein Teil davor ist ein Ersatzbus (vermutlich Bauarbeiten) – Busse stehen leichter im Stau.");if(b<45&&lvl<2){lvl=2;t=`Ersatzbus, ${b} min Puffer`}}
+  let lvl=1,t=`${b} min zum Umsteigen`;const why=[];
+  if(b<30){lvl=2;t=`Nur ${b} min zum Umsteigen`;why.push(`${fn} kommt nur ${b} min vor dem ICE an.`)}else why.push(`${fn} kommt ${b} min vor dem ICE an.`);
+  if(k&&k>=50){why.push(`Er fährt nur etwa alle ${k} min – der nächste käme zu spät.`);if(b<60&&lvl<2){lvl=2;t=`Zubringer nur stündlich`}}
+  if(pu&&pu.p<70){why.push(`Er war im ${punctMonth()} nur zu ${pu.p} % pünktlich.`);if(lvl<2){lvl=2;t=`Zubringer oft verspätet`}}
+  if(v.L.slice(0,v.iceIdx).some(isSEV)){why.push("Ein Teil davor ist ein Ersatzbus (vermutlich Bauarbeiten) – Busse stehen leichter im Stau.");if(b<45&&lvl<2){lvl=2;t=`Ersatzbus vorher`}}
   why.push("Kommt er zu spät, verfällt dein ICE-Sparpreis, weil der ICE ein eigenes Ticket ist.");
   if(v.safer) why.push(`Sicherer: ${v.safer}.`);
   return {lvl,t,why:why.join(" ")+after};
@@ -745,7 +756,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
         if(pre!=="none"){
           const ok=pre.filter(x=>mins(x.end,dep)>=8&&new Date(x.start)>=earliest).sort((x,y)=>new Date(y.end)-new Date(x.end));
           preIt=ok[0];if(!preIt||mins(preIt.end,dep)>90)continue;feederTakt=taktOf(pre);
-          if(mins(preIt.end,dep)<30){const s2=ok.find(x=>mins(x.end,dep)>=30);if(s2)safer=`${shortName(s2.L[0])} um ${fmtT(s2.L[0].startTime)} nehmen (${mins(s2.end,dep)} min Puffer)`}
+          if(mins(preIt.end,dep)<30){const s2=ok.find(x=>mins(x.end,dep)>=30);if(s2)safer=`${shortName(s2.L[0])} um ${fmtT(s2.L[0].startTime)} nehmen (dann ${mins(s2.end,dep)} min zum Umsteigen)`}
         }
         if(post!=="none"){postIt=post.filter(x=>mins(arr,x.start)>=4).sort((x,y)=>new Date(x.end)-new Date(y.end))[0];if(!postIt||mins(arr,postIt.start)>90)continue;postTakt=taktOf(post)}
         if(!preIt&&!postIt)continue; // nur ICE = ganze Reise
@@ -813,7 +824,7 @@ const ampHTML=r=>`<span class="ds-badge ds-badge-${AMPC[r.lvl]}">${esc(r.t)}</sp
 
 /* Reiter: Spar-Kombi (Standard) | Ganze Reise | Nur D-Ticket */
 const MODES={
-  spar:{hint:"Nur ein ICE-Teilstück kaufen, den Rest mit dem Deutschland-Ticket – meist am günstigsten.",sorts:[["rec","Empfohlen"],["ice","Kürzeste ICE-Strecke (meist günstigste)"],["arr","Früheste Ankunft"],["dep","Abfahrtszeit"],["dur","Kürzeste Reisezeit"]]},
+  spar:{hint:"Nur ein ICE-Teilstück kaufen, den Rest mit dem Deutschland-Ticket – meist am günstigsten.",sorts:[["rec","Empfohlen"],["ice","Meist am günstigsten"],["arr","Früheste Ankunft"],["dep","Abfahrtszeit"],["dur","Kürzeste Fahrzeit"]]},
   whole:{hint:"Ein Ticket für die ganze Strecke – volle Fahrgastrechte, meist teurer.",sorts:[["rec","Empfohlen"],["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
   dt:{hint:"Nur Regionalzüge – mit Deutschland-Ticket ohne Zusatzkosten, dauert länger.",sorts:[["rec","Empfohlen"],["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
 };
@@ -823,7 +834,13 @@ const SORT={spar:"rec",whole:"rec",dt:"rec"};
    Reisezeit + Risiko-Aufschlag (gelb +20, rot +150 – Rot nur oben, wenn es nichts Sicheres gibt) + 10 je Umstieg + halbe ICE-Fahrzeit. */
 const RISKPEN=[0,20,150];
 const scoreOf=v=>v.dur+RISKPEN[v.risk.lvl]+10*v.transfers+(v.kind==="S"?Math.round(v.fvMin/2):0);
-const REC_HELP="„Empfohlen“ verrechnet Reisezeit, Sicherheit und Preis: Reisezeit in Minuten, dazu 20 min Aufschlag bei gelbem und 150 min bei rotem Risiko (knapper Puffer, seltener oder unpünktlicher Zubringer), 10 min je Umstieg und – bei Spar-Kombis – die halbe ICE-Fahrzeit, weil eine längere ICE-Strecke meist mehr kostet. Der kleinste Wert steht oben.";
+/* Hilfe in Alltagssprache (Rechnung für „Empfohlen“ steht oben bei scoreOf) */
+const helpHTML=()=>`<div class="help-card" id="list-help" hidden>
+  <p><b>So liest du eine Verbindung:</b> <span class="sw nv"></span> Regionalzug – fährst du mit dem Deutschland-Ticket. <span class="sw fv"></span> ICE – dafür kaufst du ein Ticket. <span class="sw wait"></span> Umsteigen, die Zahl sind Minuten. Rot umrandet heißt: knapp.</p>
+  <p><b>Empfohlen</b> steht oben, wenn die Fahrt schnell ist, sicher klappt und meist wenig kostet. Fahrten mit knappem Umstieg rutschen nach unten.</p>
+  ${MODE==="spar"?`<p><b>„ICE-Ticket“ und „Normal“:</b> „ICE-Ticket“ zeigt den Preis nur für den ICE – den Rest fährst du mit dem Deutschland-Ticket. „Normal“ zeigt dieselbe Fahrt mit einem Ticket für alles. So siehst du, wie viel du sparst.</p>`:""}
+  <p><b>Mehrere Preise vergleichen:</b> Hake Verbindungen an und tippe auf „Alle öffnen“. Beim ersten Mal fragt dein Browser, ob er mehrere Fenster öffnen darf – bitte erlauben.</p>
+</div>`;
 const SEL=new Map();let SHOWALL=false; // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
@@ -915,28 +932,25 @@ function dirHTML(r){
   const rec=[...list].sort(SORTFN.rec)[0],fast=[...list].sort(SORTFN.dur)[0];
   const tagsOf=v=>[...(v===rec?["Empfohlen"]:[]),...(v===fast?["Schnellste"]:[])];
   const shown=SHOWALL?list:list.slice(0,30);
-  let h=`<div class="list-head"><span class="ds-supporting">${list.length} Möglichkeit${list.length===1?"":"en"} · Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span>
-    <span class="sort-wrap"><label class="sort"><span class="sr-only">Sortieren</span><select class="ds-input ds-select" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label>
-    <button class="tgl" type="button" aria-expanded="false" aria-controls="rec-help" aria-label="Was heißt Empfohlen?">${ico("info",16)}</button></span></div>
-  <p class="ds-supporting" id="rec-help" hidden>${REC_HELP}</p>
-  <button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="earlier-times" type="button">${ico("left",16)}Frühere Zeiten laden (vor ${fmtT(r.from)} Uhr)</button>`;
-  h+=`<div class="legend ds-supporting" aria-hidden="true">${MODE!=="whole"?`<span><i class="lg nv"></i>Regio${MODE==="spar"?" (D-Ticket)":""}</span>`:`<span><i class="lg nv"></i>Regio</span>`}${MODE!=="dt"?`<span><i class="lg fv"></i>ICE${MODE==="spar"?" (kaufen)":""}</span>`:""}<span><i class="lg wait"></i>Umstieg</span></div>`;
-  h+=`<div class="open-bar"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="open-sel" type="button"${SEL.size?"":" disabled"}>${ico("open",16)}<span>Ausgewählte öffnen (${SEL.size})</span></button>
-    <button class="tgl" type="button" aria-expanded="false" aria-controls="open-help">${ico("info",16)}Wie?</button></div>
-  <p class="ds-supporting" id="open-help" hidden>${MODE==="spar"?"Bei jeder Spar-Kombi öffnet „ICE-Ticket“ nur die Teilstrecke und „Normal“ die ganze Strecke mit normalem Ticket – so siehst du beide Preise. „Ausgewählte öffnen“ öffnet bei markierten Zeilen beide. ":""}Mit ⌘-Klick (Mac) bzw. Strg-Klick öffnet sich ein Link im Hintergrund. Beim ersten „Ausgewählte öffnen“ fragt der Browser, ob er Pop-ups erlauben soll.</p>`;
-
+  let h=`<div class="toolbar">
+    <span class="count">${list.length} Verbindung${list.length===1?"":"en"}</span>
+    <label class="sortl"><span class="sr-only">Sortieren nach</span><select class="sort-sel" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label>
+    <button class="tgl help-btn" type="button" aria-expanded="false" aria-controls="list-help">${ico("info",16)}Hilfe</button>
+  </div>
+  ${helpHTML()}
+  <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button">${ico("left",16)}Früher</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button">Später${ico("right",16)}</button></div>`;
   if(shown.length) h+=`<ul class="rows ds-card">${shown.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>`;
   else h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
-  h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button">Spätere Zeiten laden (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
+  h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button">Spätere Verbindungen (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
   return h;
 }
 
 /* Zustand der aktuellen Suche: DIRS = Richtungen, RES[i] = Ergebnis oder null */
 let DIRS=[],RES=[],TAB=0,LOADING=false;
 function renderOut(){
-  if(!DIRS.length){$("out").innerHTML="";return}
+  if(!DIRS.length){$("out").innerHTML="";SEL.clear();paintSelBar();return}
   const rt=DIRS.length>1,d0=DIRS[0];
   let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div>`;
   if(rt&&MODE==="whole"&&RES[0]?.whole?.length&&RES[1]?.whole?.length){
@@ -955,20 +969,30 @@ function renderOut(){
   $("earlier-times")?.addEventListener("click",()=>loadMore(TAB,-1));
   for(const c of document.querySelectorAll(".pick")) c.addEventListener("change",()=>{
     const hrefs=JSON.parse(c.dataset.hrefs);c.checked?SEL.set(hrefs[0],hrefs):SEL.delete(hrefs[0]);
-    const b=$("open-sel");b.disabled=!SEL.size;b.querySelector("span").textContent=`Ausgewählte öffnen (${SEL.size})`;
+    paintSelBar();
   });
   // Aufklappen per Pfeil
   for(const t of document.querySelectorAll("#out .tgl")) t.addEventListener("click",()=>{
     const d=$(t.getAttribute("aria-controls")),open=d.hidden;d.hidden=!open;t.setAttribute("aria-expanded",String(open));
   });
+  $("later-top")?.addEventListener("click",()=>loadMore(TAB,1));
+  paintSelBar();
+}
+/* Schwebende Leiste, sobald etwas angehakt ist */
+function paintSelBar(){
+  let bar=$("selbar");
+  if(!bar){bar=document.createElement("div");bar.id="selbar";bar.className="selbar";bar.setAttribute("role","region");bar.setAttribute("aria-label","Auswahl");document.querySelector(".ds").appendChild(bar)}
+  const n=SEL.size;bar.hidden=!n;
+  bar.innerHTML=n?`<span><b>${n}</b> ausgewählt</span><button class="ds-btn ds-btn-primary ds-btn-sm" id="open-sel" type="button">${ico("open",16)}Alle öffnen</button><button class="tgl" id="sel-clear" type="button">Leeren</button>`:"";
   $("open-sel")?.addEventListener("click",openSelected);
+  $("sel-clear")?.addEventListener("click",()=>{SEL.clear();for(const c of document.querySelectorAll(".pick"))c.checked=false;paintSelBar()});
 }
 /* Mehrere bahn.de-Suchen auf einmal öffnen. Browser lassen Seiten keine Tabs im Hintergrund öffnen;
    beim ersten Mal fragen sie meist, ob Pop-ups erlaubt sind. */
 function openSelected(){
   let blocked=0;const all=[...new Set([...SEL.values()].flat())];
   for(const href of all){const w=window.open(href,"_blank");if(w)w.opener=null;else blocked++}
-  if(blocked) showErr(`${blocked} von ${all.length} Tabs wurden blockiert`,"Dein Browser blockiert Pop-ups. Erlaube Pop-ups für diese Seite (Symbol in der Adresszeile) und tippe nochmal auf „Ausgewählte öffnen“.");
+  if(blocked) showErr(`${blocked} von ${all.length} Seiten wurden nicht geöffnet`,"Dein Browser hat es blockiert. Tippe rechts in der Adresszeile auf das Symbol, erlaube „Pop-ups“ für diese Seite und tippe dann nochmal auf „Alle öffnen“.");
 }
 function setMode(m){
   MODE=m;SHOWALL=false;try{localStorage.setItem("bbf-mode",m)}catch{}
