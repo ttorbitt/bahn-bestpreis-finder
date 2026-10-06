@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bestpreis"><meta name="description" content="Zugverbindungen nach Zeit, Geld und Risiko vergleichen – mit Deutschland-Ticket-Kombis und Risiko-Ampel."></head><body>
 <title>Bahn-Bestpreis-Finder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -135,6 +135,24 @@ input.bad{border-color:var(--bad)}
 .sk.l1{height:12px;width:30%}.sk.l2{height:26px;width:70%}.sk.l3{height:12px;width:55%}.sk.l4{height:12px;width:85%}
 
 /* FAQ */
+/* Pünktlichkeit, Kalender, Teilen, Früher/Später, zuletzt gesucht */
+.punct{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--muted)}
+.pu{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.pu .pb{width:34px;height:5px;border-radius:9px;background:var(--line);overflow:hidden}
+.pu .pb>i{display:block;height:100%;background:currentColor}
+.pu.g{color:var(--ok)}.pu.y{color:var(--warn)}.pu.r{color:var(--bad)}
+.pu b{color:var(--ink);font-weight:700}
+.cal{color:var(--muted);font-size:.88rem;min-height:44px;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:3px}
+.res-head{display:flex!important;justify-content:space-between;align-items:flex-start;gap:10px}
+.res-head>div{display:grid;gap:2px;min-width:0}
+.share{flex:0 0 auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 14px;min-height:40px;font:700 .85rem var(--f-body);cursor:pointer}
+.shift{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.shift button{background:none;border:0;color:var(--accent);font:700 .9rem var(--f-body);cursor:pointer;min-height:44px;padding:0 4px}
+.shift span{color:var(--muted);font-size:.85rem}
+.recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;color:var(--muted)}
+.recent button{background:var(--bg);border:0;border-radius:99px;padding:6px 12px;min-height:36px;font:600 .82rem var(--f-body);color:var(--ink);cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.install{flex:0 0 auto;background:var(--ink);color:var(--surface);border:0;border-radius:99px;padding:8px 14px;min-height:40px;font:700 .82rem var(--f-body);cursor:pointer}
 .faq{display:grid;gap:0}
 .faq h2{margin-bottom:6px}
 .faq details{border-top:1px solid var(--line)}
@@ -148,7 +166,7 @@ footer a{color:var(--muted)}
 
 <div class="wrap">
 <header style="display:grid;gap:6px">
-  <h1>Bahn-Bestpreis-Finder</h1>
+  <div class="head-row"><h1>Bahn-Bestpreis-Finder</h1><button class="install" id="install" type="button" hidden>Als App installieren</button></div>
   <p class="lede">Die schnellste, die günstigste und die sicherste Zugverbindung – mit Deutschland-Ticket-Kombis und Risiko-Ampel.</p>
 </header>
 
@@ -179,6 +197,7 @@ footer a{color:var(--muted)}
     <button class="btn" id="go" type="submit">Verbindungen finden</button>
     <button class="linkbtn" id="reset" type="button">Zurücksetzen</button>
   </div>
+  <div class="recent" id="recent" hidden></div>
 </form>
 
 <section class="prog" id="prog" hidden aria-live="polite">
@@ -199,7 +218,7 @@ footer a{color:var(--muted)}
   <details><summary>Wo sehe ich die Preise?</summary><p>Nur bei bahn.de. Der Knopf „Bei bahn.de öffnen“ startet dort die passende Suche. Fahrzeiten kommen aus dem Fahrplan – Baustellen vorher im DB Navigator prüfen.</p></details>
 </section>
 
-<footer>Annahme: Du hast ein Deutschland-Ticket. Fahrplan: <a href="https://transitous.org" target="_blank" rel="noopener">Transitous</a> (offene Daten), Bahnhöfe: <a href="https://github.com/public-transport/db-stations" target="_blank" rel="noopener">db-stations</a>. <a href="https://www.bahn.de/faq/gk/angebot/zeitkarten/deutschland-ticket/fahrgastrechte" target="_blank" rel="noopener">Fahrgastrechte D-Ticket</a> · <a href="https://www.bahn.de/service/fahrplaene/bauarbeiten" target="_blank" rel="noopener">Bauinfos</a>. Inoffizielles Hilfswerkzeug, keine Verbindung zur Deutschen Bahn.</footer>
+<footer>Annahme: Du hast ein Deutschland-Ticket. Fahrplan: <a href="https://transitous.org" target="_blank" rel="noopener">Transitous</a> (offene Daten), Bahnhöfe: <a href="https://github.com/public-transport/db-stations" target="_blank" rel="noopener">db-stations</a>, Pünktlichkeit: <a href="https://github.com/piebro/deutsche-bahn-data" target="_blank" rel="noopener">deutsche-bahn-data</a> (Daten: DB, CC BY 4.0; Anteil Halte mit unter 6 min Verspätung im Vormonat).<span id="ios-hint" hidden> Als App: in Safari „Teilen“ → „Zum Home-Bildschirm“.</span> <a href="https://www.bahn.de/faq/gk/angebot/zeitkarten/deutschland-ticket/fahrgastrechte" target="_blank" rel="noopener">Fahrgastrechte D-Ticket</a> · <a href="https://www.bahn.de/service/fahrplaene/bauarbeiten" target="_blank" rel="noopener">Bauinfos</a>. Inoffizielles Hilfswerkzeug, keine Verbindung zur Deutschen Bahn.</footer>
 </div>
 
 <script>
@@ -361,6 +380,19 @@ async function takt(fromPlace,toPlace,aroundIso,sig){
   const d=[];for(let i=1;i<deps.length;i++)d.push((deps[i]-deps[i-1])/60000);
   if(!d.length) return null; d.sort((a,b)=>a-b); return Math.round(d[Math.floor(d.length/2)]);
 }
+/* Pünktlichkeit pro Zug (Vormonat) aus punct.json – nur auf der eigenständigen Seite, sonst einfach ohne */
+let PUNCT=null;
+const punctReady=fetch("punct.json").then(r=>r.ok?r.json():null).then(d=>{PUNCT=d}).catch(()=>{});
+const punctMonth=()=>PUNCT?new Date(PUNCT.m+"-15").toLocaleDateString("de-DE",{month:"long"}):"";
+function punctOf(l){
+  if(!PUNCT) return null;
+  const name=legName(l).replace(/\s+/g," ");
+  if(isFV(l)){const v=PUNCT.f[name];return v?{name,p:v[0],x:v[1]}:null}
+  const m=name.match(/^(\S+)\s*\((\d+)\)/);const line=m?m[1]:name.split(" ")[0];
+  const nr=(m?m[2]:String(l.tripShortName||"").replace(/\D/g,"")).replace(/^0+/,"");
+  const v=nr&&PUNCT.r[`${line} ${nr}`];
+  return v?{name:line,p:v[0],x:v[1]}:null;
+}
 /* Risiko: t = eine Zeile für die Liste, d = Erklärung zum Aufklappen */
 function risk(v){
   if(v.kind==="A"&&v.flix) return {lvl:1,t:"FlixTrain: eigenes Ticket, D-Ticket gilt dort nicht.",d:"FlixTrain gehört nicht zum DB-Tarif. Verspätungen dort sichert die DB nicht ab."};
@@ -371,9 +403,12 @@ function risk(v){
   const D_D="Nur Nahverkehr: Mit dem Deutschland-Ticket kostet die Fahrt nichts extra, und es kann kein Ticket verfallen.";
   if(v.kind==="D") return v.transfers>3?{lvl:1,t:`${v.transfers}× umsteigen, aber nichts kann verfallen.`,d:D_D}:{lvl:0,t:"Nichts kann verfallen.",d:D_D};
   if(v.feederBuf==null) return {lvl:0,t:"Regionalzug erst nach dem ICE – unkritisch.",d:"Kommt der Regionalzug nach dem ICE zu spät, nimmst du mit dem D-Ticket einfach den nächsten."};
-  const b=v.feederBuf,k=v.takt,lvl=(b<30||(k&&k>=50&&b<60))?2:1;
-  return {lvl,t:`${b} min Puffer vor dem ICE${k?`, Takt ${k} min`:""}.`,
-    d:`Kommt der Regionalzug vor dem ICE zu spät, verfällt dein ICE-Sparpreis. Faustregel: mindestens 30 min Puffer, bei Stundentakt 60 min.${lvl===2?" Nimm besser einen Regionalzug früher.":""}`};
+  const b=v.feederBuf,k=v.takt;let lvl=(b<30||(k&&k>=50&&b<60))?2:1;
+  // Zubringer, der oft zu spät kommt, macht gelb zu rot
+  const fi=v.L.findIndex(isFV),pu=fi>0?punctOf(v.L[fi-1]):null;
+  if(pu&&pu.p<70) lvl=2;
+  return {lvl,t:`${b} min Puffer vor dem ICE${k?`, Takt ${k} min`:""}${pu&&pu.p<80?`, ${pu.name} nur ${pu.p} % pünktlich`:""}.`,
+    d:`Kommt der Regionalzug vor dem ICE zu spät, verfällt dein ICE-Sparpreis. Faustregel: mindestens 30 min Puffer, bei Stundentakt 60 min.${pu?` ${pu.name} war im ${punctMonth()} an ${pu.p} % der Halte pünktlich.`:""}${lvl===2?" Nimm besser einen Regionalzug früher.":""}`};
 }
 
 /* Eine Richtung berechnen. onPartial zeigt das durchgehende Ticket, sobald es da ist; prog(anteil, text) meldet den Fortschritt. */
@@ -459,6 +494,25 @@ function howTo(v){
   if(v.kind==="D") return "Kein Ticket nötig. Im DB Navigator „Nur Nahverkehr“ wählen.";
   return `Nur ${esc(f[0].from.name)} → ${esc(f[f.length-1].to.name)} buchen (${esc(legName(f[0]))} ${fmtT(f[0].startTime)}), Rest mit D-Ticket.`;
 }
+/* Kalendereintrag (.ics) als data:-Link – klappt ohne Server */
+function icsFor(v,A,B){
+  const f=d=>new Date(d).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+  const tx=s=>String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  const legs=v.L.map(l=>`${fmtT(l.startTime)} ${l.from.name} → ${fmtT(l.endTime)} ${l.to.name}: ${legName(l)}`).join("\n");
+  const warn=v.risk.lvl===2?"\nACHTUNG: Einen Regionalzug früher nehmen – sonst verfällt der ICE-Sparpreis bei Verspätung.":"";
+  const fold=line=>{const out=[];let x=line;while(x.length>72){out.push(x.slice(0,72));x=" "+x.slice(72)}out.push(x);return out.join("\r\n")};
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Bahn-Bestpreis-Finder//DE","CALSCALE:GREGORIAN","BEGIN:VEVENT",
+    `UID:${f(v.start)}-${Math.random().toString(36).slice(2)}@bahn-bestpreis-finder`,`DTSTAMP:${f(new Date())}`,
+    `DTSTART:${f(v.start)}`,`DTEND:${f(v.end)}`,`SUMMARY:${tx(`Zug ${A.name} → ${B.name}`)}`,`LOCATION:${tx(A.name)}`,
+    `DESCRIPTION:${tx(`${v.name}, ${hm(v.dur)}, ${v.transfers}× umsteigen\n${legs}\nRisiko: ${v.risk.t}${warn}`)}`,
+    "BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${tx("Zug in 60 min")}`,"TRIGGER:-PT60M","END:VALARM","END:VEVENT","END:VCALENDAR"].map(fold).join("\r\n");
+}
+const fileName=(A,B,v)=>`zug-${A.name}-${B.name}-${berlinLocal(v.start).slice(0,10)}`.toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-")+".ics";
+function punctHTML(L){
+  const items=L.map(punctOf).filter(Boolean);
+  if(!items.length) return "";
+  return `<div class="punct" title="Anteil Halte mit unter 6 min Verspätung im ${esc(punctMonth())}">Pünktlich (${esc(punctMonth())}): ${items.map(u=>`<span class="pu ${u.p>=80?"g":u.p>=60?"y":"r"}"><b>${esc(u.name)}</b><span class="pb"><i style="width:${u.p}%"></i></span>${u.p} %</span>`).join("")}</div>`;
+}
 const routeHTML=L=>L.map((l,i)=>`${i?`<span class="via">${esc(l.from.name)}</span>`:""}<span class="chip ${isFV(l)?"fv":"nv"}">${esc(legName(l))}</span>`).join("");
 const ampHTML=r=>`<span class="amp l${r.lvl}">${AMP[r.lvl]}</span>`;
 function tripHTML(v,A,B,labels,best){
@@ -468,8 +522,10 @@ function tripHTML(v,A,B,labels,best){
     <div class="times"><span class="t big">${fmtT(v.start)}</span><span class="line" aria-hidden="true"></span><span class="t big">${fmtT(v.end)}</span></div>
     <div class="meta"><span><b class="t">${hm(v.dur)}</b></span><span>${v.transfers}× umsteigen</span><span class="name">${esc(v.name)}</span></div>
     <div class="route">${routeHTML(v.L)}</div>
+    ${punctHTML(v.L)}
     <p class="risk">${esc(v.risk.t)}</p>
     <div class="row-act"><a class="dblink" href="${esc(l.href)}" target="_blank" rel="noopener">Bei bahn.de öffnen →</a>
+      <a class="cal" href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">In Kalender</a>
       <details class="more"><summary>Details</summary><div class="body"><p>${esc(v.risk.d)}</p><p><b>So buchen:</b> ${howTo(v)}</p><p>${esc(l.note)} Alter/BahnCard dort einstellen.</p></div></details></div>
   </article>`;
 }
@@ -492,7 +548,9 @@ function dirHTML(r){
   rows.sort((a,b)=>(b[2]?1:0)-(a[2]?1:0));
   const shown=new Set(rows.map(x=>x[0]));
   const rest=V.filter(v=>!shown.has(v));
-  let h=`<div class="list">${rows.map(([v,lab,best])=>tripHTML(v,A,B,lab,best)).join("")}</div>`;
+  const i=RES.indexOf(r);
+  let h=`<div class="shift"><button type="button" data-shift="-1">‹ Früher</button><span>Abfahrt ab ${fmtT(DIRS[i]?.t||V[0].start)}</span><button type="button" data-shift="1">Später ›</button></div>`;
+  h+=`<div class="list">${rows.map(([v,lab,best])=>tripHTML(v,A,B,lab,best)).join("")}</div>`;
   if(partial) h+=`<p class="tip">Spar-Varianten werden noch geprüft …</p>${skelHTML(1)}`;
   if(tip) h+=`<p class="tip">Schneller: ab ${fmtT(tip.start)} in ${hm(tip.dur)} (${main.dur-tip.dur} min kürzer). <a href="${esc(dbLink(A.st,B.st,tip.start))}" target="_blank" rel="noopener">Bei bahn.de öffnen</a></p>`;
   if(!partial&&rest.length) h+=`<details class="others"><summary>${rest.length} weitere Variante${rest.length>1?"n":""}</summary><div class="list">${rest.map(v=>tripHTML(v,A,B,[],false)).join("")}</div></details>`;
@@ -504,12 +562,51 @@ let DIRS=[],RES=[],TAB=0,LOADING=false;
 function renderOut(){
   if(!DIRS.length){$("out").innerHTML="";return}
   const rt=DIRS.length>1,d0=DIRS[0];
-  let h=`<section class="res"><div class="res-head"><h2>${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="sub">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div>`;
+  let h=`<section class="res"><div class="res-head"><div><h2>${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="sub">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="share" id="share" type="button">Teilen</button></div>`;
   if(rt) h+=`<div class="tabs" role="tablist">${DIRS.map((d,i)=>`<button type="button" role="tab" id="tab${i}" aria-selected="${i===TAB}" aria-controls="panel">${i?"Rückfahrt":"Hinfahrt"}<small>${esc(fmtD(d.t))}${RES[i]?"":LOADING?" · lädt …":""}</small></button>`).join("")}</div>`;
   const r=RES[TAB];
   h+=`<div id="panel" ${rt?`role="tabpanel" aria-labelledby="tab${TAB}"`:""}>${r?dirHTML(r):LOADING?skelHTML(3):""}</div></section>`;
   $("out").innerHTML=h;
   if(rt) DIRS.forEach((_,i)=>$("tab"+i).onclick=()=>{TAB=i;renderOut()});
+  $("share").onclick=shareSearch;
+  for(const b of document.querySelectorAll("[data-shift]")) b.onclick=()=>shift(TAB,+b.dataset.shift);
+}
+/* Früher/Später: nur diese Richtung neu suchen, eine Stunde früher bzw. ab dem nächsten Zug */
+function shift(i,dir){
+  if(LOADING) return;
+  const d=DIRS[i],ref=RES[i]?.main?.start||d.t;
+  d.t=dir<0?addMin(ref,-60):addMin(ref,1);
+  const loc=berlinLocal(d.t),dd=loc.slice(0,10),tt=loc.slice(11,16);
+  if(i===0){$("date").value=dd;$("time").value=tt}else{$("rdate").value=dd;$("rtime").value=tt}
+  search(null,i);
+}
+/* Teilen: Suche steckt in der Webadresse */
+function searchURL(){
+  const p=new URLSearchParams({von:chosen.from.eva,nach:chosen.to.eva,d:$("date").value,t:$("time").value});
+  if(rtOn()){p.set("rd",$("rdate").value);p.set("rt",$("rtime").value)}
+  return location.origin+location.pathname+"?"+p;
+}
+async function shareSearch(){
+  const url=searchURL(),b=$("share"),d=DIRS[0];
+  const text=`Zug ${d.A.name} ${DIRS.length>1?"⇄":"→"} ${d.B.name}, ${fmtD(d.t)}`;
+  try{if(navigator.share){await navigator.share({title:"Bahn-Bestpreis-Finder",text,url});return}}catch(e){if(e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(url);b.textContent="Link kopiert ✓"}catch{b.textContent="Link steht oben in der Adresszeile"}
+  setTimeout(()=>{if($("share"))$("share").textContent="Teilen"},2500);
+}
+/* Zuletzt gesucht (nur in diesem Browser) */
+const RKEY="bbf-recent";
+function loadRecent(){try{return JSON.parse(localStorage.getItem(RKEY))||[]}catch{return []}}
+function saveRecent(a,b){
+  const list=[{f:a.eva,t:b.eva},...loadRecent().filter(x=>!(x.f===a.eva&&x.t===b.eva))].slice(0,4);
+  try{localStorage.setItem(RKEY,JSON.stringify(list))}catch{}
+  paintRecent();
+}
+const byEva=e=>IDX.find(s=>String(s.eva)===String(e));
+function paintRecent(){
+  const list=loadRecent().map(x=>[byEva(x.f),byEva(x.t)]).filter(([a,b])=>a&&b),box=$("recent");
+  box.hidden=!list.length;
+  box.innerHTML=list.length?`Zuletzt: ${list.map(([a,b],i)=>`<button type="button" data-r="${i}">${esc(a.name)} → ${esc(b.name)}</button>`).join("")}`:"";
+  box.querySelectorAll("[data-r]").forEach(btn=>btn.onclick=()=>{const [a,b]=list[+btn.dataset.r];choose("from",a);choose("to",b);search()});
 }
 
 /* Fortschritt */
@@ -529,11 +626,14 @@ function showErr(msg){$("err-msg").innerHTML=msg;$("err").hidden=false}
 function rtOn(){return $("t-rt").checked}
 const EST=()=>DIRS.length>1?"dauert ca. 30–80 s":"dauert ca. 15–40 s";
 
-async function search(e){
-  e?.preventDefault();
+async function search(e,only){
+  e?.preventDefault?.();
   stop(new StopError("ersetzt"));
   const my=++runId; const live=()=>my===runId;
   $("err").hidden=true;$("form-hint").textContent="";
+  await Promise.race([punctReady,sleep(2500)]);
+  if(!live()) return;
+  if(only!=null&&DIRS[only]) return runDirs([only],my,live);
   const sf=stationFor("from"),stt=stationFor("to");
   if(!sf||!stt){$("from").focus();return}
   if(sf.name===stt.name){$("form-hint").textContent="Start und Ziel sind gleich.";return}
@@ -545,24 +645,33 @@ async function search(e){
   const t2=rt?berlinToUTC($("rdate").value,$("rtime").value):null;
   if(rt&&new Date(t2)<=new Date(t1)){$("form-hint").textContent="Die Rückfahrt muss nach der Hinfahrt liegen.";return}
 
+  DIRS=[{A,B,t:t1}];if(rt)DIRS.push({A:B,B:A,t:t2});
+  RES=DIRS.map(()=>null);TAB=0;
+  saveRecent(sf,stt);
+  return runDirs(DIRS.map((_,i)=>i),my,live);
+}
+async function runDirs(idxs,my,live){
+  const rt=DIRS.length>1;
+  try{history.replaceState(null,"",searchURL())}catch{}
   ctrl=new AbortController();const sig=ctrl.signal;
   sig.stats={total:0,done:0,tick:()=>{}};
-  DIRS=[{A,B,t:t1}];if(rt)DIRS.push({A:B,B:A,t:t2});
-  RES=DIRS.map(()=>null);TAB=0;LOADING=true;
+  for(const i of idxs) RES[i]=null;
+  LOADING=true;
   $("go").disabled=true;
   let cur={frac:0,label:"Bahnhöfe erkannt",step:1};
   const paint=()=>live()&&LOADING&&showProg(cur.frac,cur.label,sig.stats,cur.step);
   sig.stats.tick=paint;
   paint();renderOut();
   try{
-    for(let i=0;i<DIRS.length;i++){
+    for(let k=0;k<idxs.length;k++){
+      const i=idxs[k];
       clearTimeout(timer);
       timer=setTimeout(()=>stop(new StopError(`Der Fahrplan-Server braucht zu lange (über ${TIMEOUT_S} s).`,true)),TIMEOUT_S*1000);
       const pre=rt?(i?"Rückfahrt: ":"Hinfahrt: "):"";
       const d=DIRS[i];
       RES[i]=await computeDir(placeOf(d.A.st),placeOf(d.B.st),d.t,sig,{
         onPartial:r=>{if(!live())return;RES[i]=r;renderOut()},
-        prog:(f,label)=>{cur={frac:(i+f)/DIRS.length,label:pre+label,step:f<.3?1:f<1?2:(i===DIRS.length-1?3:1)};paint()}
+        prog:(f,label)=>{cur={frac:(k+f)/idxs.length,label:pre+label,step:f<.3?1:f<1?2:(k===idxs.length-1?3:1)};paint()}
       });
       if(!live()) return;
       renderOut();
@@ -601,12 +710,28 @@ $("reset").onclick=()=>{stop(new StopError("ersetzt"));runId++;$("go").disabled=
 setupCombo("from");setupCombo("to");
 for(const id of ["from","to"]){const ex=IDX.find(s=>s.n===norm($(id).value));if(ex)choose(id,ex)}
 
-// Start: Beispielsuche Freitag hin, Sonntag zurück, damit die Seite sofort zeigt, was sie kann
+// Start: geteilte Suche aus der Webadresse – sonst Beispielsuche Freitag hin, Sonntag zurück
 const now=new Date();const fri=new Date(now);fri.setDate(now.getDate()+((5-now.getDay()+7)%7||7));
 $("date").value=fri.toLocaleDateString("sv-SE",{timeZone:"Europe/Berlin"});
 $("rdate").value=plusDays($("date").value,2);
-syncTrip();
+let q=null;try{q=new URLSearchParams(location.search)}catch{}
+if(q&&q.get("von")&&q.get("nach")){
+  const a=byEva(q.get("von")),b=byEva(q.get("nach")),ok=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||""),okT=x=>/^\d{2}:\d{2}$/.test(x||"");
+  if(a) choose("from",a); if(b) choose("to",b);
+  if(ok(q.get("d"))) $("date").value=q.get("d"); if(okT(q.get("t"))) $("time").value=q.get("t");
+  const hasR=ok(q.get("rd"));$("t-rt").checked=hasR;$("t-one").checked=!hasR;
+  if(hasR){$("rdate").value=q.get("rd");if(okT(q.get("rt")))$("rtime").value=q.get("rt")}
+}
+syncTrip();paintRecent();
 search();
+
+// Installierbar als App (Startbildschirm); offline zeigt die Seite wenigstens die Suchmaske
+if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude/.test(location.hostname)) navigator.serviceWorker.register("sw.js").catch(()=>{});
+let installEvt=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("install").hidden=false});
+$("install").onclick=async()=>{if(!installEvt)return;installEvt.prompt();await installEvt.userChoice.catch(()=>{});installEvt=null;$("install").hidden=true};
+const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!standalone) $("ios-hint").hidden=false;
 })();
 </script>
 

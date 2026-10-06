@@ -9,3 +9,14 @@ Kleine Web-App für Zugreisen in Deutschland: Start, Ziel, Datum und ungefähre 
 ## Entwicklung
 
 `app.html` ist die Quelle, `stations.json` die Bahnhofsliste (DB-Stationsdaten über [db-stations](https://github.com/public-transport/db-stations)). `python3 build.py` erzeugt daraus `index.html` (GitHub Pages) und `artifact.html`.
+
+## Pünktlichkeit aktualisieren (einmal im Monat)
+
+`punct.json` enthält die Pünktlichkeit pro Zug aus dem Vormonat (Quelle: [piebro/deutsche-bahn-data](https://huggingface.co/datasets/piebro/deutsche-bahn-data), Daten der DB, CC BY 4.0).
+Monatsdatei laden und auswerten (braucht `pip install duckdb`):
+
+    python3 punctuality.py data-2026-09.parquet punct.json
+
+## App-Dateien
+
+`manifest.webmanifest`, `sw.js` und `icon-*.png` machen die Seite installierbar. Icons neu zeichnen: `python3 make_icons.py`.
