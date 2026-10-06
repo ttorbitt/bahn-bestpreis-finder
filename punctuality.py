@@ -1,6 +1,6 @@
 """Pünktlichkeit pro Zug aus piebro/deutsche-bahn-data (CC BY 4.0, Daten: DB Timetables API).
 pünktlich = Ankunft weniger als 6 min verspätet (DB-Definition), ausgefallene Halte separat."""
-import duckdb, json, sys, gzip
+import duckdb, json, sys, gzip, re
 src = sys.argv[1]; out = sys.argv[2]
 FV = "('ICE','IC','EC','ECE','RJ','RJX','NJ','EN','FLX','TGV','WB','EST','ES')"
 c = duckdb.connect()
@@ -24,7 +24,7 @@ for fv, t, nr, ln, n, p, x in rows:
     if p is None: continue
     if fv: f[f"{t} {nr}"] = [int(p), int(x)]
     elif ln: r[f"{ln} {nr}"] = [int(p), int(x)]
-data = {"m": src.split("data-")[-1][:7], "f": f, "r": r}
+data = {"m": re.search(r"(\d{4}-\d{2})", src).group(1), "f": f, "r": r}
 s = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
 open(out, "w").write(s)
 print(len(f), "Fernzüge,", len(r), "Regionalzüge,", len(s)//1024, "KB,", len(gzip.compress(s.encode()))//1024, "KB gzip")
