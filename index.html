@@ -182,7 +182,7 @@ footer a{color:var(--muted)}
 </form>
 
 <section class="prog" id="prog" hidden aria-live="polite">
-  <div class="prog-row"><span class="prog-step" id="p-step">Suche startet …</span><span class="prog-meta" id="p-meta">dauert ca. 10–30 s</span></div>
+  <div class="prog-row"><span class="prog-step" id="p-step">Suche startet …</span><span class="prog-meta" id="p-meta"></span></div>
   <div class="bar" role="progressbar" aria-label="Suchfortschritt" aria-valuemin="0" aria-valuemax="100" id="p-bar"><i></i></div>
   <div class="prog-row"><ol class="steps" id="p-steps"></ol><button class="linkbtn" id="cancel" type="button">Abbrechen</button></div>
 </section>
@@ -213,7 +213,7 @@ const NV="REGIONAL_RAIL,REGIONAL_FAST_RAIL,SUBURBAN,SUBWAY,TRAM,BUS,FERRY";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const AMP=["grün","gelb","rot"];
-const TIMEOUT_S=45;
+const TIMEOUT_S=60; // je Richtung; der offene Server braucht unter Last bis ~40 s
 
 const fmtT=iso=>new Date(iso).toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"});
 const fmtD=iso=>new Date(iso).toLocaleDateString("de-DE",{timeZone:"Europe/Berlin",weekday:"short",day:"numeric",month:"short"});
@@ -519,7 +519,7 @@ function showProg(frac,label,stats,stepIdx){
   const pct=Math.round(Math.min(1,Math.max(0,frac))*100);
   $("p-bar").firstElementChild.style.width=pct+"%";$("p-bar").setAttribute("aria-valuenow",pct);
   $("p-step").textContent=label;
-  $("p-meta").textContent=stats&&stats.total?`${stats.done} von ${stats.total} Abfragen · ca. 10–30 s`:"dauert ca. 10–30 s";
+  $("p-meta").textContent=stats&&stats.total?`${stats.done} von ${stats.total} Abfragen · ${EST()}`:EST();
   $("p-steps").innerHTML=STEPS.map((s,i)=>`<li class="${i<stepIdx?"done":i===stepIdx?"now":""}">${s}</li>`).join("");
 }
 
@@ -527,6 +527,7 @@ let runId=0,ctrl=null,timer=null;
 function stop(reason){if(ctrl&&!ctrl.signal.aborted)ctrl.abort(reason);clearTimeout(timer)}
 function showErr(msg){$("err-msg").innerHTML=msg;$("err").hidden=false}
 function rtOn(){return $("t-rt").checked}
+const EST=()=>DIRS.length>1?"dauert ca. 30–80 s":"dauert ca. 15–40 s";
 
 async function search(e){
   e?.preventDefault();
