@@ -372,10 +372,10 @@ footer a{color:var(--muted-foreground)!important;text-decoration:underline!impor
     <div class="trav">
       <div class="trav-row"><span class="ds-label" style="margin:0">Reisende</span><button class="ds-chip" type="button" id="trav-btn" aria-expanded="false" aria-controls="trav-panel"><span data-ico="user" data-size="16"></span><span id="trav-sum">1 Person, 27–64 Jahre</span></button></div>
       <div class="trav-panel" id="trav-panel" hidden>
-        <div class="ds-field"><label class="ds-label" for="t-age">Alter</label><select class="ds-input ds-select" id="t-age"><option value="j">15–26 Jahre</option><option value="e" selected>27–64 Jahre</option><option value="x">Kind oder ab 65</option></select></div>
+        <div class="ds-field"><label class="ds-label" for="t-age">Alter</label><select class="ds-input ds-select" id="t-age"><option value="k0">Kind (0–5 Jahre)</option><option value="k">Kind (6–14 Jahre)</option><option value="j">15–26 Jahre</option><option value="e" selected>27–64 Jahre</option><option value="s">ab 65 Jahre</option></select></div>
         <div class="ds-field"><label class="ds-label" for="t-bc">BahnCard</label><select class="ds-input ds-select" id="t-bc"><option value="0" selected>Keine</option><option value="25">BahnCard 25</option><option value="50">BahnCard 50</option></select></div>
         <div class="ds-field"><label class="ds-label" for="t-kl">Klasse</label><select class="ds-input ds-select" id="t-kl"><option value="2" selected>2. Klasse</option><option value="1">1. Klasse</option></select></div>
-        <p class="ds-supporting" id="trav-hint" style="grid-column:1/-1" hidden>Für Kinder und ab 65 kennt die Seite den bahn.de-Code noch nicht. bahn.de öffnet mit „27–64 Jahre“ – dort oben unter „Anfrage ändern“ das Alter anpassen.</p>
+
       </div>
     </div>
     <span class="hint bad" id="form-hint" role="status"></span>
@@ -540,10 +540,10 @@ function berlinLocal(iso){
   return `${g("year")}-${g("month")}-${g("day")}T${g("hour")}:${g("minute")}:00`;
 }
 /* Reisende für bahn.de (Code-Aufbau Alter:Ermäßigung:Klasse:Anzahl).
-   Geprüft an echten bahn.de-Links: 13 = 27–64 Jahre, 9 = 15–26 Jahre, 16 = keine Ermäßigung, 17 = BahnCard 25 (mit KLASSE_n);
-   23 = BahnCard 50 wie bei BetterBahn. Hin+Rück: rd/rza/rz/rv wie in der bahn.de-Suchmaske. */
+   Alle an echten bahn.de-Links geprüft (07.10.2026): Alter 8 = Kind 0–5, 11 = Kind 6–14, 9 = 15–26, 13 = 27–64, 12 = ab 65;
+   Ermäßigung 16 = keine, 17 = BahnCard 25, 23 = BahnCard 50 (mit KLASSE_n). Hin+Rück: rd/rza/rz/rv, Zwischenhalte: hz. */
 const TKEY="bbf-travel";
-const AGES={j:{code:9,label:"15–26 Jahre"},e:{code:13,label:"27–64 Jahre"},x:{code:13,label:"Kind/ab 65"}};
+const AGES={k0:{code:8,label:"Kind 0–5 Jahre"},k:{code:11,label:"Kind 6–14 Jahre"},j:{code:9,label:"15–26 Jahre"},e:{code:13,label:"27–64 Jahre"},s:{code:12,label:"ab 65 Jahre"}};
 const BCS={"0":{code:16,label:"keine BahnCard"},"25":{code:17,label:"BahnCard 25"},"50":{code:23,label:"BahnCard 50"}};
 const TRAV={age:"e",bc:"0",kl:"2"};
 try{const t=JSON.parse(localStorage.getItem(TKEY));if(t&&AGES[t.age]&&BCS[t.bc]&&/^[12]$/.test(t.kl))Object.assign(TRAV,t)}catch{}
@@ -897,7 +897,7 @@ function rowHTML(v,A,B,tags){
       <div class="row-detail" id="${id}" hidden>
         <p class="why">${esc(v.risk.why)}</p>
         ${timelineHTML(v)}
-        <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}${TRAV.age==="x"?" – Alter auf bahn.de anpassen":""}.</p>
+        <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
         <p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p>
       </div>
     </div>
@@ -1109,7 +1109,7 @@ $("cancel").onclick=()=>stop(new StopError("abgebrochen"));
 $("swap").onclick=()=>{const a=chosen.from,b=chosen.to,va=$("from").value;$("from").value=$("to").value;$("to").value=va;choose("from",b);choose("to",a)};
 function paintTrav(){
   $("t-age").value=TRAV.age;$("t-bc").value=TRAV.bc;$("t-kl").value=TRAV.kl;
-  $("trav-sum").textContent=travLabel();$("trav-hint").hidden=TRAV.age!=="x";
+  $("trav-sum").textContent=travLabel();
 }
 $("trav-btn").onclick=()=>{const open=$("trav-panel").hidden;$("trav-panel").hidden=!open;$("trav-btn").setAttribute("aria-expanded",String(open))};
 for(const [id,k] of [["t-age","age"],["t-bc","bc"],["t-kl","kl"]]) $(id).addEventListener("change",()=>{
