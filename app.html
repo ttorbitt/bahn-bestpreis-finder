@@ -249,6 +249,8 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .modes .ds-tab{padding:.5rem .4rem}
 .list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .list-head .sort{min-width:0;max-width:100%}
+.sort-wrap{display:inline-flex;align-items:center;gap:2px;min-width:0}
+.sort-wrap .tgl{margin-left:0}
 .open-bar{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap}
 kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radius:4px;padding:0 4px;background:var(--muted)}
 .rows{list-style:none;margin:0;padding:0;display:block}
@@ -266,10 +268,12 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .acts{grid-column:2;display:flex;flex-wrap:wrap}}
 /* Reiseleiste */
-.chain{display:grid;gap:2px;margin-top:4px;min-width:0;overflow:hidden}
+.chain{display:flex;gap:2px;margin-top:4px;min-width:0;overflow:hidden}
+.seg.fv{min-width:58px}.seg.nv{min-width:14px}.seg.wait{min-width:12px}
 .seg{container-type:inline-size}
 @container (max-width:44px){.seg svg{display:none}}
-@container (max-width:22px){.seg>span{font-size:0}}
+@container (max-width:15px){.seg>span{font-size:0}}
+.seg.wait{padding:0 2px}
 .seg svg{flex:none}
 .seg>span{overflow:hidden;text-overflow:ellipsis}
 .seg{gap:4px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-size:.72rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -417,7 +421,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const AMP=["Grün","Gelb","Rot"],AMPC=["safe","warn","danger"];
 /* Icons: Iconoir (MIT), Originalpfade */
-const ICO={"pin":"<path d=\"M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/> <path d=\"M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","down":"<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
+const ICO={"bus":"<path d=\"M7 16.01L7.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 16.01L17.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 12H21V19C21 19.5523 20.5523 20 20 20H4C3.44772 20 3 19.5523 3 19V12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 8V6C21 3.79086 19.2091 2 17 2H7C4.79086 2 3 3.79086 3 6V8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 8L17 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M4.5 20V21.9C4.5 22.2314 4.76863 22.5 5.1 22.5H7.9C8.23137 22.5 8.5 22.2314 8.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M15.5 20V21.9C15.5 22.2314 15.7686 22.5 16.1 22.5H18.9C19.2314 22.5 19.5 22.2314 19.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/>","pin":"<path d=\"M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/> <path d=\"M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","down":"<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
 const ico=(n,s=18)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" stroke-width="1.5" fill="none" aria-hidden="true">${ICO[n]}</svg>`;
 
 const TIMEOUT_S=180; // harte Grenze je Richtung
@@ -545,12 +549,13 @@ const TRAV={age:"e",bc:"0",kl:"2"};
 try{const t=JSON.parse(localStorage.getItem(TKEY));if(t&&AGES[t.age]&&BCS[t.bc]&&/^[12]$/.test(t.kl))Object.assign(TRAV,t)}catch{}
 const rParam=()=>`${AGES[TRAV.age].code}:${BCS[TRAV.bc].code}:${TRAV.bc==="0"?"KLASSENLOS":"KLASSE_"+TRAV.kl}:1`;
 const travLabel=()=>`1 Person, ${AGES[TRAV.age].label}${TRAV.bc!=="0"?", "+BCS[TRAV.bc].label:""}${TRAV.kl==="1"?", 1. Klasse":""}`;
-function dbLink(from,to,iso,{dltv=false,dlt=false}={}){
+const stId=s=>`A=1@O=${s.name}@X=${Math.round(s.lon*1e6)}@Y=${Math.round(s.lat*1e6)}@U=80@L=${s.eva}@B=1@`;
+function dbLink(from,to,iso,{dltv=false,dlt=false,via=[]}={}){
   const id=s=>encodeURIComponent(`A=1@O=${s.name}@L=${s.eva}@`);
   return "https://www.bahn.de/buchung/fahrplan/suche#"+[
     "sts=true",`so=${encodeURIComponent(from.name)}`,`zo=${encodeURIComponent(to.name)}`,`kl=${TRAV.kl}`,`r=${rParam()}`,
     `soid=${id(from)}`,`zoid=${id(to)}`,"sot=ST","zot=ST",`soei=${from.eva}`,`zoei=${to.eva}`,
-    `hd=${berlinLocal(iso)}`,"hza=D","hz=%5B%5D","ar=false","s=false","d=false","fm=false","bp=false",
+    `hd=${berlinLocal(iso)}`,"hza=D",`hz=${encodeURIComponent(JSON.stringify(via.map(s=>[stId(s),s.name,0])))}`,"ar=false","s=false","d=false","fm=false","bp=false",
     `dlt=${dlt}`,"nfv=false",`dltv=${dltv}`].join("&");
 }
 /* Hin- und Rückfahrt in einem bahn.de-Link (Gesamtstrecke, ohne D-Ticket-Häkchen) */
@@ -613,6 +618,7 @@ function riskOf(v){
   if(b<30){lvl=2;t=`Nur ${b} min Puffer`;why.push(`${fn} kommt nur ${b} min vor dem ICE an.`)}else why.push(`${fn} kommt ${b} min vor dem ICE an.`);
   if(k&&k>=50){why.push(`Er fährt nur etwa alle ${k} min – der nächste käme zu spät.`);if(b<60&&lvl<2){lvl=2;t=`Stundentakt, ${b} min Puffer`}}
   if(pu&&pu.p<70){why.push(`Er war im ${punctMonth()} nur zu ${pu.p} % pünktlich.`);if(lvl<2){lvl=2;t=`Zubringer oft unpünktlich`}}
+  if(v.L.slice(0,v.iceIdx).some(isSEV)){why.push("Ein Teil davor ist ein Ersatzbus (vermutlich Bauarbeiten) – Busse stehen leichter im Stau.");if(b<45&&lvl<2){lvl=2;t=`Ersatzbus, ${b} min Puffer`}}
   why.push("Kommt er zu spät, verfällt dein ICE-Sparpreis, weil der ICE ein eigenes Ticket ist.");
   if(v.safer) why.push(`Sicherer: ${v.safer}.`);
   return {lvl,t,why:why.join(" ")+after};
@@ -807,18 +813,26 @@ const ampHTML=r=>`<span class="ds-badge ds-badge-${AMPC[r.lvl]}">${esc(r.t)}</sp
 
 /* Reiter: Spar-Kombi (Standard) | Ganze Reise | Nur D-Ticket */
 const MODES={
-  spar:{hint:"Nur ein ICE-Teilstück kaufen, den Rest mit dem Deutschland-Ticket – meist am günstigsten.",sorts:[["ice","Kürzeste ICE-Strecke (meist günstigste)"],["arr","Früheste Ankunft"],["dep","Abfahrtszeit"],["dur","Kürzeste Reisezeit"]]},
-  whole:{hint:"Ein Ticket für die ganze Strecke – volle Fahrgastrechte, meist teurer.",sorts:[["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
-  dt:{hint:"Nur Regionalzüge – mit Deutschland-Ticket ohne Zusatzkosten, dauert länger.",sorts:[["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
+  spar:{hint:"Nur ein ICE-Teilstück kaufen, den Rest mit dem Deutschland-Ticket – meist am günstigsten.",sorts:[["rec","Empfohlen"],["ice","Kürzeste ICE-Strecke (meist günstigste)"],["arr","Früheste Ankunft"],["dep","Abfahrtszeit"],["dur","Kürzeste Reisezeit"]]},
+  whole:{hint:"Ein Ticket für die ganze Strecke – volle Fahrgastrechte, meist teurer.",sorts:[["rec","Empfohlen"],["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
+  dt:{hint:"Nur Regionalzüge – mit Deutschland-Ticket ohne Zusatzkosten, dauert länger.",sorts:[["rec","Empfohlen"],["dep","Abfahrtszeit"],["arr","Früheste Ankunft"],["dur","Kürzeste Reisezeit"]]},
 };
 let MODE="spar";try{const m=localStorage.getItem("bbf-mode");if(MODES[m])MODE=m}catch{}
-const SORT={spar:"ice",whole:"dep",dt:"dep"};
+const SORT={spar:"rec",whole:"rec",dt:"rec"};
+/* „Empfohlen“: Punkte in Minuten, kleiner = besser.
+   Reisezeit + Risiko-Aufschlag (gelb +25, rot +90) + 10 je Umstieg + halbe ICE-Fahrzeit (längere ICE-Strecke = meist teurer). */
+const RISKPEN=[0,25,90];
+const scoreOf=v=>v.dur+RISKPEN[v.risk.lvl]+10*v.transfers+(v.kind==="S"?Math.round(v.fvMin/2):0);
+const REC_HELP="„Empfohlen“ verrechnet Reisezeit, Sicherheit und Preis: Reisezeit in Minuten, dazu 25 min Aufschlag bei gelbem und 90 min bei rotem Risiko (knapper Puffer, seltener oder unpünktlicher Zubringer), 10 min je Umstieg und – bei Spar-Kombis – die halbe ICE-Fahrzeit, weil eine längere ICE-Strecke meist mehr kostet. Der kleinste Wert steht oben.";
 const SEL=new Map();let SHOWALL=false; // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
-const SORTFN={ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
+const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
 /* Wie die Verbindung aufgebaut ist: Regionalzug (D-Ticket) / ICE (Ticket) / Umstieg */
 const legType=l=>isFlix(l)?"flix":isFV(l)?"fv":"nv";
+const isBus=l=>l.mode==="BUS";
+const isSEV=l=>isBus(l)&&/^(RE|RB|S|IRE)\s?\d/i.test(legName(l)); // Bus unter Zugnummer = meist Ersatzverkehr
+const legIco=(l,n)=>ico(isBus(l)?"bus":"train",n);
 const shortSt=n=>String(n).replace(/\s+Hauptbahnhof\b/,"").replace(/\s+Hbf\b/,"").replace(/\s+Bahnhof\b/,"").replace(/^Bahnhof\s+/,"");
 const typeLabel=(t,kind)=>t==="fv"?(kind==="S"?"Ticket kaufen":"ICE/IC"):t==="flix"?"eigenes Ticket":(kind==="A"?"im Ticket":"D-Ticket");
 /* Offizieller DB-Bahnhofsname (wie auf bahn.de), nicht nur die Stadt */
@@ -835,13 +849,14 @@ function chainHTML(v){
     if(i){const w=mins(L[i-1].endTime,l.startTime);items.push({w,bad:v.kind==="S"&&i===v.iceIdx&&w<30,at:stName(l.from)})}
     items.push({l,m:Math.max(1,mins(l.startTime,l.endTime))});
   });
-  // Mindestbreiten so klein, dass auch 6–7 Teilstücke auf ein Handy passen; ICE bleibt immer lesbar
-  const cols=items.map(it=>it.l?`minmax(${isFV(it.l)?68:16}px,${it.m}fr)`:`minmax(12px,${Math.max(it.w,6)}fr)`).join(" ");
+  /* Jeder Abschnitt bekommt so viel Breite, wie sein voller Name braucht (flex-basis), dazu Anteil an der Fahrzeit.
+     Ist zu wenig Platz (Handy), schrumpfen alle gleichmäßig – dann erst werden Namen gekürzt. */
+  const basis=it=>it.l?`calc(${shortName(it.l).length+1}ch + 26px)`:`calc(${String(it.w).length+1}ch + 10px)`;
   const aria=items.map(it=>it.l?`${legName(it.l)} (${typeLabel(legType(it.l),v.kind)})`:`Umstieg in ${it.at}, ${it.w} Minuten`).join(", ");
   const segs=items.map(it=>it.l
-    ?`<span class="seg ${legType(it.l)}" title="${esc(legName(it.l))}: ${fmtT(it.l.startTime)} ${esc(stName(it.l.from))} → ${fmtT(it.l.endTime)} ${esc(stName(it.l.to))}">${ico("train",13)}<span>${esc(shortName(it.l))}</span></span>`
-    :`<span class="seg wait${it.bad?" bad":""}" title="${it.w} min Umstieg in ${esc(it.at)}"><span>${it.w}′</span></span>`).join("");
-  return `<div class="chain" style="grid-template-columns:${cols}" role="img" aria-label="${esc(aria)}">${segs}</div>
+    ?`<span class="seg ${legType(it.l)}" style="flex:${it.m} 1 ${basis(it)}" title="${esc(legName(it.l))}${isSEV(it.l)?" (Ersatzbus)":isBus(it.l)?" (Bus)":""}: ${fmtT(it.l.startTime)} ${esc(stName(it.l.from))} → ${fmtT(it.l.endTime)} ${esc(stName(it.l.to))}">${legIco(it.l,13)}<span>${esc(shortName(it.l))}</span></span>`
+    :`<span class="seg wait${it.bad?" bad":""}" style="flex:${Math.max(it.w,4)} 1 ${basis(it)}" title="${it.w} min Umstieg in ${esc(it.at)}"><span>${it.w}′</span></span>`).join("");
+  return `<div class="chain" role="img" aria-label="${esc(aria)}">${segs}</div>
     <div class="chain-st"><span>${ico("pin",13)}${esc(stName(L[0].from))}</span><span>${ico("pin",13)}${esc(stName(L[L.length-1].to))}</span></div>`;
 }
 /* Fahrtverlauf (aufgeklappt): Bahnhof – Zug – Bahnhof … */
@@ -851,15 +866,23 @@ function timelineHTML(v){
     const t=legType(l),pu=punctOf(l);
     const st=i===0?`<li class="tl-st"><span class="t">${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b></span></li>`
       :`<li class="tl-st"><span class="t">${fmtT(L[i-1].endTime)}<br>${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b> <span class="ds-supporting">· ${mins(L[i-1].endTime,l.startTime)} min Umstieg</span></span></li>`;
-    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar">${ico("train",15)} <b>${esc(legName(l))}</b> <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich`:""}</span></span></li>`;
+    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar">${legIco(l,15)} <b>${esc(legName(l))}</b>${isSEV(l)?` <span class="ds-badge ds-badge-warn">Ersatzbus</span>`:isBus(l)?" (Bus)":""} <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich`:""}</span></span></li>`;
     const end=i===L.length-1?`<li class="tl-st"><span class="t">${fmtT(l.endTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.to))}</b></span></li>`:"";
     return st+leg+end;}).join("")}</ol>`;
+}
+/* Normalpreis für GENAU diese Fahrt: ganze Strecke mit durchgehendem Ticket, über die Umsteigebahnhöfe zum/vom ICE
+   als Zwischenhalt – sonst schlägt bahn.de evtl. einen anderen Weg vor. */
+function normalLink(v,A,B){
+  const via=[];
+  if(v.iceIdx>0){const s=nearestStation(v.ice.from.lat,v.ice.from.lon);if(s&&s.eva!==A.st.eva)via.push(s)}
+  if(v.iceEnd<v.L.length-1){const s=nearestStation(v.ice.to.lat,v.ice.to.lon);if(s&&s.eva!==B.st.eva&&!via.some(x=>x.eva===s.eva))via.push(s)}
+  return dbLink(A.st,B.st,v.start,{via});
 }
 /* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
 function rowHTML(v,A,B,tags){
   const l=linkFor(v,A,B);
   // Spar-Kombi: zum Vergleich die ganze Strecke zur selben Zeit mit normalem Ticket
-  const norm=v.kind==="S"?dbLink(A.st,B.st,v.start):null;
+  const norm=v.kind==="S"?normalLink(v,A,B):null;
   const hrefs=norm?[l.href,norm]:[l.href];
   const ticket=v.kind==="S"
     ?`<span class="tk">${ico("train",14)}<b>${esc(v.ice.name)}</b> ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))}</span>`
@@ -880,7 +903,7 @@ function rowHTML(v,A,B,tags){
     </div>
     <div class="acts">
       <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?"ICE-Ticket":"bahn.de"}${ico("open",14)}</a>
-      ${norm?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(norm)}" target="_blank" rel="noopener" title="Ganze Strecke ${esc(stName(A.st))} → ${esc(stName(B.st))} mit normalem Ticket – zum Preisvergleich">Normal${ico("open",14)}</a>`:""}
+      ${norm?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(norm)}" target="_blank" rel="noopener" title="Dieselbe Fahrt ${esc(stName(A.st))} → ${esc(stName(B.st))} über die gleichen Umsteigebahnhöfe, mit normalem Ticket – zum Preisvergleich">Normal${ico("open",14)}</a>`:""}
     </div>
   </li>`;
 }
@@ -888,23 +911,25 @@ const skelRows=n=>`<ul class="rows ds-card" aria-hidden="true">${Array.from({len
 
 function dirHTML(r){
   const {A,B}=r,list=[...(r[MODE]||[])].sort(SORTFN[SORT[MODE]]||SORTFN.dep);
-  // Markierungen: schnellste und (im Spar-Reiter) kürzeste ICE-Strecke ohne rotes Risiko
-  const fast=[...list].sort(SORTFN.dur)[0],cheap=MODE==="spar"?([...list].filter(v=>v.risk.lvl<2).sort(SORTFN.ice)[0]||null):null;
-  const tagsOf=v=>[...(v===cheap?["Kürzeste ICE-Strecke"]:[]),...(v===fast?["Schnellste"]:[])];
+  // Markierungen: empfohlen (beste Punkte) und schnellste
+  const rec=[...list].sort(SORTFN.rec)[0],fast=[...list].sort(SORTFN.dur)[0];
+  const tagsOf=v=>[...(v===rec?["Empfohlen"]:[]),...(v===fast?["Schnellste"]:[])];
   const shown=SHOWALL?list:list.slice(0,30);
   let h=`<div class="list-head"><span class="ds-supporting">${list.length} Möglichkeit${list.length===1?"":"en"} · Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span>
-    <label class="sort"><span class="sr-only">Sortieren</span><select class="ds-input ds-select" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label></div>`;
+    <span class="sort-wrap"><label class="sort"><span class="sr-only">Sortieren</span><select class="ds-input ds-select" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label>
+    <button class="tgl" type="button" aria-expanded="false" aria-controls="rec-help" aria-label="Was heißt Empfohlen?">${ico("info",16)}</button></span></div>
+  <p class="ds-supporting" id="rec-help" hidden>${REC_HELP}</p>
+  <button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="earlier-times" type="button">${ico("left",16)}Frühere Zeiten laden (vor ${fmtT(r.from)} Uhr)</button>`;
   h+=`<div class="legend ds-supporting" aria-hidden="true">${MODE!=="whole"?`<span><i class="lg nv"></i>Regio${MODE==="spar"?" (D-Ticket)":""}</span>`:`<span><i class="lg nv"></i>Regio</span>`}${MODE!=="dt"?`<span><i class="lg fv"></i>ICE${MODE==="spar"?" (kaufen)":""}</span>`:""}<span><i class="lg wait"></i>Umstieg</span></div>`;
   h+=`<div class="open-bar"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="open-sel" type="button"${SEL.size?"":" disabled"}>${ico("open",16)}<span>Ausgewählte öffnen (${SEL.size})</span></button>
     <button class="tgl" type="button" aria-expanded="false" aria-controls="open-help">${ico("info",16)}Wie?</button></div>
   <p class="ds-supporting" id="open-help" hidden>${MODE==="spar"?"Bei jeder Spar-Kombi öffnet „ICE-Ticket“ nur die Teilstrecke und „Normal“ die ganze Strecke mit normalem Ticket – so siehst du beide Preise. „Ausgewählte öffnen“ öffnet bei markierten Zeilen beide. ":""}Mit ⌘-Klick (Mac) bzw. Strg-Klick öffnet sich ein Link im Hintergrund. Beim ersten „Ausgewählte öffnen“ fragt der Browser, ob er Pop-ups erlauben soll.</p>`;
-  if(MODE==="spar"&&r.partial) h+=`<p class="tip" role="status">Spar-Kombis werden berechnet …</p>${skelRows(2)}`;
-  if(MODE==="dt"&&r.dtLoading) h+=`<p class="tip" role="status">Verbindungen nur mit Regionalzügen werden gesucht …</p>${skelRows(1)}`;
+
   if(shown.length) h+=`<ul class="rows ds-card">${shown.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>`;
-  else if(!r.partial&&!(MODE==="dt"&&r.dtLoading)) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
+  else h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
-  if(!r.partial) h+=`<button class="ds-btn ds-btn-outline more-times" id="more-times" type="button">Spätere Zeiten laden (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
+  h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button">Spätere Zeiten laden (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
   return h;
 }
 
@@ -926,7 +951,8 @@ function renderOut(){
   $("share").onclick=shareSearch;
   $("sort")?.addEventListener("change",e=>{SORT[MODE]=e.target.value;renderOut()});
   $("show-all")?.addEventListener("click",()=>{SHOWALL=true;renderOut()});
-  $("more-times")?.addEventListener("click",()=>loadMore(TAB));
+  $("more-times")?.addEventListener("click",()=>loadMore(TAB,1));
+  $("earlier-times")?.addEventListener("click",()=>loadMore(TAB,-1));
   for(const c of document.querySelectorAll(".pick")) c.addEventListener("change",()=>{
     const hrefs=JSON.parse(c.dataset.hrefs);c.checked?SEL.set(hrefs[0],hrefs):SEL.delete(hrefs[0]);
     const b=$("open-sel");b.disabled=!SEL.size;b.querySelector("span").textContent=`Ausgewählte öffnen (${SEL.size})`;
@@ -950,13 +976,14 @@ function setMode(m){
   $("mode-hint").textContent=MODES[m].hint;
   if(DIRS.length) renderOut();
 }
-/* Nächstes 3-Stunden-Fenster für die gewählte Richtung anhängen */
-function loadMore(i){
+/* Früheres bzw. späteres 3-Stunden-Fenster für die gewählte Richtung dazuladen */
+function loadMore(i,dir){
   if(LOADING||!RES[i]) return;
   const my=++runId,live=()=>my===runId;
-  return runDirs([i],my,live,{append:true});
+  return runDirs([i],my,live,{append:true,earlier:dir<0});
 }
-const mergeRes=(a,b)=>({...b,dtLoading:b.dtLoading,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:a.from,note:b.note||a.note});
+const minT=(a,b)=>new Date(a)<new Date(b)?a:b,maxT=(a,b)=>new Date(a)>new Date(b)?a:b;
+const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note});
 
 /* Teilen: Suche steckt in der Webadresse */
 function searchURL(){
@@ -1049,8 +1076,9 @@ async function runDirs(idxs,my,live,opt={}){
       timer=setTimeout(()=>stop(new StopError(`Der Fahrplan-Server braucht zu lange (über ${TIMEOUT_S} s).`,true)),TIMEOUT_S*1000);
       const pre=rt?(i?"Rückfahrt: ":"Hinfahrt: "):"";
       const d=DIRS[i],prev=opt.append?RES[i]:null;
-      const r=await computeDir(placeOf(d.A.st),placeOf(d.B.st),prev?prev.until:d.t,sig,{
-        onPartial:r=>{if(!live())return;RES[i]=prev?mergeRes(prev,r):r;renderOut()},
+      const t=prev?(opt.earlier?addMin(prev.from,-WIN_MIN):prev.until):d.t;
+      const r=await computeDir(placeOf(d.A.st),placeOf(d.B.st),t,sig,{
+        onPartial:()=>{}, // Zwischenstände nicht zeigen: Ergebnisse erst, wenn sie vollständig geladen sind
         prog:(f,label)=>{cur={frac:(k+f)/idxs.length,label:pre+label,step:f<.2?0:f<.45?1:f<1?2:(k===idxs.length-1?3:0)};paint()}
       });
       RES[i]=prev?mergeRes(prev,r):r;
