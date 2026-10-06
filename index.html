@@ -266,17 +266,32 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .row .go{margin-top:2px}
 .more-times{justify-self:start}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .go{grid-column:2;justify-self:start}}
+@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .acts{grid-column:2;display:flex;flex-wrap:wrap}}
 /* Reiseleiste */
-.chain{display:grid;gap:3px;margin-top:4px;min-width:0}
-.seg{height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-size:.72rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chain{display:grid;gap:2px;margin-top:4px;min-width:0;overflow:hidden}
+.seg{container-type:inline-size}
+@container (max-width:44px){.seg svg{display:none}}
+@container (max-width:22px){.seg>span{font-size:0}}
+.seg svg{flex:none}
+.seg>span{overflow:hidden;text-overflow:ellipsis}
+.seg{gap:4px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-size:.72rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .seg.nv{background:var(--pop-green);color:var(--pop-green-foreground)}
 .seg.fv{background:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-primary-inset-sm)}
 .seg.flix{background:var(--pop-orange);color:var(--pop-orange-foreground)}
 .seg.wait{border:1.5px dashed var(--line-strong);color:var(--muted-foreground);font-weight:500;background:transparent}
 .seg.wait.bad{border-color:var(--destructive);color:var(--destructive)}
 .chain-st{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--muted-foreground);min-width:0}
-.chain-st>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chain-st>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;gap:3px;min-width:0}
+.chain-st svg{flex:none}
+.row-l3{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:.86rem}
+.tk{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.tk b{font-weight:600;white-space:nowrap}
+.tgl{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--muted-foreground);font:500 .85rem var(--font-sans);cursor:pointer;min-height:36px;padding:0 4px;margin-left:auto}
+.tgl svg{transition:transform .15s}
+.row-l3 .tgl[aria-expanded="true"] svg{transform:rotate(180deg)}
+.row-detail{display:grid;gap:8px;padding-top:4px}
+.acts{display:grid;gap:6px;justify-items:stretch}
+.acts .ds-btn{justify-content:center}
 .chain-tr{font-size:.78rem;color:var(--muted-foreground)}
 .chain-tr .bad{color:var(--destructive);font-weight:600}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem}
@@ -288,7 +303,9 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .tl{list-style:none;margin:4px 0 8px;padding:0;display:grid}
 .tl li{display:grid;grid-template-columns:3.2rem minmax(0,1fr);gap:10px;align-items:center;font-size:.86rem}
 .tl .t{font-variant-numeric:tabular-nums;color:var(--foreground);font-weight:600;line-height:1.25}
-.tl-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.tl-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.tl-name svg{color:var(--primary);flex:none}
+.tl-bar svg{vertical-align:-3px}
 .tl-name b{color:var(--foreground);font-weight:600}
 .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--foreground);background:var(--card);flex:none;margin-left:-1px}
 .tl-leg .tl-bar{border-left:4px solid var(--pop-green-foreground);margin-left:3px;padding:8px 0 8px 14px}
@@ -402,11 +419,11 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const AMP=["Grün","Gelb","Rot"],AMPC=["safe","warn","danger"];
 /* Icons: Iconoir (MIT), Originalpfade */
-const ICO={"user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
+const ICO={"pin":"<path d=\"M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/> <path d=\"M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","down":"<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
 const ico=(n,s=18)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" stroke-width="1.5" fill="none" aria-hidden="true">${ICO[n]}</svg>`;
 
-const TIMEOUT_S=75; // harte Grenze je Richtung
-const SPAR_S=40;    // danach Spar-Suche beenden und Gefundenes zeigen // je Richtung; der offene Server braucht unter Last bis ~40 s
+const TIMEOUT_S=180; // harte Grenze je Richtung
+const SPAR_S=120;   // Vollständigkeit vor Tempo; danach Spar-Suche beenden und Gefundenes zeigen // je Richtung; der offene Server braucht unter Last bis ~40 s
 
 const fmtT=iso=>new Date(iso).toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"});
 const fmtD=iso=>new Date(iso).toLocaleDateString("de-DE",{timeZone:"Europe/Berlin",weekday:"short",day:"numeric",month:"short"});
@@ -603,6 +620,7 @@ function riskOf(v){
   return {lvl,t,why:why.join(" ")+after};
 }
 const sigOf=v=>v.kind+v.L.map(l=>legName(l)+l.startTime+l.endTime).join("|");
+const uniqIt=arr=>{const m=new Map();for(const x of arr){const k=x.L.map(l=>legName(l)+l.startTime).join("|");if(!m.has(k))m.set(k,x)}return [...m.values()]};
 const uniqV=arr=>{const m=new Map();for(const v of arr){const k=sigOf(v);if(!m.has(k)||m.get(k).dur>v.dur)m.set(k,v)}return [...m.values()]};
 function mkSpar(L,start,end,ice,iceIdx,iceEnd=iceIdx){
   return {kind:"S",L,start,end,dur:mins(start,end),transfers:L.length-1,fvMin:mins(ice.dep,ice.arr),ice,iceIdx,iceEnd,
@@ -618,26 +636,27 @@ const WIN_MIN=180;
 async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   const soft=e=>{if(e instanceof StopError&&(e.message!=="Frist"||sig.aborted))throw e;return null};
   prog(.05,"Verbindungen im Zeitfenster suchen");
-  const [all,dAll]=await Promise.all([
-    plan(A.place,B.place,tIso,{n:8,sig}),            // große Zeitfenster sind für den Server teuer – n:8 deckt meist ~3 h ab
-    plan(A.place,B.place,tIso,{nv:true,n:3,sig}).catch(soft)]);
+  // Der Server arbeitet unsere Anfragen praktisch nacheinander ab (~3 s je Anfrage) – darum wenige, wichtige zuerst.
+  const all=await plan(A.place,B.place,tIso,{n:8,sig}); // n:8 deckt meist ~3 h ab; große Zeitfenster sind teuer
   const t0=new Date(addMin(tIso,-5)),tEnd=new Date(addMin(tIso,WIN_MIN));
   const inWin=x=>new Date(x.start)>=t0&&new Date(x.start)<=tEnd;
   const its=all.map(analyze).filter(x=>x.hasFV&&inWin(x));
-  const dt=(dAll||[]).filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:"Nur Regionalzüge"}));
-  if(!its.length&&!dt.length) throw new Error(`Keine Verbindung ${A.name} → ${B.name} gefunden. Liegt das Datum noch im Fahrplan (meist bis Mitte Dezember)?`);
+  let dt=[],dtLoading=true; // „Nur D-Ticket“ wird zuletzt geladen (teuer, am seltensten gebraucht)
+  if(!its.length) throw new Error(`Keine Verbindung ${A.name} → ${B.name} gefunden. Liegt das Datum noch im Fahrplan (meist bis Mitte Dezember)?`);
   const whole=its.map(x=>({...x,kind:"A",name:x.L.filter(isFV).map(legName).join(" + ")}));
-  const fastest=Math.min(...its.map(x=>x.dur),...dt.map(x=>x.dur));
-  const spar=[];
+  const fastest=Math.min(...its.map(x=>x.dur));
+  const spar=[],sparBase=[];
   // a) gleiche Züge wie die ganze Reise, nur der ICE-Abschnitt auf eigenem Ticket
   for(const x of its){
     if(x.flix||x.L.every(isFV)) continue;
     const f=x.L.filter(isFV),fi=x.L.indexOf(f[0]),fe=x.L.indexOf(f[f.length-1]);
-    spar.push(mkSpar(x.L,x.start,x.end,{from:f[0].from,to:f[f.length-1].to,dep:f[0].startTime,arr:f[f.length-1].endTime,name:f.map(legName).join(" + ")},fi,fe));
+    sparBase.push(mkSpar(x.L,x.start,x.end,{from:f[0].from,to:f[f.length-1].to,dep:f[0].startTime,arr:f[f.length-1].endTime,name:f.map(legName).join(" + ")},fi,fe));
   }
+  spar.push(...sparBase);
+  let buildNow=()=>{};
   let note="";
   const pack=partial=>{const fin=a=>uniqV(a).map(v=>(v.risk=riskOf(v),v));
-    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,note}};
+    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,dtLoading,note}};
   onPartial(pack(true));
 
   // Ab hier mit Frist: bei langsamem Server zeigen wir, was bis dahin da ist
@@ -665,54 +684,90 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
       let bi=[],ai=[];
       run.forEach((s,i)=>{
         if(s.lat==null)return;const p=pos(s);
-        if(s.departure&&i<iT&&(i===iF||(i<=iF+2&&p>=-.25&&p<=.6)))bi.push(i);
-        if(s.arrival&&i>iF&&(i===iT||(i>=iT-2&&p>=.4&&p<=1.25)))ai.push(i);
+        // Einstieg: eigener Halt oder Halte zwischen Start und Mitte (nicht „rückwärts“ wie Kiel bei Fahrt nach Süden)
+        if(s.departure&&i<iT&&(i===iF||(i<=iF+2&&p>=0&&p<=.6)))bi.push(i);
+        // Ausstieg: eigener Halt oder Halte zwischen Mitte und knapp hinter dem Ziel
+        if(s.arrival&&i>iF&&(i===iT||(i>=iT-2&&p>=.4&&p<=1.15)))ai.push(i);
       });
-      bi=bi.sort((x,y)=>Math.abs(pos(run[x]))-Math.abs(pos(run[y]))).slice(0,5);
-      ai=ai.sort((x,y)=>Math.abs(1-pos(run[x]))-Math.abs(1-pos(run[y]))).slice(0,5);
+      bi=bi.sort((x,y)=>Math.abs(pos(run[x]))-Math.abs(pos(run[y]))).slice(0,8);
+      ai=ai.sort((x,y)=>Math.abs(1-pos(run[x]))-Math.abs(1-pos(run[y]))).slice(0,8);
       plans.push({leg,run,bi,ai});
     });
-    // 3) Regionalzüge: kleine, gezielte Abfragen je Bahnhof und ICE-Zeit (schnell); doppelte nur einmal
-    const preQ=new Map(),postQ=new Map();
-    for(const {run,bi,ai} of plans){
-      for(const i of bi){const st=run[i];if(!near(st,A.st))preQ.set(st.name+"|"+st.departure,{st,t:st.departure})}
-      for(const i of ai){const st=run[i];if(!near(st,B.st))postQ.set(st.name+"|"+st.arrival,{st,t:st.arrival})}
-    }
-    const preR=new Map(),postR=new Map(),qs=[];
-    for(const [k,{st,t}] of preQ) qs.push(()=>plan(A.place,`${st.lat},${st.lon}`,addMin(t,-8),{arr:true,nv:true,n:2,sig:ssig}).then(r=>preR.set(k,r.filter(nvOnlyOk).map(analyze))));
-    for(const [k,{st,t}] of postQ) qs.push(()=>plan(`${st.lat},${st.lon}`,B.place,addMin(t,4),{nv:true,n:2,sig:ssig}).then(r=>postR.set(k,r.filter(nvOnlyOk).map(analyze))));
-    done=0;prog(.45,`Regionalzüge zu den Umstiegen (0 von ${qs.length})`);
-    await Promise.all(qs.map(q=>q().catch(soft).finally(()=>{done++;prog(.45+.5*done/qs.length,`Regionalzüge zu den Umstiegen (${done} von ${qs.length})`)})));
-    // 4) Kombinationen
-    const earliest=new Date(addMin(tIso,-45));
-    for(const {leg,run,bi,ai} of plans)for(const ib of bi)for(const ia of ai){
-      if(ia<=ib)continue;
-      const bs=run[ib],es=run[ia],dep=bs.departure,arr=es.arrival;
-      const pre=near(bs,A.st)?"none":preR.get(bs.name+"|"+dep),post=near(es,B.st)?"none":postR.get(es.name+"|"+arr);
-      if(!pre||!post)continue;
-      let preIt=null,safer=null,feederTakt=null,postIt=null,postTakt=null;
-      if(pre!=="none"){
-        const ok=pre.filter(x=>mins(x.end,dep)>=8&&new Date(x.start)>=earliest).sort((x,y)=>new Date(y.end)-new Date(x.end));
-        preIt=ok[0];if(!preIt)continue;feederTakt=taktOf(pre);
-        if(mins(preIt.end,dep)<30){const s2=ok.find(x=>mins(x.end,dep)>=30);if(s2)safer=`${shortName(s2.L[0])} um ${fmtT(s2.L[0].startTime)} nehmen (${mins(s2.end,dep)} min Puffer)`}
+    /* 3) Regionalzüge – vollständig für JEDE ICE-Abfahrt:
+          a) eine Abfrage pro Umstiegsbahnhof (liefert meist schon mehrere Züge),
+          b) für jede ICE-Zeit prüfen, ob ein passender Regionalzug dabei ist – sonst gezielt nachfragen.
+       Regionalzug-Anteil höchstens ~200 km (sonst nicht sinnvoll und für den Server sehr teuer). */
+    const km=(a,b)=>Math.sqrt((a.lat-b.lat)**2+((a.lon-b.lon)*.63)**2)*111,MAXKM=200;
+    const need=side=>{
+      const m=new Map(),P=side==="pre"?A.st:B.st;
+      for(const {run,bi,ai} of plans)for(const i of (side==="pre"?bi:ai)){
+        const st=run[i],t=side==="pre"?st.departure:st.arrival;
+        if(near(st,P)||km(st,P)>MAXKM)continue;
+        const e=m.get(st.name)||{st,d:km(st,P),t:new Set()};e.t.add(t);m.set(st.name,e);
       }
-      if(post!=="none"){postIt=post.filter(x=>mins(arr,x.start)>=4).sort((x,y)=>new Date(x.end)-new Date(y.end))[0];if(!postIt)continue;postTakt=taktOf(post)}
-      if(!preIt&&!postIt)continue; // nur ICE = ganze Reise
-      const ice={...leg,from:{...leg.from,name:bs.name,lat:bs.lat,lon:bs.lon},to:{...leg.to,name:es.name,lat:es.lat,lon:es.lon},startTime:dep,endTime:arr,intermediateStops:[]};
-      const L=[...(preIt?preIt.L:[]),ice,...(postIt?postIt.L:[])];
-      const start=preIt?preIt.start:dep,end=postIt?postIt.end:arr;
-      if(mins(start,end)>fastest+150)continue;
-      const v=mkSpar(L,start,end,{from:bs,to:es,dep,arr,name:legName(leg)},preIt?preIt.L.length:0);
-      Object.assign(v,{feederTakt,postTakt,safer});spar.push(v);
+      return [...m.values()].sort((x,y)=>x.d-y.d);
+    };
+    const preN=need("pre"),postN=need("post");
+    const preR=new Map(),postR=new Map();
+    const add=(M,k,r)=>M.set(k,uniqIt([...(M.get(k)||[]),...r.filter(nvOnlyOk).map(analyze)]));
+    const fitsPre=(list,dep)=>(list||[]).some(x=>mins(x.end,dep)>=8&&mins(x.end,dep)<=90);
+    const fitsPost=(list,arr)=>(list||[]).some(x=>mins(arr,x.start)>=4&&mins(arr,x.start)<=90);
+    const total=()=>preN.length+postN.length+gaps;let gaps=0;done=0;
+    const tick=()=>{done++;prog(.45+.45*Math.min(1,done/Math.max(1,total())),`Regionalzüge zu den Umstiegen (${done} von ${total()})`);refresh()};
+    let lastRefresh=0;const refresh=(force)=>{if(!force&&Date.now()-lastRefresh<1500)return;lastRefresh=Date.now();buildCombos();onPartial(pack(true))};
+    prog(.45,`Regionalzüge zu den Umstiegen (0 von ${total()})`);
+    // a) je Bahnhof eine Abfrage
+    await Promise.all([
+      ...preN.map(e=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mx=Math.max(...ts),n=Math.min(6,e.t.size+1);
+        return plan(A.place,`${e.st.lat},${e.st.lon}`,new Date(mx-8*60000).toISOString(),{arr:true,nv:true,n,sig:ssig}).then(r=>add(preR,e.st.name,r)).catch(soft).finally(tick)}),
+      ...postN.map(e=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mn=Math.min(...ts),n=Math.min(6,e.t.size+1);
+        return plan(`${e.st.lat},${e.st.lon}`,B.place,new Date(mn+4*60000).toISOString(),{nv:true,n,sig:ssig}).then(r=>add(postR,e.st.name,r)).catch(soft).finally(tick)})]);
+    // b) Lücken gezielt schließen: für jede ICE-Zeit ohne passenden Regionalzug eine eigene Abfrage
+    const fill=[];
+    for(const e of preN)for(const dep of e.t)if(!fitsPre(preR.get(e.st.name),dep))fill.push({d:e.d,f:()=>plan(A.place,`${e.st.lat},${e.st.lon}`,addMin(dep,-8),{arr:true,nv:true,n:2,sig:ssig}).then(r=>add(preR,e.st.name,r))});
+    for(const e of postN)for(const arr of e.t)if(!fitsPost(postR.get(e.st.name),arr))fill.push({d:e.d,f:()=>plan(`${e.st.lat},${e.st.lon}`,B.place,addMin(arr,4),{nv:true,n:2,sig:ssig}).then(r=>add(postR,e.st.name,r))});
+    gaps=fill.length;fill.sort((x,y)=>x.d-y.d);
+    await Promise.all(fill.map(q=>q.f().catch(soft).finally(tick)));
+    // 4) Kombinationen (wird auch für Zwischenstände aufgerufen)
+    function buildCombos(){
+      spar.length=0;spar.push(...sparBase);
+      const earliest=new Date(addMin(tIso,-45));
+      for(const {leg,run,bi,ai} of plans)for(const ib of bi)for(const ia of ai){
+        if(ia<=ib)continue;
+        const bs=run[ib],es=run[ia],dep=bs.departure,arr=es.arrival;
+        const pre=near(bs,A.st)?"none":preR.get(bs.name),post=near(es,B.st)?"none":postR.get(es.name);
+        if(!pre||!post)continue;
+        let preIt=null,safer=null,feederTakt=null,postIt=null,postTakt=null;
+        if(pre!=="none"){
+          const ok=pre.filter(x=>mins(x.end,dep)>=8&&new Date(x.start)>=earliest).sort((x,y)=>new Date(y.end)-new Date(x.end));
+          preIt=ok[0];if(!preIt||mins(preIt.end,dep)>90)continue;feederTakt=taktOf(pre);
+          if(mins(preIt.end,dep)<30){const s2=ok.find(x=>mins(x.end,dep)>=30);if(s2)safer=`${shortName(s2.L[0])} um ${fmtT(s2.L[0].startTime)} nehmen (${mins(s2.end,dep)} min Puffer)`}
+        }
+        if(post!=="none"){postIt=post.filter(x=>mins(arr,x.start)>=4).sort((x,y)=>new Date(x.end)-new Date(y.end))[0];if(!postIt||mins(arr,postIt.start)>90)continue;postTakt=taktOf(post)}
+        if(!preIt&&!postIt)continue; // nur ICE = ganze Reise
+        const ice={...leg,from:{...leg.from,name:bs.name,lat:bs.lat,lon:bs.lon},to:{...leg.to,name:es.name,lat:es.lat,lon:es.lon},startTime:dep,endTime:arr,intermediateStops:[]};
+        const L=[...(preIt?preIt.L:[]),ice,...(postIt?postIt.L:[])];
+        const start=preIt?preIt.start:dep,end=postIt?postIt.end:arr;
+        if(mins(start,end)>fastest+150)continue;
+        const v=mkSpar(L,start,end,{from:bs,to:es,dep,arr,name:legName(leg)},preIt?preIt.L.length:0);
+        Object.assign(v,{feederTakt,postTakt,safer});spar.push(v);
+      }
+      for(const v of spar){
+        if(v.feederTakt==null){const p=preR.get(v.ice.from.name);if(p)v.feederTakt=taktOf(p)}
+        if(v.postTakt==null){const p=postR.get(v.ice.to.name);if(p)v.postTakt=taktOf(p)}
+      }
     }
-    // Takt auch für „gleiche Züge“ nachtragen
-    for(const v of spar){
-      if(v.feederTakt==null){const p=preR.get(v.ice.from.name+"|"+v.ice.dep);if(p)v.feederTakt=taktOf(p)}
-      if(v.postTakt==null){const p=postR.get(v.ice.to.name+"|"+v.ice.arr);if(p)v.postTakt=taktOf(p)}
-    }
+    buildCombos();buildNow=buildCombos;
   }catch(e){if(!(e instanceof StopError&&e.message==="Frist"&&!sig.aborted))throw e}
   finally{clearTimeout(fr);sig.removeEventListener("abort",onOuter)}
   if(cut) note="Der Fahrplan-Server ist gerade langsam – nicht alle Spar-Kombis konnten geprüft werden. Später nochmal suchen lohnt sich.";
+  try{buildNow()}catch{}
+  onPartial(pack(false));
+  // 5) zuletzt: nur Regionalzüge (für den Reiter „Nur D-Ticket“)
+  prog(.93,"Nur-D-Ticket-Verbindungen suchen");
+  try{const d=await plan(A.place,B.place,tIso,{nv:true,n:3,sig});dt=d.filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:"Nur Regionalzüge"}))}
+  catch(e){if(e instanceof StopError)throw e}
+  dtLoading=false;
   prog(1,"Fertig");
   return pack(false);
 }
@@ -760,7 +815,7 @@ const MODES={
 };
 let MODE="spar";try{const m=localStorage.getItem("bbf-mode");if(MODES[m])MODE=m}catch{}
 const SORT={spar:"ice",whole:"dep",dt:"dep"};
-const SEL=new Set();let SHOWALL=false;
+const SEL=new Map();let SHOWALL=false; // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
@@ -768,48 +823,67 @@ const SORTFN={ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a
 const legType=l=>isFlix(l)?"flix":isFV(l)?"fv":"nv";
 const shortSt=n=>String(n).replace(/\s+Hauptbahnhof\b/,"").replace(/\s+Hbf\b/,"").replace(/\s+Bahnhof\b/,"").replace(/^Bahnhof\s+/,"");
 const typeLabel=(t,kind)=>t==="fv"?(kind==="S"?"Ticket kaufen":"ICE/IC"):t==="flix"?"eigenes Ticket":(kind==="A"?"im Ticket":"D-Ticket");
+/* Offizieller DB-Bahnhofsname (wie auf bahn.de), nicht nur die Stadt */
+const stMemo=new Map();
+function stName(st){
+  const k=`${st.lat},${st.lon}`;
+  if(!stMemo.has(k)){const n=st.lat!=null?nearestStation(st.lat,st.lon):null;stMemo.set(k,n?n.name:String(st.name).replace(/\s+Hauptbahnhof\b/," Hbf"))}
+  return stMemo.get(k);
+}
+/* Reiseleiste: Zug-Abschnitte (Breite = Fahrzeit) und Umstiege */
 function chainHTML(v){
   const L=v.L,items=[];
   L.forEach((l,i)=>{
-    if(i){const w=mins(L[i-1].endTime,l.startTime);items.push({w,bad:v.kind==="S"&&i===v.iceIdx&&w<30,at:l.from.name})}
+    if(i){const w=mins(L[i-1].endTime,l.startTime);items.push({w,bad:v.kind==="S"&&i===v.iceIdx&&w<30,at:stName(l.from)})}
     items.push({l,m:Math.max(1,mins(l.startTime,l.endTime))});
   });
-  const cols=items.map(it=>it.l?`minmax(34px,${it.m}fr)`:`minmax(24px,${Math.max(it.w,6)}fr)`).join(" ");
-  const aria=items.map(it=>it.l?`${legName(it.l)} (${typeLabel(legType(it.l),v.kind)})`:`Umstieg ${it.at} ${it.w} Minuten`).join(", ");
+  // Mindestbreiten so klein, dass auch 6–7 Teilstücke auf ein Handy passen; ICE bleibt immer lesbar
+  const cols=items.map(it=>it.l?`minmax(${isFV(it.l)?68:16}px,${it.m}fr)`:`minmax(12px,${Math.max(it.w,6)}fr)`).join(" ");
+  const aria=items.map(it=>it.l?`${legName(it.l)} (${typeLabel(legType(it.l),v.kind)})`:`Umstieg in ${it.at}, ${it.w} Minuten`).join(", ");
   const segs=items.map(it=>it.l
-    ?`<span class="seg ${legType(it.l)}" title="${esc(legName(it.l))}: ${fmtT(it.l.startTime)} ${esc(it.l.from.name)} → ${fmtT(it.l.endTime)} ${esc(it.l.to.name)}">${esc(shortName(it.l))}</span>`
-    :`<span class="seg wait${it.bad?" bad":""}" title="${it.w} min Umstieg in ${esc(it.at)}">${it.w}′</span>`).join("");
-  const tr=items.filter(it=>!it.l).map(it=>`<span${it.bad?' class="bad"':""}>${esc(shortSt(it.at))} ${it.w} min</span>`).join(" · ");
+    ?`<span class="seg ${legType(it.l)}" title="${esc(legName(it.l))}: ${fmtT(it.l.startTime)} ${esc(stName(it.l.from))} → ${fmtT(it.l.endTime)} ${esc(stName(it.l.to))}">${ico("train",13)}<span>${esc(shortName(it.l))}</span></span>`
+    :`<span class="seg wait${it.bad?" bad":""}" title="${it.w} min Umstieg in ${esc(it.at)}"><span>${it.w}′</span></span>`).join("");
   return `<div class="chain" style="grid-template-columns:${cols}" role="img" aria-label="${esc(aria)}">${segs}</div>
-    <div class="chain-st"><span>${esc(shortSt(L[0].from.name))}</span><span>${esc(shortSt(L[L.length-1].to.name))}</span></div>
-    ${tr?`<div class="chain-tr">Umstieg: ${tr}</div>`:""}`;
+    <div class="chain-st"><span>${ico("pin",13)}${esc(stName(L[0].from))}</span><span>${ico("pin",13)}${esc(stName(L[L.length-1].to))}</span></div>`;
 }
+/* Fahrtverlauf (aufgeklappt): Bahnhof – Zug – Bahnhof … */
 function timelineHTML(v){
   const L=v.L;
   return `<ol class="tl">${L.map((l,i)=>{
     const t=legType(l),pu=punctOf(l);
-    const st=i===0?`<li class="tl-st"><span class="t">${fmtT(l.startTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.from.name)}</b></span></li>`
-      :`<li class="tl-st"><span class="t">${fmtT(L[i-1].endTime)}<br>${fmtT(l.startTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.from.name)}</b> <span class="ds-supporting">· ${mins(L[i-1].endTime,l.startTime)} min Umstieg</span></span></li>`;
-    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar"><b>${esc(legName(l))}</b> <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich im ${esc(punctMonth())}`:""}</span></span></li>`;
-    const end=i===L.length-1?`<li class="tl-st"><span class="t">${fmtT(l.endTime)}</span><span class="tl-name"><i class="dot"></i><b>${esc(l.to.name)}</b></span></li>`:"";
+    const st=i===0?`<li class="tl-st"><span class="t">${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b></span></li>`
+      :`<li class="tl-st"><span class="t">${fmtT(L[i-1].endTime)}<br>${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b> <span class="ds-supporting">· ${mins(L[i-1].endTime,l.startTime)} min Umstieg</span></span></li>`;
+    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar">${ico("train",15)} <b>${esc(legName(l))}</b> <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich`:""}</span></span></li>`;
+    const end=i===L.length-1?`<li class="tl-st"><span class="t">${fmtT(l.endTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.to))}</b></span></li>`:"";
     return st+leg+end;}).join("")}</ol>`;
 }
+/* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
 function rowHTML(v,A,B,tags){
-  const l=linkFor(v,A,B),pre=v.kind==="S"?v.L.slice(0,v.iceIdx):[],post=v.kind==="S"?v.L.slice(v.iceEnd+1):[];
-  const what=v.kind==="S"
-    ?`<span class="ds-supporting">Ticket kaufen:</span> <b>${esc(v.ice.name)} ${esc(shortSt(v.ice.from.name))} → ${esc(shortSt(v.ice.to.name))}</b> <span class="ds-supporting">(${hm(v.fvMin)})${pre.length||post.length?" · Rest mit D-Ticket":""}</span>`
-    :v.kind==="A"?`<span class="ds-supporting">Ein Ticket für alles:</span> <b>${esc(v.name)}</b>`:`<span class="ds-supporting">Kein Ticket nötig – alles mit dem D-Ticket</span>`;
-  const checked=SEL.has(l.href)?" checked":"";
+  const l=linkFor(v,A,B);
+  // Spar-Kombi: zum Vergleich die ganze Strecke zur selben Zeit mit normalem Ticket
+  const norm=v.kind==="S"?dbLink(A.st,B.st,v.start):null;
+  const hrefs=norm?[l.href,norm]:[l.href];
+  const ticket=v.kind==="S"
+    ?`<span class="tk">${ico("train",14)}<b>${esc(v.ice.name)}</b> ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))}</span>`
+    :v.kind==="A"?`<span class="tk">Ein Ticket für alles</span>`:`<span class="tk">Nur Deutschland-Ticket</span>`;
+  const id="d"+Math.random().toString(36).slice(2,9);
   return `<li class="row">
-    <input class="pick" type="checkbox" aria-label="Für Preisvergleich auswählen" data-href="${esc(l.href)}"${checked}>
+    <input class="pick" type="checkbox" aria-label="Zum Vergleich auswählen" data-hrefs="${esc(JSON.stringify(hrefs))}"${SEL.has(l.href)?" checked":""}>
     <div class="row-main">
-      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}${ampHTML(v.risk)}</div>
+      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}</div>
       ${chainHTML(v)}
-      <div class="row-l2">${what}</div>
-      <p class="why">${esc(v.risk.why)}</p>
-      <details class="more"><summary>${ico("info",16)}Fahrtverlauf und So buchen</summary><div class="body">${timelineHTML(v)}<p><b>So buchen:</b> ${howTo(v)}</p><p>${esc(l.note)} Reisende: ${esc(travLabel())}${TRAV.age==="x"?" – Alter auf bahn.de anpassen":""}.</p><p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p></div></details>
+      <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
+      <div class="row-detail" id="${id}" hidden>
+        <p class="why">${esc(v.risk.why)}</p>
+        ${timelineHTML(v)}
+        <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}${TRAV.age==="x"?" – Alter auf bahn.de anpassen":""}.</p>
+        <p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p>
+      </div>
     </div>
-    <a class="ds-btn ds-btn-primary ds-btn-sm go" href="${esc(l.href)}" target="_blank" rel="noopener" aria-label="Bei bahn.de öffnen">bahn.de${ico("open",14)}</a>
+    <div class="acts">
+      <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?"ICE-Ticket":"bahn.de"}${ico("open",14)}</a>
+      ${norm?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(norm)}" target="_blank" rel="noopener" title="Ganze Strecke ${esc(stName(A.st))} → ${esc(stName(B.st))} mit normalem Ticket – zum Preisvergleich">Normal${ico("open",14)}</a>`:""}
+    </div>
   </li>`;
 }
 const skelRows=n=>`<ul class="rows ds-card" aria-hidden="true">${Array.from({length:n},()=>`<li class="row"><span></span><div class="row-main"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l4"></div></div></li>`).join("")}</ul>`;
@@ -822,12 +896,14 @@ function dirHTML(r){
   const shown=SHOWALL?list:list.slice(0,30);
   let h=`<div class="list-head"><span class="ds-supporting">${list.length} Möglichkeit${list.length===1?"":"en"} · Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span>
     <label class="sort"><span class="sr-only">Sortieren</span><select class="ds-input ds-select" id="sort">${MODES[MODE].sorts.map(([k,t])=>`<option value="${k}"${SORT[MODE]===k?" selected":""}>${t}</option>`).join("")}</select></label></div>`;
-  h+=`<div class="legend ds-supporting" aria-hidden="true">${MODE!=="whole"?`<span><i class="lg nv"></i>Regionalzug · D-Ticket</span>`:`<span><i class="lg nv"></i>Regionalzug</span>`}${MODE!=="dt"?`<span><i class="lg fv"></i>ICE/IC${MODE==="spar"?" · Ticket kaufen":""}</span>`:""}<span><i class="lg wait"></i>Umstieg (min)</span>${MODE==="spar"?`<span><i class="lg wait bad"></i>knapp</span>`:""}</div>`;
-  h+=`<div class="open-bar"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="open-sel" type="button"${SEL.size?"":" disabled"}>${ico("open",16)}Ausgewählte öffnen (${SEL.size})</button>
-    <span class="ds-supporting">Tipp: <kbd>⌘</kbd>-Klick (Mac) bzw. <kbd>Strg</kbd>-Klick öffnet einen Link im Hintergrund.</span></div>`;
+  h+=`<div class="legend ds-supporting" aria-hidden="true">${MODE!=="whole"?`<span><i class="lg nv"></i>Regio${MODE==="spar"?" (D-Ticket)":""}</span>`:`<span><i class="lg nv"></i>Regio</span>`}${MODE!=="dt"?`<span><i class="lg fv"></i>ICE${MODE==="spar"?" (kaufen)":""}</span>`:""}<span><i class="lg wait"></i>Umstieg</span></div>`;
+  h+=`<div class="open-bar"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="open-sel" type="button"${SEL.size?"":" disabled"}>${ico("open",16)}<span>Ausgewählte öffnen (${SEL.size})</span></button>
+    <button class="tgl" type="button" aria-expanded="false" aria-controls="open-help">${ico("info",16)}Wie?</button></div>
+  <p class="ds-supporting" id="open-help" hidden>${MODE==="spar"?"Bei jeder Spar-Kombi öffnet „ICE-Ticket“ nur die Teilstrecke und „Normal“ die ganze Strecke mit normalem Ticket – so siehst du beide Preise. „Ausgewählte öffnen“ öffnet bei markierten Zeilen beide. ":""}Mit ⌘-Klick (Mac) bzw. Strg-Klick öffnet sich ein Link im Hintergrund. Beim ersten „Ausgewählte öffnen“ fragt der Browser, ob er Pop-ups erlauben soll.</p>`;
   if(MODE==="spar"&&r.partial) h+=`<p class="tip" role="status">Spar-Kombis werden berechnet …</p>${skelRows(2)}`;
+  if(MODE==="dt"&&r.dtLoading) h+=`<p class="tip" role="status">Verbindungen nur mit Regionalzügen werden gesucht …</p>${skelRows(1)}`;
   if(shown.length) h+=`<ul class="rows ds-card">${shown.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>`;
-  else if(!r.partial) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
+  else if(!r.partial&&!(MODE==="dt"&&r.dtLoading)) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
   if(!r.partial) h+=`<button class="ds-btn ds-btn-outline more-times" id="more-times" type="button">Spätere Zeiten laden (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
@@ -854,17 +930,21 @@ function renderOut(){
   $("show-all")?.addEventListener("click",()=>{SHOWALL=true;renderOut()});
   $("more-times")?.addEventListener("click",()=>loadMore(TAB));
   for(const c of document.querySelectorAll(".pick")) c.addEventListener("change",()=>{
-    c.checked?SEL.add(c.dataset.href):SEL.delete(c.dataset.href);
-    const b=$("open-sel");b.disabled=!SEL.size;b.lastChild.textContent=`Ausgewählte öffnen (${SEL.size})`;
+    const hrefs=JSON.parse(c.dataset.hrefs);c.checked?SEL.set(hrefs[0],hrefs):SEL.delete(hrefs[0]);
+    const b=$("open-sel");b.disabled=!SEL.size;b.querySelector("span").textContent=`Ausgewählte öffnen (${SEL.size})`;
+  });
+  // Aufklappen per Pfeil
+  for(const t of document.querySelectorAll("#out .tgl")) t.addEventListener("click",()=>{
+    const d=$(t.getAttribute("aria-controls")),open=d.hidden;d.hidden=!open;t.setAttribute("aria-expanded",String(open));
   });
   $("open-sel")?.addEventListener("click",openSelected);
 }
 /* Mehrere bahn.de-Suchen auf einmal öffnen. Browser lassen Seiten keine Tabs im Hintergrund öffnen;
    beim ersten Mal fragen sie meist, ob Pop-ups erlaubt sind. */
 function openSelected(){
-  let blocked=0;
-  for(const href of SEL){const w=window.open(href,"_blank");if(w)w.opener=null;else blocked++}
-  if(blocked) showErr(`${blocked} von ${SEL.size} Tabs wurden blockiert`,"Dein Browser blockiert Pop-ups. Erlaube Pop-ups für diese Seite (Symbol in der Adresszeile) und tippe nochmal auf „Ausgewählte öffnen“.");
+  let blocked=0;const all=[...new Set([...SEL.values()].flat())];
+  for(const href of all){const w=window.open(href,"_blank");if(w)w.opener=null;else blocked++}
+  if(blocked) showErr(`${blocked} von ${all.length} Tabs wurden blockiert`,"Dein Browser blockiert Pop-ups. Erlaube Pop-ups für diese Seite (Symbol in der Adresszeile) und tippe nochmal auf „Ausgewählte öffnen“.");
 }
 function setMode(m){
   MODE=m;SHOWALL=false;try{localStorage.setItem("bbf-mode",m)}catch{}
@@ -878,7 +958,7 @@ function loadMore(i){
   const my=++runId,live=()=>my===runId;
   return runDirs([i],my,live,{append:true});
 }
-const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:a.from,note:b.note||a.note});
+const mergeRes=(a,b)=>({...b,dtLoading:b.dtLoading,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:a.from,note:b.note||a.note});
 
 /* Teilen: Suche steckt in der Webadresse */
 function searchURL(){
@@ -926,7 +1006,7 @@ function stop(reason){if(ctrl&&!ctrl.signal.aborted)ctrl.abort(reason);clearTime
 function showErr(title,msg=""){$("err-title").textContent=title;$("err-msg").textContent=msg;$("err-msg").hidden=!msg;$("err").hidden=false}
 function rtOn(){return $("t-rt").getAttribute("aria-pressed")==="true"}
 function setTrip(rt){for(const [id,on] of [["t-rt",rt],["t-one",!rt]]){$(id).setAttribute("aria-pressed",String(on));$(id).classList.toggle("active",on)}$("ret").hidden=!rt}
-const EST=()=>DIRS.length>1?"dauert ca. 30–90 s":"dauert ca. 15–45 s";
+const EST=()=>DIRS.length>1?"dauert ca. 1–3 min":"dauert ca. 30–90 s";
 
 async function search(e,only){
   e?.preventDefault?.();
