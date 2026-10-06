@@ -469,8 +469,8 @@ const ICO={"bus":"<path d=\"M7 16.01L7.01 15.9989\" stroke=\"currentColor\" stro
 const ico=(n,s=18)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" stroke-width="1.5" fill="none" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 document.body.insertAdjacentHTML("afterbegin",`<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(ICO).map(([k,v])=>`<symbol id="i-${k}" viewBox="0 0 24 24">${v}</symbol>`).join("")}</svg>`);
 
-const TIMEOUT_S=180; // harte Grenze je Richtung
-const SPAR_S=120;   // Vollständigkeit vor Tempo; danach Spar-Suche beenden und Gefundenes zeigen // je Richtung; der offene Server braucht unter Last bis ~40 s
+const TIMEOUT_S=240; // harte Grenze je Richtung
+const SPAR_S=170;   // Vollständigkeit vor Tempo; danach Spar-Suche beenden und Gefundenes zeigen // je Richtung; der offene Server braucht unter Last bis ~40 s
 
 const fmtT=iso=>new Date(iso).toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"});
 const fmtD=iso=>new Date(iso).toLocaleDateString("de-DE",{timeZone:"Europe/Berlin",weekday:"short",day:"numeric",month:"short"});
@@ -717,15 +717,47 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     const trips=new Map();
     for(const x of its)for(const l of x.L)if(isFV(l)&&!isFlix(l)&&l.tripId&&!trips.has(l.tripId))trips.set(l.tripId,l);
     const legs=[...trips.values()]; // alle ICE-Fahrten – Laufweg-Abfragen sind schnell
+    const runOf=t=>{const out=[];for(const x of (t.legs||[]).filter(x=>x.mode!=="WALK"))for(const st of [x.from,...(x.intermediateStops||[]),x.to])if(!out.length||out[out.length-1].name!==st.name)out.push(st);return out};
     let done=0;prog(.2,`Laufwege der ICEs (0 von ${legs.length})`);
-    const runs=await Promise.all(legs.map(l=>api("/v5/trip",{tripId:l.tripId},ssig).then(t=>{
-      const out=[];for(const x of (t.legs||[]).filter(x=>x.mode!=="WALK"))for(const st of [x.from,...(x.intermediateStops||[]),x.to])if(!out.length||out[out.length-1].name!==st.name)out.push(st);return out;
-    }).catch(soft).finally(()=>{done++;prog(.2+.25*done/legs.length,`Laufwege der ICEs (${done} von ${legs.length})`)})));
+    const runs=await Promise.all(legs.map(l=>api("/v5/trip",{tripId:l.tripId},ssig).then(runOf)
+      .catch(soft).finally(()=>{done++;prog(.2+.15*done/legs.length,`Laufwege der ICEs (${done} von ${legs.length})`)})));
     // Lage eines Halts auf der Strecke Start→Ziel (0 = Start, 1 = Ziel)
     const ax=A.st.lon*.63,ay=A.st.lat,bx=B.st.lon*.63,by=B.st.lat,ab=(bx-ax)**2+(by-ay)**2;
     const pos=st=>((st.lon*.63-ax)*(bx-ax)+(st.lat-ay)*(by-ay))/ab;
     const near=(st,P)=>(st.lat-P.lat)**2+((st.lon-P.lon)*.63)**2<2e-4;
-    const plans=[];
+    const km=(a,b)=>Math.sqrt((a.lat-b.lat)**2+((a.lon-b.lon)*.63)**2)*111,MAXKM=200;
+    // Abstand eines Halts von der Luftlinie Start→Ziel: Umstiege weit abseits (Köln, Nürnberg bei Lübeck→Frankfurt) sind nie sinnvoll
+    const offKm=st=>Math.abs((st.lon*.63-ax)*(by-ay)-(st.lat-ay)*(bx-ax))/Math.sqrt(ab)*111,CORR=Math.max(80,.3*km(A.st,B.st));
+    /* 2b) Weitere ICEs über die Abfahrtstafeln der Einstiegsbahnhöfe: findet auch Züge, die gar nicht
+           bis zum Ziel fahren und darum in der ersten Suche fehlen (z. B. ICE Hamburg → Fulda → München). */
+    const hubs=new Map();
+    runs.forEach(run=>{for(const st of run||[]){
+      if(st.lat==null||!st.stopId||hubs.has(st.name))continue;const p=pos(st);
+      if(p>=-.02&&p<=.6&&km(st,A.st)<=MAXKM&&offKm(st)<=CORR)hubs.set(st.name,st)}});
+    const t1=new Date(addMin(tIso,-30)),t2=new Date(addMin(tIso,WIN_MIN+150)),extra=new Map();
+    prog(.36,`Weitere ICEs an ${hubs.size} Bahnhöfen`);
+    await Promise.all([...hubs.values()].map(h=>api("/v5/stoptimes",{stopId:h.stopId,time:t1.toISOString(),n:80,mode:"HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL"},ssig).then(d=>{
+      for(const x of d.stopTimes||[]){
+        const dep=new Date(x.place?.departure||0);
+        if(dep<t1||dep>t2||x.cancelled||x.tripCancelled||x.place.pickupType==="NOT_ALLOWED")continue;
+        if(trips.has(x.tripId)||extra.has(x.tripId)||!isFV(x)||isFlix(x))continue;
+        if(x.tripTo?.lat!=null&&pos(x.tripTo)<pos(h)+.15)continue; // fährt nicht Richtung Ziel
+        extra.set(x.tripId,x);
+      }}).catch(soft)));
+    const xs=[...extra.values()];done=0;
+    const xruns=await Promise.all(xs.map(x=>api("/v5/trip",{tripId:x.tripId},ssig).then(runOf)
+      .catch(soft).finally(()=>{done++;prog(.38+.07*done/xs.length,`Weitere ICEs prüfen (${done} von ${xs.length})`)})));
+    xs.forEach((x,j)=>{
+      const run=xruns[j];if(!run||!run.length)return;
+      const iF=run.findIndex(st=>st.name===x.place.name);if(iF<0)return;
+      let iT=-1,best=9;
+      run.forEach((st,i)=>{if(i<=iF||st.lat==null||!st.arrival)return;const p=pos(st);if(p>=.4&&p<=1.15&&Math.abs(1-p)<best){best=Math.abs(1-p);iT=i}});
+      if(iT<0)return;
+      legs.push({mode:x.mode,displayName:x.displayName,routeShortName:x.routeShortName,tripShortName:x.tripShortName,agencyName:x.agencyName,
+        xtra:true,tripId:x.tripId,headsign:x.headsign,from:run[iF],to:run[iT],startTime:run[iF].departure,endTime:run[iT].arrival,intermediateStops:[]});
+      runs.push(run);
+    });
+    const plans=[],knownB=new Set(),knownA=new Set();
     legs.forEach((leg,j)=>{
       const run=runs[j];if(!run||!run.length)return;
       const iF=run.findIndex(s=>s.name===leg.from.name),iT=run.findIndex(s=>s.name===leg.to.name);
@@ -740,18 +772,23 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
       });
       bi=bi.sort((x,y)=>Math.abs(pos(run[x]))-Math.abs(pos(run[y]))).slice(0,8);
       ai=ai.sort((x,y)=>Math.abs(1-pos(run[x]))-Math.abs(1-pos(run[y]))).slice(0,8);
+      // Zusatz-ICEs (2b) nur an Bahnhöfen, die ohnehin geprüft werden, plus eigener Ein-/Ausstieg –
+      // sonst explodiert die Zahl der Regionalzug-Abfragen und der Server schafft es nicht mehr
+      if(leg.xtra){bi=bi.filter(i=>i===iF||knownB.has(run[i].name));ai=ai.filter(i=>i===iT||knownA.has(run[i].name))}
+      else{for(const i of bi)knownB.add(run[i].name);for(const i of ai)knownA.add(run[i].name)}
       plans.push({leg,run,bi,ai});
     });
     /* 3) Regionalzüge – vollständig für JEDE ICE-Abfahrt:
           a) eine Abfrage pro Umstiegsbahnhof (liefert meist schon mehrere Züge),
           b) für jede ICE-Zeit prüfen, ob ein passender Regionalzug dabei ist – sonst gezielt nachfragen.
        Regionalzug-Anteil höchstens ~200 km (sonst nicht sinnvoll und für den Server sehr teuer). */
-    const km=(a,b)=>Math.sqrt((a.lat-b.lat)**2+((a.lon-b.lon)*.63)**2)*111,MAXKM=200;
     const need=side=>{
       const m=new Map(),P=side==="pre"?A.st:B.st;
       for(const {run,bi,ai} of plans)for(const i of (side==="pre"?bi:ai)){
         const st=run[i],t=side==="pre"?st.departure:st.arrival;
-        if(near(st,P)||km(st,P)>MAXKM)continue;
+        if(near(st,P)||km(st,P)>MAXKM||offKm(st)>CORR)continue;
+        // Einstieg muss zur Suchzeit passen (Zubringer frühestens 90 min vor Wunschzeit, Abfahrt im Fenster)
+        if(side==="pre"&&(new Date(t)<new Date(addMin(tIso,-60))||new Date(t)>new Date(addMin(tIso,WIN_MIN+150))))continue;
         const e=m.get(st.name)||{st,d:km(st,P),t:new Set()};e.t.add(t);m.set(st.name,e);
       }
       return [...m.values()].sort((x,y)=>x.d-y.d);
@@ -765,18 +802,52 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     const tick=()=>{done++;prog(.45+.45*Math.min(1,done/Math.max(1,total())),`Regionalzüge zu den Umstiegen (${done} von ${total()})`);refresh()};
     let lastRefresh=0;const refresh=(force)=>{if(!force&&Date.now()-lastRefresh<1500)return;lastRefresh=Date.now();buildCombos();onPartial(pack(true))};
     prog(.45,`Regionalzüge zu den Umstiegen (0 von ${total()})`);
-    // a) je Bahnhof eine Abfrage
+    /* a0) Direkte Regionalzüge (ohne Umstieg) schnell über die Abfahrtstafel am Start und die Ankunftstafel am Ziel:
+           je Richtung eine Tafel + Laufwege. Die langsame Routensuche braucht es dann nur noch dort, wo kein direkter Zug passt. */
+    const stopA=its.map(x=>x.L[0].from).find(f=>f.stopId&&near(f,A.st)),stopB=its.map(x=>x.L[x.L.length-1].to).find(f=>f.stopId&&near(f,B.st));
+    const regLeg=(x,run,i,j)=>({mode:x.mode,displayName:x.displayName,routeShortName:x.routeShortName,tripShortName:x.tripShortName,agencyName:x.agencyName,
+      tripId:x.tripId,headsign:x.headsign,from:run[i],to:run[j],startTime:run[i].departure,endTime:run[j].arrival,intermediateStops:run.slice(i+1,j)});
+    const direct=async side=>{
+      const pre=side==="pre",S=pre?stopA:stopB,N=pre?preN:postN,M=pre?preR:postR;if(!S||!N.length)return;
+      const ts=N.flatMap(e=>[...e.t].map(t=>new Date(t).getTime())),lo=pre?Math.min(...ts)-150*60000:Math.min(...ts),hi=pre?Math.max(...ts):Math.max(...ts)+150*60000;
+      const d=await api("/v5/stoptimes",{stopId:S.stopId,time:new Date(lo).toISOString(),n:250,mode:"REGIONAL_RAIL,REGIONAL_FAST_RAIL",...(pre?{}:{arriveBy:true,direction:"LATER"})},ssig);
+      const seen=new Set(),xs=(d.stopTimes||[]).filter(x=>{
+        const t=new Date((pre?x.place.departure:x.place.arrival)||0).getTime();
+        if(t<lo||t>hi||x.cancelled||x.tripCancelled||seen.has(x.tripId))return false;
+        const o=pre?x.tripTo:x.tripFrom;if(o?.lat!=null&&(pre?pos(o)<.03:pos(o)>.97))return false; // fährt in die falsche Richtung
+        seen.add(x.tripId);return true});
+      await Promise.all(xs.map(x=>api("/v5/trip",{tripId:x.tripId},ssig).then(runOf).then(run=>{
+        const k=run.findIndex(st=>near(st,S));if(k<0)return;
+        for(const e of N){
+          const i=run.findIndex((st,i)=>(pre?i>k&&st.arrival:i<k&&st.departure)&&near(st,e.st));if(i<0)continue;
+          const leg=pre?regLeg(x,run,k,i):regLeg(x,run,i,k);
+          add(M,e.st.name,[{legs:[leg],startTime:leg.startTime,endTime:leg.endTime}]);
+        }}).catch(soft)));
+    };
+    prog(.45,"Direkte Regionalzüge");
+    await Promise.all([direct("pre").catch(soft),direct("post").catch(soft)]);
+    // a) je Bahnhof ohne direkten Zug eine Abfrage (Umsteige-Verbindungen wie RE3 → RE2)
+    const has=(M,e)=>(M.get(e.st.name)||[]).length>0;
     await Promise.all([
-      ...preN.map(e=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mx=Math.max(...ts),n=Math.min(6,e.t.size+1);
-        return plan(A.place,`${e.st.lat},${e.st.lon}`,new Date(mx-8*60000).toISOString(),{arr:true,nv:true,n,sig:ssig}).then(r=>add(preR,e.st.name,r)).catch(soft).finally(tick)}),
-      ...postN.map(e=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mn=Math.min(...ts),n=Math.min(6,e.t.size+1);
-        return plan(`${e.st.lat},${e.st.lon}`,B.place,new Date(mn+4*60000).toISOString(),{nv:true,n,sig:ssig}).then(r=>add(postR,e.st.name,r)).catch(soft).finally(tick)})]);
+      ...preN.map(e=>has(preR,e)?Promise.resolve().then(tick):(()=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mx=Math.max(...ts),n=Math.min(6,e.t.size+1);
+        return plan(A.place,`${e.st.lat},${e.st.lon}`,new Date(mx-8*60000).toISOString(),{arr:true,nv:true,n,sig:ssig}).then(r=>add(preR,e.st.name,r)).catch(soft).finally(tick)})()),
+      ...postN.map(e=>has(postR,e)?Promise.resolve().then(tick):(()=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mn=Math.min(...ts),n=Math.min(6,e.t.size+1);
+        return plan(`${e.st.lat},${e.st.lon}`,B.place,new Date(mn+4*60000).toISOString(),{nv:true,n,sig:ssig}).then(r=>add(postR,e.st.name,r)).catch(soft).finally(tick)})())]);
     // b) Lücken gezielt schließen: für jede ICE-Zeit ohne passenden Regionalzug eine eigene Abfrage
-    const fill=[];
-    for(const e of preN)for(const dep of e.t)if(!fitsPre(preR.get(e.st.name),dep))fill.push({d:e.d,f:()=>plan(A.place,`${e.st.lat},${e.st.lon}`,addMin(dep,-8),{arr:true,nv:true,n:2,sig:ssig}).then(r=>add(preR,e.st.name,r))});
-    for(const e of postN)for(const arr of e.t)if(!fitsPost(postR.get(e.st.name),arr))fill.push({d:e.d,f:()=>plan(`${e.st.lat},${e.st.lon}`,B.place,addMin(arr,4),{nv:true,n:2,sig:ssig}).then(r=>add(postR,e.st.name,r))});
-    gaps=fill.length;fill.sort((x,y)=>x.d-y.d);
-    await Promise.all(fill.map(q=>q.f().catch(soft).finally(tick)));
+    /* Pro Bahnhof nacheinander: nach jeder Antwort neu prüfen, denn eine Abfrage deckt oft mehrere ICE-Zeiten ab.
+       Bahnhöfe ohne jeden Regionalweg (Abfrage a leer) überspringen – dort findet auch Nachfragen nichts. */
+    const fillAt=async(e,side)=>{
+      const M=side==="pre"?preR:postR,k=e.st.name;
+      if(!(M.get(k)||[]).length) return;
+      for(const t of [...e.t].sort()){
+        if(side==="pre"?fitsPre(M.get(k),t):fitsPost(M.get(k),t)) continue;
+        gaps++;
+        const q=side==="pre"?plan(A.place,`${e.st.lat},${e.st.lon}`,addMin(t,-8),{arr:true,nv:true,n:3,sig:ssig})
+                           :plan(`${e.st.lat},${e.st.lon}`,B.place,addMin(t,4),{nv:true,n:3,sig:ssig});
+        await q.then(r=>add(M,k,r)).catch(soft).finally(tick);
+      }
+    };
+    await Promise.all([...preN.map(e=>fillAt(e,"pre")),...postN.map(e=>fillAt(e,"post"))]);
     // 4) Kombinationen (wird auch für Zwischenstände aufgerufen)
     function buildCombos(){
       spar.length=0;spar.push(...sparBase);
@@ -1182,7 +1253,7 @@ function stop(reason){if(ctrl&&!ctrl.signal.aborted)ctrl.abort(reason);clearTime
 function showErr(title,msg=""){$("err-title").textContent=title;$("err-msg").textContent=msg;$("err-msg").hidden=!msg;$("err").hidden=false}
 function rtOn(){return $("t-rt").getAttribute("aria-pressed")==="true"}
 function setTrip(rt){for(const [id,on] of [["t-rt",rt],["t-one",!rt]]){$(id).setAttribute("aria-pressed",String(on));$(id).classList.toggle("active",on)}$("ret").hidden=!rt}
-const EST=()=>DIRS.length>1?"dauert ca. 1–3 min":"dauert ca. 30–90 s";
+const EST=()=>DIRS.length>1?"dauert ca. 2–5 min":"dauert ca. 1–3 min";
 
 async function search(e,only){
   e?.preventDefault?.();
