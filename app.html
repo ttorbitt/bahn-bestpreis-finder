@@ -380,8 +380,8 @@ async function takt(fromPlace,toPlace,aroundIso,sig){
 }
 /* Pünktlichkeit pro Zug (Vormonat) aus punct.json – nur auf der eigenständigen Seite, sonst einfach ohne */
 let PUNCT=null;
-const punctReady=fetch("punct.json").then(r=>r.ok?r.json():null).then(d=>{PUNCT=d}).catch(()=>{});
-const punctMonth=()=>PUNCT?new Date(PUNCT.m+"-15").toLocaleDateString("de-DE",{month:"long"}):"";
+const punctReady=fetch("punct.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{PUNCT=d}).catch(()=>{});
+const punctMonth=()=>{const d=new Date((PUNCT?.m||"")+"-15T12:00:00Z");return isNaN(d)?"Vormonat":d.toLocaleDateString("de-DE",{month:"long"})};
 function punctOf(l){
   if(!PUNCT) return null;
   const name=legName(l).replace(/\s+/g," ");
