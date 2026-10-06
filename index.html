@@ -913,6 +913,13 @@ function normalLink(v,A,B){
   if(v.iceEnd<v.L.length-1){const s=nearestStation(v.ice.to.lat,v.ice.to.lon);if(s&&s.eva!==B.st.eva&&!via.some(x=>x.eva===s.eva))via.push(s)}
   return dbLink(A.st,B.st,v.start,{via});
 }
+const ROWV=new Map();
+function detailHTML({v,A,B,l}){
+  return `<p class="why">${esc(v.risk.why)}</p>
+    ${timelineHTML(v)}
+    <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
+    <p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p>`;
+}
 /* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
 function rowHTML(v,A,B,tags){
   const l=linkFor(v,A,B);
@@ -923,18 +930,14 @@ function rowHTML(v,A,B,tags){
     ?`<span class="tk">${ico("train",14)}<b>${esc(v.ice.name)}</b> ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))}</span>`
     :v.kind==="A"?`<span class="tk">Ein Ticket für alles</span>`:`<span class="tk">Nur Deutschland-Ticket</span>`;
   const id="d"+Math.random().toString(36).slice(2,9);
+  ROWV.set(id,{v,A,B,l}); // Details werden erst beim Aufklappen gebaut
   return `<li class="row">
     <input class="pick" type="checkbox" aria-label="Zum Vergleich auswählen" data-hrefs="${esc(JSON.stringify(hrefs))}"${SEL.has(l.href)?" checked":""}>
     <div class="row-main">
       <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}</div>
       ${chainHTML(v)}
       <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
-      <div class="row-detail" id="${id}" hidden>
-        <p class="why">${esc(v.risk.why)}</p>
-        ${timelineHTML(v)}
-        <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
-        <p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p>
-      </div>
+      <div class="row-detail" id="${id}" hidden></div>
     </div>
     <div class="acts">
       <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?"ICE-Ticket":"bahn.de"}${ico("open",14)}</a>
@@ -985,6 +988,7 @@ function dirHTML(r){
 /* Zustand der aktuellen Suche: DIRS = Richtungen, RES[i] = Ergebnis oder null */
 let DIRS=[],RES=[],TAB=0,LOADING=false;
 function renderOut(){
+  ROWV.clear();
   if(!DIRS.length){$("out").innerHTML="";SEL.clear();paintSelBar();return}
   const rt=DIRS.length>1,d0=DIRS[0];
   let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div>`;
@@ -1008,7 +1012,9 @@ function renderOut(){
   });
   // Aufklappen per Pfeil
   for(const t of document.querySelectorAll("#out .tgl")) t.addEventListener("click",()=>{
-    const d=$(t.getAttribute("aria-controls")),open=d.hidden;d.hidden=!open;t.setAttribute("aria-expanded",String(open));
+    const d=$(t.getAttribute("aria-controls")),open=d.hidden;
+    if(open&&!d.innerHTML&&ROWV.has(d.id)) d.innerHTML=detailHTML(ROWV.get(d.id));
+    d.hidden=!open;t.setAttribute("aria-expanded",String(open));
   });
   $("later-top")?.addEventListener("click",()=>loadMore(TAB,1));
   paintSelBar();
