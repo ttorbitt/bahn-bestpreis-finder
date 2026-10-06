@@ -243,6 +243,14 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .tip{font-size:.88rem;color:var(--muted-foreground)}
 .others>summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--muted-foreground)}
 .others[open]>summary{margin-bottom:10px}
+/* Filter und Nachlade-Anzeige */
+.filters{display:grid;gap:6px}
+.fchips{display:flex;gap:6px;overflow-x:auto;align-items:center;padding-bottom:2px;scrollbar-width:thin}
+.fchips .fl{flex:none;font-size:.8rem;color:var(--muted-foreground);margin-right:2px}
+.fchips .ds-chip{flex:none;white-space:nowrap}
+.fchips .n{color:var(--muted-foreground);font-size:.75rem}
+.fchips .ds-chip[aria-pressed="true"] .n{color:inherit}
+.loadmore{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.9rem;color:var(--muted-foreground);padding:10px;border:1px dashed var(--border);border-radius:1rem}
 /* Stundenübersicht und Gruppen */
 .hours{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
 .hour{flex:none;display:grid;grid-template-columns:auto auto;align-items:center;gap:2px 8px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px 12px;text-decoration:none!important;color:var(--foreground)!important;box-shadow:var(--shadow-xs)}
@@ -262,6 +270,14 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .toolbar .count{font-weight:600;margin-right:auto}
 .sort-sel{font:500 .85rem var(--font-sans);color:var(--foreground);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:.4rem .9rem;max-width:100%;box-shadow:var(--shadow-xs)}
 .help-btn{margin-left:0}
+.price{border:1px solid var(--border);border-radius:1rem;background:var(--card);font-size:.88rem}
+.price summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;list-style:none}
+.price summary::-webkit-details-marker{display:none}
+.price summary>span{flex:1;min-width:0}
+.price summary svg{transition:transform .2s}
+.price[open] summary svg{transform:rotate(180deg)}
+.price-body{padding:0 14px 12px;display:grid;gap:8px;color:var(--muted-foreground)}
+.price-body ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .help-card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:12px 14px;display:grid;gap:8px;font-size:.88rem;color:var(--muted-foreground)}
 .help-card b{color:var(--foreground);font-weight:600}
 .sw{display:inline-block;width:16px;height:9px;border-radius:3px;vertical-align:1px}
@@ -577,17 +593,17 @@ try{const t=JSON.parse(localStorage.getItem(TKEY));if(t&&AGES[t.age]&&BCS[t.bc]&
 const rParam=()=>`${AGES[TRAV.age].code}:${BCS[TRAV.bc].code}:${TRAV.bc==="0"?"KLASSENLOS":"KLASSE_"+TRAV.kl}:1`;
 const travLabel=()=>`1 Person, ${AGES[TRAV.age].label}${TRAV.bc!=="0"?", "+BCS[TRAV.bc].label:""}${TRAV.kl==="1"?", 1. Klasse":""}`;
 const stId=s=>`A=1@O=${s.name}@X=${Math.round(s.lon*1e6)}@Y=${Math.round(s.lat*1e6)}@U=80@L=${s.eva}@B=1@`;
-function dbLink(from,to,iso,{dltv=false,dlt=false,via=[]}={}){
+function dbLink(from,to,iso,{dltv=false,dlt=false,via=[],bp=false}={}){
   const id=s=>encodeURIComponent(`A=1@O=${s.name}@L=${s.eva}@`);
   return "https://www.bahn.de/buchung/fahrplan/suche#"+[
     "sts=true",`so=${encodeURIComponent(from.name)}`,`zo=${encodeURIComponent(to.name)}`,`kl=${TRAV.kl}`,`r=${rParam()}`,
     `soid=${id(from)}`,`zoid=${id(to)}`,"sot=ST","zot=ST",`soei=${from.eva}`,`zoei=${to.eva}`,
-    `hd=${berlinLocal(iso)}`,"hza=D",`hz=${encodeURIComponent(JSON.stringify(via.map(s=>[stId(s),s.name,0])))}`,"ar=false","s=false","d=false","fm=false","bp=false",
+    `hd=${berlinLocal(iso)}`,"hza=D",`hz=${encodeURIComponent(JSON.stringify(via.map(s=>[stId(s),s.name,0])))}`,"ar=false","s=false","d=false","fm=false",`bp=${bp}`,
     `dlt=${dlt}`,"nfv=false",`dltv=${dltv}`].join("&");
 }
 /* Hin- und Rückfahrt in einem bahn.de-Link (Gesamtstrecke, ohne D-Ticket-Häkchen) */
 const VM="00,01,02,03,04,05,06,07,08,09";
-const dbLinkRT=(from,to,iso1,iso2)=>dbLink(from,to,iso1).replace("&hz=%5B%5D",`&hz=%5B%5D&rd=${berlinLocal(iso2)}&rza=D&rz=%5B%5D&rv=${VM}`);
+const dbLinkRT=(from,to,iso1,iso2)=>dbLink(from,to,iso1).replace(/&hz=[^&]*/,m=>m+`&rd=${berlinLocal(iso2)}&rza=D&rz=%5B%5D&rv=${VM}`);
 const placeOf=s=>({name:s.name,place:`${s.lat},${s.lon}`,st:s});
 const RAIL="HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,"+NV; // ohne Fernbus (COACH): dort gilt kein D-Ticket
 async function plan(from,to,time,{arr=false,nv=false,n=5,win=0,sig}={}){
@@ -651,7 +667,7 @@ function riskOf(v){
   return {lvl,t,why:why.join(" ")+after};
 }
 const sigOf=v=>v.kind+v.L.map(l=>legName(l)+l.startTime+l.endTime).join("|");
-const uniqIt=arr=>{const m=new Map();for(const x of arr){const k=x.L.map(l=>legName(l)+l.startTime).join("|");if(!m.has(k))m.set(k,x)}return [...m.values()]};
+const uniqIt=arr=>{const m=new Map();for(const x of arr){const k=x.L.map(l=>legName(l)+l.startTime+l.to.name+l.endTime).join("|");if(!m.has(k))m.set(k,x)}return [...m.values()]};
 const uniqV=arr=>{const m=new Map();for(const v of arr){const k=sigOf(v);if(!m.has(k)||m.get(k).dur>v.dur)m.set(k,v)}return [...m.values()]};
 function mkSpar(L,start,end,ice,iceIdx,iceEnd=iceIdx){
   return {kind:"S",L,start,end,dur:mins(start,end),transfers:L.length-1,fvMin:mins(ice.dep,ice.arr),ice,iceIdx,iceEnd,
@@ -698,7 +714,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     // 2) Laufwege
     const trips=new Map();
     for(const x of its)for(const l of x.L)if(isFV(l)&&!isFlix(l)&&l.tripId&&!trips.has(l.tripId))trips.set(l.tripId,l);
-    const legs=[...trips.values()].slice(0,12);
+    const legs=[...trips.values()]; // alle ICE-Fahrten – Laufweg-Abfragen sind schnell
     let done=0;prog(.2,`Laufwege der ICEs (0 von ${legs.length})`);
     const runs=await Promise.all(legs.map(l=>api("/v5/trip",{tripId:l.tripId},ssig).then(t=>{
       const out=[];for(const x of (t.legs||[]).filter(x=>x.mode!=="WALK"))for(const st of [x.from,...(x.intermediateStops||[]),x.to])if(!out.length||out[out.length-1].name!==st.name)out.push(st);return out;
@@ -716,9 +732,9 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
       run.forEach((s,i)=>{
         if(s.lat==null)return;const p=pos(s);
         // Einstieg: eigener Halt oder Halte zwischen Start und Mitte (nicht „rückwärts“ wie Kiel bei Fahrt nach Süden)
-        if(s.departure&&i<iT&&(i===iF||(i<=iF+2&&p>=0&&p<=.6)))bi.push(i);
+        if(s.departure&&i<iT&&(i===iF||(p>=0&&p<=.6)))bi.push(i);
         // Ausstieg: eigener Halt oder Halte zwischen Mitte und knapp hinter dem Ziel
-        if(s.arrival&&i>iF&&(i===iT||(i>=iT-2&&p>=.4&&p<=1.15)))ai.push(i);
+        if(s.arrival&&i>iF&&(i===iT||(p>=.4&&p<=1.15)))ai.push(i);
       });
       bi=bi.sort((x,y)=>Math.abs(pos(run[x]))-Math.abs(pos(run[y]))).slice(0,8);
       ai=ai.sort((x,y)=>Math.abs(1-pos(run[x]))-Math.abs(1-pos(run[y]))).slice(0,8);
@@ -741,8 +757,8 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     const preN=need("pre"),postN=need("post");
     const preR=new Map(),postR=new Map();
     const add=(M,k,r)=>M.set(k,uniqIt([...(M.get(k)||[]),...r.filter(nvOnlyOk).map(analyze)]));
-    const fitsPre=(list,dep)=>(list||[]).some(x=>mins(x.end,dep)>=8&&mins(x.end,dep)<=90);
-    const fitsPost=(list,arr)=>(list||[]).some(x=>mins(arr,x.start)>=4&&mins(arr,x.start)<=90);
+    const fitsPre=(list,dep)=>(list||[]).some(x=>mins(x.end,dep)>=8&&mins(x.end,dep)<=120);
+    const fitsPost=(list,arr)=>(list||[]).some(x=>mins(arr,x.start)>=4&&mins(arr,x.start)<=120);
     const total=()=>preN.length+postN.length+gaps;let gaps=0;done=0;
     const tick=()=>{done++;prog(.45+.45*Math.min(1,done/Math.max(1,total())),`Regionalzüge zu den Umstiegen (${done} von ${total()})`);refresh()};
     let lastRefresh=0;const refresh=(force)=>{if(!force&&Date.now()-lastRefresh<1500)return;lastRefresh=Date.now();buildCombos();onPartial(pack(true))};
@@ -762,7 +778,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     // 4) Kombinationen (wird auch für Zwischenstände aufgerufen)
     function buildCombos(){
       spar.length=0;spar.push(...sparBase);
-      const earliest=new Date(addMin(tIso,-45));
+      const earliest=new Date(addMin(tIso,-90));
       for(const {leg,run,bi,ai} of plans)for(const ib of bi)for(const ia of ai){
         if(ia<=ib)continue;
         const bs=run[ib],es=run[ia],dep=bs.departure,arr=es.arrival;
@@ -771,15 +787,15 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
         let preIt=null,safer=null,feederTakt=null,postIt=null,postTakt=null;
         if(pre!=="none"){
           const ok=pre.filter(x=>mins(x.end,dep)>=8&&new Date(x.start)>=earliest).sort((x,y)=>new Date(y.end)-new Date(x.end));
-          preIt=ok[0];if(!preIt||mins(preIt.end,dep)>90)continue;feederTakt=taktOf(pre);
+          preIt=ok[0];if(!preIt||mins(preIt.end,dep)>120)continue;feederTakt=taktOf(pre);
           if(mins(preIt.end,dep)<30){const s2=ok.find(x=>mins(x.end,dep)>=30);if(s2)safer=`${shortName(s2.L[0])} um ${fmtT(s2.L[0].startTime)} nehmen (dann ${mins(s2.end,dep)} min zum Umsteigen)`}
         }
-        if(post!=="none"){postIt=post.filter(x=>mins(arr,x.start)>=4).sort((x,y)=>new Date(x.end)-new Date(y.end))[0];if(!postIt||mins(arr,postIt.start)>90)continue;postTakt=taktOf(post)}
+        if(post!=="none"){postIt=post.filter(x=>mins(arr,x.start)>=4).sort((x,y)=>new Date(x.end)-new Date(y.end))[0];if(!postIt||mins(arr,postIt.start)>120)continue;postTakt=taktOf(post)}
         if(!preIt&&!postIt)continue; // nur ICE = ganze Reise
         const ice={...leg,from:{...leg.from,name:bs.name,lat:bs.lat,lon:bs.lon},to:{...leg.to,name:es.name,lat:es.lat,lon:es.lon},startTime:dep,endTime:arr,intermediateStops:[]};
         const L=[...(preIt?preIt.L:[]),ice,...(postIt?postIt.L:[])];
         const start=preIt?preIt.start:dep,end=postIt?postIt.end:arr;
-        if(mins(start,end)>fastest+150)continue;
+        if(mins(start,end)>fastest+240)continue;
         const v=mkSpar(L,start,end,{from:bs,to:es,dep,arr,name:legName(leg)},preIt?preIt.L.length:0);
         Object.assign(v,{feederTakt,postTakt,safer});spar.push(v);
       }
@@ -853,11 +869,12 @@ const scoreOf=v=>v.dur+RISKPEN[v.risk.lvl]+10*v.transfers+(v.kind==="S"?Math.rou
 /* Hilfe in Alltagssprache (Rechnung für „Empfohlen“ steht oben bei scoreOf) */
 const helpHTML=()=>`<div class="help-card" id="list-help" hidden>
   <p><b>So liest du eine Verbindung:</b> <span class="sw nv"></span> Regionalzug – fährst du mit dem Deutschland-Ticket. <span class="sw fv"></span> ICE – dafür kaufst du ein Ticket. <span class="sw wait"></span> Umsteigen, die Zahl sind Minuten. Rot umrandet heißt: knapp.</p>
-  <p><b>Empfohlen</b> zeigt die Verbindungen nach Abfahrtsstunde. In jeder Stunde steht die beste oben – schnell, sicher und meist günstig. Die Kacheln ganz oben zeigen je Stunde die beste Fahrzeit; der Punkt ist grün, gelb oder rot je nach Umsteige-Risiko.</p>
+  <p><b>Empfohlen</b> zeigt die Verbindungen nach Abfahrtsstunde. In jeder Stunde steht die beste oben – schnell, sicher und meist günstig. Darunter je eine Variante mit anderer ICE-Strecke (z. B. nur bis Fulda), weil ein kürzeres ICE-Stück oft billiger ist. Die Kacheln ganz oben zeigen je Stunde die beste Fahrzeit; der Punkt ist grün, gelb oder rot je nach Umsteige-Risiko.</p>
   ${MODE==="spar"?`<p><b>„ICE-Ticket“ und „Normal“:</b> „ICE-Ticket“ zeigt den Preis nur für den ICE – den Rest fährst du mit dem Deutschland-Ticket. „Normal“ zeigt dieselbe Fahrt mit einem Ticket für alles. So siehst du, wie viel du sparst.</p>`:""}
   <p><b>Mehrere Preise vergleichen:</b> Hake Verbindungen an und tippe auf „Alle öffnen“. Beim ersten Mal fragt dein Browser, ob er mehrere Fenster öffnen darf – bitte erlauben.</p>
 </div>`;
-const SEL=new Map();let SHOWALL=false; // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
+const SEL=new Map();let SHOWALL=false,APPEND=0; // APPEND: -1 lädt frühere, +1 spätere Zeiten
+const FILT={from:"",to:""}; // Filter „ICE ab“ / „ICE bis“ im Spar-Reiter // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
@@ -945,8 +962,70 @@ function rowHTML(v,A,B,tags){
 }
 const skelRows=n=>`<ul class="rows ds-card" aria-hidden="true">${Array.from({length:n},()=>`<li class="row"><span></span><div class="row-main"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l4"></div></div></li>`).join("")}</ul>`;
 
+/* Je Stunde oben: die Beste plus die beste jeder anderen ICE-Strecke (z. B. Hamburg→Fulda neben Hamburg→Frankfurt),
+   damit unterschiedliche Spar-Ideen nicht im Eingeklappten verschwinden. Höchstens 4. */
+/* Preis-Check: Wann wird es wohl teurer? Die DB verrät ihre Kontingente nicht – das ist eine Faustregel
+   aus Vorlauf, Wochentag, Uhrzeit und Feiertagen (Spartipps laut bahn.de), keine Vorhersage echter Preise. */
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=(h+l-7*m+114)%31+1;return Date.UTC(y,mo-1,da)}
+function holidayNear(ymd){
+  const [y,mo,d]=ymd.split("-").map(Number),t=Date.UTC(y,mo-1,d),day=864e5,E=easter(y);
+  if((mo===12&&d>=18)||(mo===1&&d<=6)) return "Weihnachten/Neujahr";
+  const H=[[Date.UTC(y,0,1),"Neujahr"],[E-2*day,"Ostern"],[E+day,"Ostern"],[Date.UTC(y,4,1),"1. Mai"],[E+39*day,"Christi Himmelfahrt"],[E+50*day,"Pfingsten"],[Date.UTC(y,9,3),"Tag der Deutschen Einheit"]];
+  for(const [h,n] of H) if(Math.abs(t-h)<=2*day) return n;
+  return "";
+}
+function priceCheck(iso){
+  const loc=berlinLocal(iso),ymd=loc.slice(0,10),hr=+loc.slice(11,13);
+  const [y,mo,d]=ymd.split("-").map(Number),wd=new Date(Date.UTC(y,mo-1,d)).getUTCDay();
+  const days=Math.round((Date.UTC(y,mo-1,d)-Date.UTC(...(()=>{const n=berlinLocal(new Date().toISOString()).slice(0,10).split("-").map(Number);return [n[0],n[1]-1,n[2]]})()))/864e5);
+  const why=[];let lvl=0;
+  const peak=(wd===5&&hr>=12)||(wd===0&&hr>=12)||(wd===1&&hr<10),hol=holidayNear(ymd),edge=hr<7||hr>=19;
+  if(peak){lvl++;why.push(wd===5?"Freitagnachmittag ist sehr gefragt":wd===0?"Sonntagnachmittag ist sehr gefragt":"Montagmorgen ist sehr gefragt")}
+  if(hol){lvl++;why.push(`rund um ${hol} reisen viele`)}
+  if(days<=7){lvl+=2;why.push(days<=1?"die Fahrt ist schon morgen oder heute":`nur noch ${days} Tage bis zur Fahrt`)}
+  else if(days<=21){lvl++;why.push(`noch ${days} Tage bis zur Fahrt`)}
+  else why.push(`noch ${days} Tage bis zur Fahrt`);
+  lvl=Math.min(2,lvl);
+  const head=["Kein Zeitdruck","Bald buchen","Am besten heute buchen"][lvl];
+  const txt=[`Günstige Sparpreise sind meist noch da. Sie werden mit jedem verkauften Platz teurer – früh buchen lohnt trotzdem.`,
+    `Die billigsten Sparpreise gehen hier oft in den nächsten Tagen weg.`,
+    `Die billigsten Sparpreise sind hier oft schon weg oder gehen sehr bald weg.`][lvl];
+  return {lvl,head,txt,why,edge,days};
+}
+function priceHTML(r){
+  const p=priceCheck(r.from),cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  if(p.days<0) return "";
+  const bp=esc(dbLink(r.A.st,r.B.st,r.from,{bp:true}));
+  return `<details class="price l${p.lvl}"><summary><i class="hdot l${p.lvl}"></i><span><b>Preis-Check: ${p.head}</b> <span class="ds-supporting">${esc(cap(p.why.join(", ")))}</span></span>${ico("down",16)}</summary>
+  <div class="price-body">
+    <p>${p.txt} Einen festen Termin für Preiserhöhungen gibt es nicht – die Bahn verkauft je Zug eine begrenzte Zahl günstiger Plätze. Das hier ist eine Faustregel, keine Garantie.</p>
+    <p><b>So bekommst du den besten Preis</b></p>
+    <ul>
+      <li><b>Früh buchen:</b> Tickets gibt es bis zu 12 Monate vorher.</li>
+      <li><b>Randzeiten wählen:</b> vor 7 Uhr oder ab 19 Uhr und nicht Freitag/Sonntag nachmittags.${p.edge?" Deine Suche liegt schon in einer Randzeit.":""}</li>
+      <li><b>Uhrzeit verschieben:</b> Mit „Früher“/„Später“ hier vergleichen – oft ist eine Stunde früher deutlich billiger.</li>
+      <li><b>Bestpreissuche:</b> zeigt bei bahn.de den günstigsten Preis je Tageszeit (ab morgen). <a href="${bp}" target="_blank" rel="noopener">Bestpreissuche öffnen</a></li>
+      <li><b>IC statt ICE:</b> oft billiger bei ähnlicher Fahrzeit.</li>
+      <li><b>Kürzeres ICE-Stück:</b> genau dafür ist diese App – den Rest fährst du mit dem Deutschland-Ticket.</li>
+      <li><b>BahnCard 25</b> gilt auch auf Sparpreise; ab 6 Personen gibt es Gruppen-Sparpreise.</li>
+      <li><b>VPN bringt nichts:</b> Die Bahn hat in Deutschland überall dieselben Preise. Nur bei Fahrten ins Ausland lohnt es sich, bei der Bahn des Nachbarlands (z. B. ÖBB) zu vergleichen.</li>
+    </ul>
+  </div></details>`;
+}
+function pickTop(g){
+  if(MODE!=="spar") return g.slice(0,2);
+  const seen=new Set(),top=[];
+  for(const v of g){const k=v.kind==="S"?stName(v.ice.from)+"→"+stName(v.ice.to):"ganz";if(seen.has(k))continue;seen.add(k);top.push(v);if(top.length===4)break}
+  return top;
+}
 function dirHTML(r){
-  const {A,B}=r,list=[...(r[MODE]||[])].sort(SORTFN[SORT[MODE]]||SORTFN.dep);
+  const {A,B}=r,base=r[MODE]||[];
+  // Filter nach ICE-Einstieg/-Ausstieg (nur Spar-Kombis)
+  const fromOf=v=>v.kind==="S"?stName(v.ice.from):"",toOf=v=>v.kind==="S"?stName(v.ice.to):"";
+  const list=base.filter(v=>MODE!=="spar"||((!FILT.from||fromOf(v)===FILT.from)&&(!FILT.to||toOf(v)===FILT.to))).sort(SORTFN[SORT[MODE]]||SORTFN.dep);
+  const chips=(key,label,vals)=>{const c=new Map();for(const v of base){const k=vals(v);if(k)c.set(k,(c.get(k)||0)+1)}
+    if(c.size<2&&!FILT[key])return "";
+    return `<div class="fchips" role="group" aria-label="${label}"><span class="fl">${label}</span><button type="button" class="ds-chip" data-f="${key}" data-v="" aria-pressed="${!FILT[key]}">Alle</button>${[...c].sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<button type="button" class="ds-chip" data-f="${key}" data-v="${esc(k)}" aria-pressed="${FILT[key]===k}">${esc(k)} <span class="n">${n}</span></button>`).join("")}</div>`};
   // Markierungen: empfohlen (beste Punkte) und schnellste
   const rec=[...list].sort(SORTFN.rec)[0],fast=[...list].sort(SORTFN.dur)[0];
   const tagsOf=v=>[...(v===rec?["Empfohlen"]:[]),...(v===fast?["Schnellste"]:[])];
@@ -957,7 +1036,10 @@ function dirHTML(r){
     <button class="tgl help-btn" type="button" aria-expanded="false" aria-controls="list-help">${ico("info",16)}Hilfe</button>
   </div>
   ${helpHTML()}
-  <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button">${ico("left",16)}Früher</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button">Später${ico("right",16)}</button></div>`;
+  <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button"${LOADING?" disabled":""}>${ico("left",16)}${APPEND<0&&LOADING?"Lädt …":"Früher"}</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button"${LOADING?" disabled":""}>${APPEND>0&&LOADING?"Lädt …":"Später"}${ico("right",16)}</button></div>`;
+  h+=priceHTML(r);
+  if(MODE==="spar") h+=`<div class="filters">${chips("from","ICE ab",fromOf)}${chips("to","ICE bis",toOf)}</div>`;
+  if(LOADING&&APPEND<0) h+=`<div class="loadmore" role="status">${ico("left",16)}Suche frühere Verbindungen … <span class="lm-meta"></span></div>${skelRows(1)}`;
   if(!list.length) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   else if(SORT[MODE]==="rec"){
     /* „Empfohlen“: nach Abfahrtsstunde gruppiert – je Stunde die beste zuerst, Rest eingeklappt.
@@ -969,7 +1051,7 @@ function dirHTML(r){
     h+=`<nav class="hours" aria-label="Beste Verbindung je Stunde">${keys.map(k=>{const b=groups.get(k)[0];
       return `<a class="hour" href="#g${k}"><span class="hour-h">${k} Uhr</span><span class="t">${hm(b.dur)}</span><i class="hdot l${b.risk.lvl}" title="${esc(b.risk.t)}"></i></a>`}).join("")}</nav>`;
     for(const k of keys){
-      const g=groups.get(k),top=g.slice(0,2),rest=g.slice(2);
+      const g=groups.get(k),top=pickTop(g),rest=g.filter(v=>!top.includes(v));
       h+=`<section class="hgroup" id="g${k}"><div class="hhead"><b>${k}–${nx(k)} Uhr</b><span class="ds-supporting">${g.length} Verbindung${g.length===1?"":"en"}</span></div>
         <ul class="rows ds-card">${top.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul>
         ${rest.length?`<details class="hmore"><summary>${rest.length} weitere ab ${k} Uhr anzeigen</summary><ul class="rows ds-card">${rest.map(v=>rowHTML(v,A,B,tagsOf(v))).join("")}</ul></details>`:""}</section>`;
@@ -979,7 +1061,8 @@ function dirHTML(r){
     if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
   }
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
-  h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button">Spätere Verbindungen (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
+  if(LOADING&&APPEND>0) h+=`${skelRows(1)}<div class="loadmore" role="status">Suche spätere Verbindungen ab ${fmtT(r.until)} Uhr … <span class="lm-meta"></span></div>`;
+  else h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button"${LOADING?" disabled":""}>Spätere Verbindungen (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
   return h;
 }
 
@@ -1015,6 +1098,7 @@ function renderOut(){
     d.hidden=!open;t.setAttribute("aria-expanded",String(open));
   });
   $("later-top")?.addEventListener("click",()=>loadMore(TAB,1));
+  for(const b of document.querySelectorAll("[data-f]")) b.addEventListener("click",()=>{FILT[b.dataset.f]=b.dataset.v;SHOWALL=false;renderOut()});
   paintSelBar();
 }
 /* Schwebende Leiste, sobald etwas angehakt ist */
@@ -1043,7 +1127,8 @@ function setMode(m){
 function loadMore(i,dir){
   if(LOADING||!RES[i]) return;
   const my=++runId,live=()=>my===runId;
-  return runDirs([i],my,live,{append:true,earlier:dir<0});
+  APPEND=dir;
+  return runDirs([i],my,live,{append:true,earlier:dir<0}).finally(()=>{APPEND=0;if(live())renderOut()});
 }
 const minT=(a,b)=>new Date(a)<new Date(b)?a:b,maxT=(a,b)=>new Date(a)>new Date(b)?a:b;
 const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note});
@@ -1086,6 +1171,7 @@ function showProg(frac,label,stats,stepIdx){
   $("p-bar").firstElementChild.style.width=pct+"%";$("p-bar").setAttribute("aria-valuenow",pct);
   $("p-step").textContent=label;
   $("p-meta").textContent=stats&&stats.total?`${stats.done} von ${stats.total} Abfragen · ${EST()}`:EST();
+  for(const m of document.querySelectorAll(".lm-meta")) m.textContent=stats&&stats.total?`${stats.done} von ${stats.total}`:""; // Rückmeldung direkt am „Früher/Später“
   $("p-steps").innerHTML=STEPS.map((s,i)=>`<li class="${i<stepIdx?"done":i===stepIdx?"now":""}">${s}</li>`).join("");
 }
 
@@ -1125,7 +1211,7 @@ async function runDirs(idxs,my,live,opt={}){
   try{history.replaceState(null,"",searchURL())}catch{}
   ctrl=new AbortController();const sig=ctrl.signal;
   sig.stats={total:0,done:0,tick:()=>{}};
-  if(!opt.append){for(const i of idxs) RES[i]=null;SEL.clear();SHOWALL=false}
+  if(!opt.append){for(const i of idxs) RES[i]=null;SEL.clear();SHOWALL=false;FILT.from=FILT.to=""}
   LOADING=true;
   $("go").disabled=true;
   let cur={frac:0,label:"Suche startet",step:0};
