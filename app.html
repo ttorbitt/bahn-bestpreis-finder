@@ -187,6 +187,19 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .ds-select{appearance:auto}
 .recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .recent .ds-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.favs .fav{display:inline-flex;align-items:center;max-width:100%}
+.favs .n{color:var(--muted-foreground);font-size:.75rem;margin-left:4px}
+.fav-x{border:0;background:none;color:var(--muted-foreground);font-size:1.1rem;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px}
+.fav-x:hover{color:var(--foreground)}
+.mybadge[hidden]{display:none}
+.mine{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.mine .share-out{flex-basis:100%;min-height:7em;font:inherit;font-size:.82rem;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--foreground)}
+.mytrip{padding:12px 14px;display:grid;gap:6px}
+.mt-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mytrip summary{cursor:pointer;font-size:.88rem;font-weight:500}
+.mt-plan{white-space:pre-wrap;font:inherit;font-size:.82rem;margin:6px 0 0;color:var(--muted-foreground)}
+.head-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+#fav[aria-pressed="true"] .ico{fill:currentColor}
 /* Fortschritt */
 .prog{display:grid;gap:8px}
 .prog .ds-progress-bar{width:0;transition:width .35s ease}
@@ -366,6 +379,14 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .faq details:last-of-type{border-bottom:1px solid var(--border)}
 .faq summary{cursor:pointer;padding:12px 2px;font-weight:500}
 .faq details p{padding:0 2px 12px;max-width:60ch}
+.alt{padding:0 14px;margin:8px 0}
+.alt summary{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;padding:10px 0;font-size:.92rem}
+.alt ul{list-style:none;margin:0;padding:0 0 10px;display:grid;gap:12px}
+.alt li{display:grid;gap:4px;border-top:1px solid var(--border);padding-top:10px}
+.alt li .ds-btn{justify-self:start}
+.alt-route{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:.85rem}
+.rights summary{cursor:pointer;font-size:.88rem;font-weight:500;padding:4px 0}
+.rights p{max-width:62ch}
 footer{font-size:.78rem}
 footer a{color:var(--muted-foreground)!important;text-decoration:underline!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -411,7 +432,7 @@ footer a{color:var(--muted-foreground)!important;text-decoration:underline!impor
       <div class="ds-field"><label class="ds-label" for="rtime">Abfahrt ca.</label><input class="ds-input" id="rtime" type="time" value="17:00"></div>
     </div>
     <div class="trav">
-      <div class="trav-row"><span class="ds-label" style="margin:0">Reisende</span><button class="ds-chip" type="button" id="trav-btn" aria-expanded="false" aria-controls="trav-panel"><span data-ico="user" data-size="16"></span><span id="trav-sum">1 Person, 27–64 Jahre</span></button></div>
+      <div class="trav-row"><span class="ds-label" style="margin:0" title="Alter, BahnCard und Klasse bleiben auf diesem Gerät gespeichert">Reisende <span class="ds-supporting" style="font-weight:400">· wird gemerkt</span></span><button class="ds-chip" type="button" id="trav-btn" aria-expanded="false" aria-controls="trav-panel"><span data-ico="user" data-size="16"></span><span id="trav-sum">1 Person, 27–64 Jahre</span></button></div>
       <div class="trav-panel" id="trav-panel" hidden>
         <div class="ds-field"><label class="ds-label" for="t-age">Alter</label><select class="ds-input ds-select" id="t-age"><option value="k0">Kind (0–5 Jahre)</option><option value="k">Kind (6–14 Jahre)</option><option value="j">15–26 Jahre</option><option value="e" selected>27–64 Jahre</option><option value="s">ab 65 Jahre</option></select></div>
         <div class="ds-field"><label class="ds-label" for="t-bc">BahnCard</label><select class="ds-input ds-select" id="t-bc"><option value="0" selected>Keine</option><option value="25">BahnCard 25</option><option value="50">BahnCard 50</option></select></div>
@@ -424,6 +445,8 @@ footer a{color:var(--muted-foreground)!important;text-decoration:underline!impor
       <button class="ds-btn ds-btn-primary ds-btn-lg" id="go" type="submit">Verbindungen finden</button>
       <button class="ds-btn ds-btn-ghost ds-btn-sm" id="reset" type="button">Zurücksetzen</button>
     </div>
+    <div class="mytrip ds-card" id="mytrip" hidden></div>
+    <div class="recent favs" id="favs" hidden></div>
     <div class="recent" id="recent" hidden></div>
   </div>
 </form>
@@ -443,6 +466,7 @@ footer a{color:var(--muted-foreground)!important;text-decoration:underline!impor
   <details><summary>Was heißt die Ampel?</summary><p class="ds-supporting">Grün: Nichts kann verfallen. Gelb: kleines Risiko, z. B. knapper Umstieg. Rot: Kommt der Regionalzug vor dem ICE zu spät – oder ist er oft unpünktlich –, kann dein Sparpreis verfallen.</p></details>
   <details><summary>Warum ist die Teilstrecke billiger?</summary><p class="ds-supporting">Du kaufst nur den kürzeren ICE-Abschnitt. Den Rest fährst du mit dem Deutschland-Ticket. Lohnt sich ab etwa 10 € Ersparnis.</p></details>
   <details><summary>Was passiert bei Verspätung?</summary><p class="ds-supporting">Mit einem durchgehenden Ticket darfst du einfach den nächsten Zug nehmen. Bei getrennten Tickets nur, wenn der Regionalzug erst nach dem ICE kommt.</p></details>
+  <details><summary>Zug verspätet – was steht mir zu?</summary><p class="ds-supporting"><b>Ein Ticket für alles:</b> Ab 20 min erwarteter Verspätung darfst du einen anderen Zug nehmen, die Zugbindung entfällt. Ab 60 min gibt es 25 % zurück, ab 120 min 50 % (nicht bei Unwetter u. Ä.). <b>Deutschland-Ticket:</b> ab 60 min 1,50 € pro Fall, ausgezahlt ab 4 € – also Fälle sammeln. Einen ICE darfst du dafür nicht auf Kosten der Bahn nehmen, außer nachts (Ankunft 0–5 Uhr) oder wenn die letzte Verbindung ausfällt. <b>Spar-Kombi:</b> Zubringer und ICE sind getrennte Verträge – kommt der Regionalzug zu spät und der ICE ist weg, verfällt der Sparpreis. Anträge im DB Navigator oder auf <a href="https://www.bahn.de/fahrgastrechte" target="_blank" rel="noopener">bahn.de/fahrgastrechte</a>.</p></details>
   <details><summary>Wo sehe ich die Preise?</summary><p class="ds-supporting">Nur bei bahn.de. „Bei bahn.de öffnen“ startet dort die passende Suche. Baustellen vorher im DB Navigator prüfen.</p></details>
 </section>
 
@@ -457,12 +481,36 @@ const FV=new Set(["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"]);
 // Fernzüge, die in den offenen Daten manchmal als Regionalzug geführt werden (z. B. RJ der DSB)
 const FVNAME=/^(ICE|IC|EC|ECE|EN|NJ|RJ|RJX|TGV|FLX|ES|EST|THA|WB)\b/i;
 const isFV=l=>FV.has(l.mode)||FVNAME.test((l.displayName||l.routeShortName||"").trim());
+/* Fernzug-Abschnitte, auf denen das Deutschland-Ticket gilt (bahn.de „Nahverkehrsfreigabe“, geprüft 07.10.2026).
+   Ein Zug zählt nur, wenn Ein- UND Ausstieg auf demselben Abschnitt liegen. Halte als [Breite, Länge] aus dem Fahrplan.
+   Gäubahn Stuttgart–Singen fehlt absichtlich: ihre ICs stehen in den Daten als Regionalzug „IC87“ und zählen schon so. */
+const DT_FV=[
+  {name:"Bremen – Norddeich Mole",only:/^IC\b/,st:[[53.0831,8.8136],[53.0528,8.6298],[53.1094,8.461],[53.1444,8.2233],[53.1826,8.0031],[53.2022,7.8865],[53.2209,7.7597],[53.2317,7.4653],[53.369,7.1952],[53.3445,7.1862],[53.5192,7.2749],[53.5882,7.2189],[53.6216,7.1608],[53.6243,7.1587]]},
+  {name:"Rostock – Stralsund",st:[[54.0786,12.1305],[54.2392,12.4374],[54.2774,12.8031],[54.3081,13.0784]]},
+  {name:"Rostock – Schwerin – Hamburg (nur ICE 1520/1521)",nr:/^152[01]$/,st:[[54.0786,12.1305],[53.837,11.9979],[53.7669,11.4662],[53.6356,11.4074],[53.5527,10.0069]]},
+  {name:"Dresden – Freiberg – Chemnitz",only:/^IC\b/,st:[[51.0404,13.7317],[51.066,13.7403],[50.9094,13.3424],[50.84,12.9308]]},
+];
+const onSec=(s,p)=>p?.lat!=null&&s.st.some(([a,o])=>(p.lat-a)**2+((p.lon-o)*.63)**2<2e-5); // ~500 m
+const dtSec=l=>{if(!l||!isFV(l))return null;const n=(l.displayName||l.routeShortName||"").trim();
+  return DT_FV.find(s=>(!s.only||s.only.test(n))&&(!s.nr||s.nr.test(n.replace(/\D/g,"")))&&onSec(s,l.from)&&onSec(s,l.to))||null};
+const isPaid=l=>isFV(l)&&!dtSec(l); // Fernzug, für den man ein eigenes Ticket braucht
+// Für die Anzeige: auch ICs, die in manchen Daten schon als Regionalzug geführt werden („IC56“, „IC87“)
+const freeIC=l=>dtSec(l)||(!isFV(l)&&/^IC\s?\d/i.test((l.displayName||l.routeShortName||"").trim())?{name:"diesem Abschnitt"}:null);
+/* Welcher Teil einer Fernzug-Fahrt braucht ein Ticket? Halte am Anfang/Ende, die auf einem Abschnitt mit D-Ticket-Freigabe
+   liegen, fallen weg (im selben Zug sitzen bleiben). stops = [Einstieg, …Zwischenhalte, Ausstieg]. null = alles frei. */
+function paidRange(l,stops){
+  const n=(l.displayName||l.routeShortName||"").trim();let i0=0,i1=stops.length-1;
+  for(const s of DT_FV){if((s.only&&!s.only.test(n))||(s.nr&&!s.nr.test(n.replace(/\D/g,""))))continue;
+    while(i1>i0&&onSec(s,stops[i1])&&onSec(s,stops[i1-1]))i1--;
+    while(i0<i1&&onSec(s,stops[i0])&&onSec(s,stops[i0+1]))i0++;}
+  return i0<i1?[i0,i1]:null;
+}
 const NV="REGIONAL_RAIL,REGIONAL_FAST_RAIL,SUBURBAN,SUBWAY,TRAM,BUS,FERRY";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const AMP=["Grün","Gelb","Rot"],AMPC=["safe","warn","danger"];
 /* Icons: Iconoir (MIT), Originalpfade */
-const ICO={"bus":"<path d=\"M7 16.01L7.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 16.01L17.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 12H21V19C21 19.5523 20.5523 20 20 20H4C3.44772 20 3 19.5523 3 19V12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 8V6C21 3.79086 19.2091 2 17 2H7C4.79086 2 3 3.79086 3 6V8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 8L17 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M4.5 20V21.9C4.5 22.2314 4.76863 22.5 5.1 22.5H7.9C8.23137 22.5 8.5 22.2314 8.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M15.5 20V21.9C15.5 22.2314 15.7686 22.5 16.1 22.5H18.9C19.2314 22.5 19.5 22.2314 19.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/>","pin":"<path d=\"M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/> <path d=\"M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","down":"<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
+const ICO={"bus":"<path d=\"M7 16.01L7.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 16.01L17.01 15.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 12H21V19C21 19.5523 20.5523 20 20 20H4C3.44772 20 3 19.5523 3 19V12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 8V6C21 3.79086 19.2091 2 17 2H7C4.79086 2 3 3.79086 3 6V8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 8L17 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M4.5 20V21.9C4.5 22.2314 4.76863 22.5 5.1 22.5H7.9C8.23137 22.5 8.5 22.2314 8.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M15.5 20V21.9C15.5 22.2314 15.7686 22.5 16.1 22.5H18.9C19.2314 22.5 19.5 22.2314 19.5 21.9V20\" stroke=\"currentColor\" stroke-linecap=\"round\"/>","pin":"<path d=\"M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z\" stroke=\"currentColor\" stroke-width=\"1.5\"/> <path d=\"M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","down":"<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","user":"<path d=\"M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>","train": "<path d=\"M9.6087 7H14.3913C15.832 7 17 8.16795 17 9.6087C17 9.82481 16.8248 10 16.6087 10H7.3913C7.17519 10 7 9.82481 7 9.6087C7 8.16795 8.16795 7 9.6087 7Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M9 3H15C18.3137 3 21 5.68629 21 9V13C21 16.3137 18.3137 19 15 19H9C5.68629 19 3 16.3137 3 13V9C3 5.68629 5.68629 3 9 3Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M16 15.01L16.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M8 15.01L8.01 14.9989\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M10.5 19L8.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M13.5 19L15.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M16.5 19L18.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/> <path d=\"M7.5 19L5.5 21.5\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "cal": "<path d=\"M13 21H5C3.89543 21 3 20.1046 3 19V10H21V13M15 4V2M15 4V6M15 4H10.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3 10V6C3 4.89543 3.89543 4 5 4H7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 2V6\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 10V6C21 4.89543 20.1046 4 19 4H18.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M15.9922 19H18.9922M22 19H18.9922M18.9922 19V16M18.9922 19V22\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "share": "<path d=\"M20 13V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V13\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 15V3M12 3L8.5 6.5M12 3L15.5 6.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "info": "<path d=\"M12 11.5V16.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 7.51L12.01 7.49889\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "open": "<path d=\"M21 3L15 3M21 3L12 12M21 3V9\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H11\" stroke=\"currentColor\" stroke-linecap=\"round\"/>", "refresh": "<path d=\"M21.8883 13.5C21.1645 18.3113 17.013 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C16.1006 2 19.6248 4.46819 21.1679 8\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "star": "<path d=\"M8.58737 8.23597L11.1849 3.00376C11.5183 2.33208 12.4817 2.33208 12.8151 3.00376L15.4126 8.23597L21.2215 9.08017C21.9668 9.18848 22.2638 10.0994 21.7243 10.6219L17.5217 14.6918L18.5135 20.4414C18.6409 21.1798 17.8614 21.7428 17.1945 21.3941L12 18.678L6.80547 21.3941C6.1386 21.7428 5.35909 21.1798 5.48645 20.4414L6.47825 14.6918L2.27575 10.6219C1.73617 10.0994 2.03322 9.18848 2.77852 9.08017L8.58737 8.23597Z\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "left": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "right": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "swap": "<path d=\"M17 20V4M17 4L20 7M17 4L14 7\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M7 4V20M7 20L10 17M7 20L4 17\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "install": "<path d=\"M6 20L18 20\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"};
 // Icons einmal als Symbol-Paket in die Seite, danach nur noch Verweise (<use>) – hält lange Listen schlank
 const ico=(n,s=18)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" stroke-width="1.5" fill="none" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 document.body.insertAdjacentHTML("afterbegin",`<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(ICO).map(([k,v])=>`<symbol id="i-${k}" viewBox="0 0 24 24">${v}</symbol>`).join("")}</svg>`);
@@ -606,20 +654,20 @@ const VM="00,01,02,03,04,05,06,07,08,09";
 const dbLinkRT=(from,to,iso1,iso2)=>dbLink(from,to,iso1).replace(/&hz=[^&]*/,m=>m+`&rd=${berlinLocal(iso2)}&rza=D&rz=%5B%5D&rv=${VM}`);
 const placeOf=s=>({name:s.name,place:`${s.lat},${s.lon}`,st:s});
 const RAIL="HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL,"+NV; // ohne Fernbus (COACH): dort gilt kein D-Ticket
-async function plan(from,to,time,{arr=false,nv=false,n=5,win=0,sig}={}){
+async function plan(from,to,time,{arr=false,nv=false,n=5,win=0,modes="",sig}={}){
   const p={fromPlace:from,toPlace:to,time,numItineraries:n,arriveBy:String(arr)};
   if(win) p.searchWindow=win; // alle Abfahrten in diesem Zeitfenster (Sekunden)
-  p.transitModes=nv?NV:RAIL;
+  p.transitModes=modes||(nv?NV:RAIL);
   return (await api("/v5/plan",p,sig)).itineraries||[];
 }
 
 const isFlix=l=>l.mode==="COACH"||(isFV(l)&&/flix|^FLX/i.test(`${l.agencyName||""} ${l.displayName||""}`));
 const legsOf=it=>it.legs.filter(l=>l.mode!=="WALK");
-const nvOnlyOk=it=>!legsOf(it).some(isFV);
+const nvOnlyOk=it=>!legsOf(it).some(isPaid); // auch IC-Abschnitte mit D-Ticket-Freigabe
 const legName=l=>(l.displayName||l.routeShortName||l.tripShortName||l.mode).trim();
 function analyze(it){
   const L=legsOf(it);
-  const fv=L.map((l,i)=>isFV(l)?i:-1).filter(i=>i>=0);
+  const fv=L.map((l,i)=>isPaid(l)?i:-1).filter(i=>i>=0);
   let minTr=null;
   for(let i=1;i<L.length;i++){const m=mins(L[i-1].endTime,L[i].startTime);minTr=minTr==null?m:Math.min(minTr,m)}
   // Abfahrt/Ankunft des ersten/letzten Zugs – ohne Fußweg zum Gleis, sonst passt die Zeit nicht zu bahn.de (09:08 statt 09:10)
@@ -673,7 +721,26 @@ const uniqIt=arr=>{const m=new Map();for(const x of arr){const k=x.L.map(l=>legN
 const uniqV=arr=>{const m=new Map();for(const v of arr){const k=sigOf(v);if(!m.has(k)||m.get(k).dur>v.dur)m.set(k,v)}return [...m.values()]};
 function mkSpar(L,start,end,ice,iceIdx,iceEnd=iceIdx){
   return {kind:"S",L,start,end,dur:mins(start,end),transfers:L.length-1,fvMin:mins(ice.dep,ice.arr),ice,iceIdx,iceEnd,
-    feederBuf:iceIdx>0?mins(L[iceIdx-1].endTime,ice.dep):null,name:`${ice.name}: ${ice.from.name} → ${ice.to.name}`};
+    feederBuf:iceIdx>0?mins(L[iceIdx-1].endTime,L[iceIdx].startTime):null,name:`${ice.name}: ${ice.from.name} → ${ice.to.name}`};
+}
+
+/* Andere Wege neben den Kombis: Nachtfahrt (Vorabend bzw. über Nacht) und FlixBus mit D-Ticket zum Busbahnhof.
+   Je eine Abfrage, laufen nebenher; scheitern sie, fehlt nur dieser Hinweis. */
+async function altWays(A,B,tIso,fastest,sig){
+  const loc=berlinLocal(tIso),hr=+loc.slice(11,13),dayMin=hr*60+ +loc.slice(14,16);
+  const jobs=[];
+  // Nachtfahrt: nur bei langen Strecken; morgens gesucht → am Vorabend los, abends gesucht → über Nacht
+  const nightStart=hr<13?addMin(tIso,-dayMin-240):hr>=17?addMin(tIso,20*60-dayMin):null; // 20:00 Uhr am Vortag bzw. am selben Tag
+  if(fastest>=240&&nightStart) jobs.push(plan(A.place,B.place,nightStart,{n:5,sig}).then(d=>d.map(analyze).filter(x=>{
+    const s=berlinLocal(x.start),e=berlinLocal(x.end),sh=+s.slice(11,13),eh=+e.slice(11,13);
+    return !x.flix&&s.slice(0,10)!==e.slice(0,10)&&(sh>=19||sh<2)&&eh>=4&&eh<11&&mins(x.start,x.end)>=180
+      &&(hr>=17||new Date(x.end)<=new Date(addMin(tIso,fastest)));
+  }).slice(0,2).map(x=>({...x,kind:"N",name:x.L.filter(isFV).map(legName).join(" + ")||"Regionalzüge"}))));
+  // FlixBus: Bus + Regionalzüge (D-Ticket) zum/vom Busbahnhof, ohne Fernzug
+  jobs.push(plan(A.place,B.place,tIso,{n:5,modes:"COACH,"+NV,sig}).then(d=>d.filter(it=>legsOf(it).some(l=>l.mode==="COACH")&&!legsOf(it).some(isPaid))
+    .map(analyze).filter(x=>mins(tIso,x.start)>=-30&&mins(tIso,x.start)<=WIN_MIN&&x.dur<=fastest+180)
+    .sort((a,b)=>a.dur-b.dur).slice(0,2).map(x=>({...x,kind:"F",name:x.L.filter(l=>l.mode==="COACH").map(legName).join(" + ")}))));
+  return (await Promise.all(jobs.map(j=>j.catch(()=>[])))).flat();
 }
 
 /* Eine Richtung für ein 3-Stunden-Fenster berechnen.
@@ -694,7 +761,8 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   const inWin=x=>new Date(x.start)>=t0&&new Date(x.start)<=tEnd;
   const its=all.map(analyze).filter(x=>x.hasFV&&inWin(x));
   let dt=[],dtLoading=true; // „Nur D-Ticket“ wird zuletzt geladen (teuer, am seltensten gebraucht)
-  const dtOf=d=>d.filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:"Nur Regionalzüge"}));
+  // Reine D-Ticket-Wege: Regionalzüge, auch mit IC-Abschnitten, auf denen das D-Ticket gilt (die liefert nur die erste Suche)
+  const dtOf=d=>[...d,...all].filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:x.L.some(freeIC)?"Mit IC, D-Ticket gilt":"Nur Regionalzüge"}));
   if(!its.length){
     // Kein ICE/IC im Fenster (z. B. Lübeck → Hamburg): trotzdem die Regionalzüge zeigen statt „keine Verbindung“
     prog(.5,"Nur-D-Ticket-Verbindungen suchen");
@@ -703,22 +771,29 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     if(!dt.length) throw new Error(`Keine Verbindung ${A.name} → ${B.name} gefunden. Liegt das Datum noch im Fahrplan (meist bis Mitte Dezember)?`);
     prog(1,"Fertig");
     return {A,B,whole:[],spar:[],dt:uniqV(dt).map(v=>(v.risk=riskOf(v),v)),from:tIso,until:addMin(tIso,WIN_MIN),partial:false,dtLoading:false,failed:[],
-      note:"In diesem Zeitfenster fährt hier kein ICE oder IC – mit dem Deutschland-Ticket kommst du ohne Zusatzkosten hin (Reiter „Nur D-Ticket“)."};
+      note:dt.some(v=>v.L.some(freeIC))?"Auf dieser Strecke gilt das Deutschland-Ticket auch im IC – du brauchst kein Zusatzticket (Reiter „Nur D-Ticket“)."
+        :"In diesem Zeitfenster fährt hier kein ICE oder IC – mit dem Deutschland-Ticket kommst du ohne Zusatzkosten hin (Reiter „Nur D-Ticket“)."};
   }
   const whole=its.map(x=>({...x,kind:"A",name:x.L.filter(isFV).map(legName).join(" + ")}));
   const fastest=Math.min(...its.map(x=>x.dur));
+  const altP=altWays(A,B,tIso,fastest,sig).catch(()=>[]);let alt=[];
   const spar=[],sparBase=[];
   // a) gleiche Züge wie die ganze Reise, nur der ICE-Abschnitt auf eigenem Ticket
   for(const x of its){
-    if(x.flix||x.L.every(isFV)) continue;
-    const f=x.L.filter(isFV),fi=x.L.indexOf(f[0]),fe=x.L.indexOf(f[f.length-1]);
-    sparBase.push(mkSpar(x.L,x.start,x.end,{from:f[0].from,to:f[f.length-1].to,dep:f[0].startTime,arr:f[f.length-1].endTime,name:f.map(legName).join(" + ")},fi,fe));
+    if(x.flix||x.L.every(isPaid)) continue;
+    const f=x.L.filter(isPaid),fi=x.L.indexOf(f[0]),fe=x.L.indexOf(f[f.length-1]),fl=f[f.length-1];
+    const tk={from:f[0].from,to:fl.to,dep:f[0].startTime,arr:fl.endTime,name:f.map(legName).join(" + ")};
+    // Ticket nur bis zum Beginn bzw. ab dem Ende eines Abschnitts mit D-Ticket-Freigabe
+    const s0=[f[0].from,...(f[0].intermediateStops||[]),f[0].to],r0=paidRange(f[0],s0),s1=[fl.from,...(fl.intermediateStops||[]),fl.to],r1=paidRange(fl,s1);
+    if(r0&&r0[0]>0&&s0[r0[0]].departure){tk.freeBefore=true;tk.from=s0[r0[0]];tk.dep=s0[r0[0]].departure}
+    if(r1&&r1[1]<s1.length-1&&s1[r1[1]].arrival){tk.freeAfter=true;tk.to=s1[r1[1]];tk.arr=s1[r1[1]].arrival}
+    sparBase.push(mkSpar(x.L,x.start,x.end,tk,fi,fe));
   }
   spar.push(...sparBase);
   let buildNow=()=>{};
   let note="";
   const pack=partial=>{const fin=a=>uniqV(a).map(v=>(v.risk=riskOf(v),v));
-    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,dtLoading,note,failed:[...failed]}};
+    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,dtLoading,note,failed:[...failed],alt}};
   onPartial(pack(true));
 
   // Ab hier mit Frist: bei langsamem Server zeigen wir, was bis dahin da ist
@@ -728,7 +803,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   try{
     // 2) Laufwege
     const trips=new Map();
-    for(const x of its)for(const l of x.L)if(isFV(l)&&!isFlix(l)&&l.tripId&&!trips.has(l.tripId))trips.set(l.tripId,l);
+    for(const x of its)for(const l of x.L)if(isPaid(l)&&!isFlix(l)&&l.tripId&&!trips.has(l.tripId))trips.set(l.tripId,l);
     const legs=[...trips.values()]; // alle ICE-Fahrten – Laufweg-Abfragen sind schnell
     const runOf=t=>{const out=[];for(const x of (t.legs||[]).filter(x=>x.mode!=="WALK"))for(const st of [x.from,...(x.intermediateStops||[]),x.to])if(!out.length||out[out.length-1].name!==st.name)out.push(st);return out};
     let done=0;prog(.2,`Laufwege der ICEs (0 von ${legs.length})`);
@@ -927,7 +1002,9 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
         const L=[...(preIt?preIt.L:[]),ice,...(postIt?postIt.L:[])];
         const start=preIt?preIt.start:dep,end=postIt?postIt.end:arr;
         if(mins(start,end)>fastest+240)continue;
-        const v=mkSpar(L,start,end,{from:bs,to:es,dep,arr,name:legName(leg)},preIt?preIt.L.length:0);
+        const sub=run.slice(ib,ia+1),pr=paidRange(leg,sub);if(!pr)continue; // ganz auf D-Ticket-Abschnitt: keine Spar-Kombi
+        const tb=sub[pr[0]],te=sub[pr[1]];
+        const v=mkSpar(L,start,end,{from:tb,to:te,dep:tb.departure,arr:te.arrival,name:legName(leg),freeBefore:pr[0]>0,freeAfter:pr[1]<sub.length-1},preIt?preIt.L.length:0);
         Object.assign(v,{feederTakt,postTakt,safer});spar.push(v);
       }
       for(const v of spar){
@@ -946,6 +1023,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   try{dt=dtOf(await plan(A.place,B.place,tIso,{nv:true,n:3,sig}))}
   catch(e){if(e instanceof StopError)throw e}
   dtLoading=false;
+  alt=await altP;
   prog(1,"Fertig");
   return pack(false);
 }
@@ -958,10 +1036,25 @@ function linkFor(v,A,B){
   if(s1&&s2) return {href:dbLink(s1,s2,v.ice.dep),note:`Öffnet nur die ICE-Teilstrecke ${s1.name} → ${s2.name}.`};
   return {href:dbLink(A.st,B.st,v.start,{dltv:true}),note:"Öffnet bahn.de mit Häkchen „Deutschland-Ticket vorhanden“ – berechnet nur den ICE-Teil."};
 }
+/* Fahrgastrechte kurz, je Ticketart (bahn.de-FAQ und EVO, geprüft 07.10.2026) */
+const FGR="https://www.bahn.de/fahrgastrechte";
+function rightsText(v){
+  const fv="Ab 20 min erwarteter Verspätung am Ziel darfst du einen anderen Zug nehmen. Ab 60 min gibt es 25 % des Fahrpreises zurück, ab 120 min 50 % (ausgezahlt ab 4 €; nicht bei Unwetter u. Ä.). Antrag im DB Navigator oder bei bahn.de unter „Entschädigung beantragen“.";
+  const dt="D-Ticket-Teil: ab 60 min Verspätung 1,50 € pro Fall (ausgezahlt erst ab 4 €, Fälle sammeln). Ab 20 min darfst du einen anderen Regionalzug nehmen, aber keinen ICE/IC auf Kosten der Bahn – außer nachts bei Ankunft 0–5 Uhr oder wenn die letzte Verbindung ausfällt (Ersatz bis 120 €).";
+  return v.kind==="A"?fv:v.kind==="D"?dt:`ICE-Ticket: ${fv} <b>Aber:</b> Verpasst du den ICE, weil der Regionalzug zu spät kam, verfällt der Sparpreis – es sind zwei getrennte Verträge. ${dt}`;
+}
+function rightsHTML(v){
+  const t=rightsText(v);
+  return `<details class="rights"><summary>Verspätet? Das steht dir zu</summary><p class="ds-supporting">${t} <a href="${FGR}" target="_blank" rel="noopener">Fahrgastrechte bei bahn.de</a></p></details>`;
+}
 function howTo(v){
   if(v.kind==="A") return `Auf bahn.de die Verbindung ab ${fmtT(v.start)} wählen (${esc(v.name)}), Super Sparpreis.`;
-  if(v.kind==="D") return "Kein Ticket nötig. Im DB Navigator „Nur Nahverkehr“ wählen.";
-  return `Nur ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))} buchen (${esc(v.ice.name)} um ${fmtT(v.ice.dep)}), Super Sparpreis. Die Regionalzüge davor und danach fährst du mit dem Deutschland-Ticket.`;
+  if(v.kind==="D"){const s=v.L.map(freeIC).find(Boolean);
+    return s?`Kein Ticket nötig: Auf ${esc(s.name)} gilt das Deutschland-Ticket auch im IC (nur 2. Klasse, Fahrrad nur mit Stellplatz-Reservierung). Im DB Navigator darum nicht „Nur Nahverkehr“ wählen.`
+      :"Kein Ticket nötig. Im DB Navigator „Nur Nahverkehr“ wählen."}
+  const fr=(v.ice.freeBefore?` Bis ${esc(stName(v.ice.from))} fährst du im selben Zug schon mit dem Deutschland-Ticket (Nahverkehrsfreigabe).`:"")
+    +(v.ice.freeAfter?` Ab ${esc(stName(v.ice.to))} gilt im selben Zug das Deutschland-Ticket – einfach sitzen bleiben (Nahverkehrsfreigabe, nur 2. Klasse).`:"");
+  return `Nur ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))} buchen (${esc(v.ice.name)} um ${fmtT(v.ice.dep)}), Super Sparpreis. Die Regionalzüge davor und danach fährst du mit dem Deutschland-Ticket.${fr}`;
 }
 /* Kalendereintrag (.ics) als data:-Link – klappt ohne Server */
 function icsFor(v,A,B){
@@ -1005,12 +1098,12 @@ const helpHTML=()=>`<div class="help-card" id="list-help" hidden>
   <p><b>Mehrere Preise vergleichen:</b> Hake Verbindungen an und tippe auf „Alle öffnen“. Beim ersten Mal fragt dein Browser, ob er mehrere Fenster öffnen darf – bitte erlauben.</p>
 </div>`;
 const SEL=new Map();let SHOWALL=false,APPEND=0; // APPEND: -1 lädt frühere, +1 spätere Zeiten
-const FILT={from:"",to:""}; // Filter „ICE ab“ / „ICE bis“ im Spar-Reiter // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
+const FILT={from:"",to:"",sev:""}; // Filter „ICE ab“ / „ICE bis“ im Spar-Reiter // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
 /* Wie die Verbindung aufgebaut ist: Regionalzug (D-Ticket) / ICE (Ticket) / Umstieg */
-const legType=l=>isFlix(l)?"flix":isFV(l)?"fv":"nv";
+const legType=l=>isFlix(l)?"flix":isPaid(l)?"fv":"nv"; // IC mit D-Ticket-Freigabe zählt wie ein Regionalzug
 const isBus=l=>l.mode==="BUS";
 const isSEV=l=>isBus(l)&&/^(RE|RB|S|IRE)\s?\d/i.test(legName(l)); // Bus unter Zugnummer = meist Ersatzverkehr
 const legIco=(l,n)=>ico(isBus(l)?"bus":"train",n);
@@ -1047,7 +1140,7 @@ function timelineHTML(v){
     const t=legType(l),pu=punctOf(l);
     const st=i===0?`<li class="tl-st"><span class="t">${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b></span></li>`
       :`<li class="tl-st"><span class="t">${fmtT(L[i-1].endTime)}<br>${fmtT(l.startTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.from))}</b> <span class="ds-supporting">· ${mins(L[i-1].endTime,l.startTime)} min Umstieg</span></span></li>`;
-    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar">${legIco(l,15)} <b>${esc(legName(l))}</b>${isSEV(l)?` <span class="ds-badge ds-badge-warn">Ersatzbus</span>`:isBus(l)?" (Bus)":""} <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich`:""}</span></span></li>`;
+    const leg=`<li class="tl-leg ${t}"><span></span><span class="tl-bar">${legIco(l,15)} <b>${esc(legName(l))}</b>${isSEV(l)?` <span class="ds-badge ds-badge-warn">Ersatzbus</span>`:isBus(l)?" (Bus)":""}${freeIC(l)?` <span class="ds-badge ds-badge-safe" title="Nahverkehrsfreigabe: nur 2. Klasse, Fahrrad nur mit Stellplatz-Reservierung">D-Ticket gilt im IC</span>`:""} <span class="ds-supporting">· ${typeLabel(t,v.kind)} · ${hm(mins(l.startTime,l.endTime))}${pu?` · ${pu.p} % pünktlich`:""}</span></span></li>`;
     const end=i===L.length-1?`<li class="tl-st"><span class="t">${fmtT(l.endTime)}</span><span class="tl-name">${ico("pin",15)}<b>${esc(stName(l.to))}</b></span></li>`:"";
     return st+leg+end;}).join("")}</ol>`;
 }
@@ -1060,13 +1153,44 @@ function normalLink(v,A,B){
   return dbLink(A.st,B.st,v.start,{via});
 }
 const ROWV=new Map();
+/* Meine Reisewahl: markieren, gespeichert bleiben, teilen – kurz für Freunde (mit Link zur App), ausführlich für mich */
+const TRIPKEY="bbf-trip",appURL=()=>location.origin+location.pathname;
+const plainOf=html=>{const d=document.createElement("div");d.innerHTML=html;return d.textContent.replace(/\s+/g," ").trim()};
+function loadTrip(){try{const t=JSON.parse(localStorage.getItem(TRIPKEY));return t&&new Date(t.end).getTime()>Date.now()-6*36e5?t:null}catch{return null}}
+function friendsText(v,A,B){
+  const fv=[...new Set(v.L.filter(isFV).map(shortName))];
+  return `🚆 Ich komme am ${fmtD(v.end)} um ${fmtT(v.end)} Uhr in ${B.name} an – los geht's um ${fmtT(v.start)} in ${A.name}${fv.length?` (mit ${fv.join(" + ")})`:""}.\n\nGefunden mit dem Bahn-Bestpreis-Finder – günstige Zugverbindungen mit dem Deutschland-Ticket: ${appURL()}`;
+}
+function planText(v,A,B,l){
+  const out=[`Meine Zugreise ${fmtD(v.start)}: ${A.name} → ${B.name}`,`${fmtT(v.start)} → ${fmtT(v.end)} Uhr · ${hm(v.dur)} · ${v.transfers}× umsteigen`,""];
+  for(const x of v.L) out.push(`${fmtT(x.startTime)} ${stName(x.from)} → ${fmtT(x.endTime)} ${stName(x.to)}: ${legName(x)}${isSEV(x)?" (ERSATZBUS)":""} · ${typeLabel(legType(x),v.kind)}`);
+  out.push("","WORAUF ACHTEN","• Ticket: "+plainOf(howTo(v)),`• Risiko (${AMP[v.risk.lvl]}): ${v.risk.why}`);
+  if(v.L.some(isSEV)) out.push("• Ersatzbus: mehr Zeit einplanen und die Haltestelle vorher suchen, Fahrrad meist nicht möglich.");
+  out.push("• Verspätet? "+plainOf(rightsText(v)),"• Kurz vorher im DB Navigator prüfen: Gleis, Baustellen, Ausfälle.","",`Ticket: ${l.href}`,"",`Bahn-Bestpreis-Finder: ${appURL()}`);
+  return out.join("\n");
+}
+async function shareText(text,btn,title){
+  try{if(navigator.share){await navigator.share({title,text});return}}catch(e){if(e.name==="AbortError")return}
+  const box=btn.closest(".mine")?.querySelector(".share-out");
+  try{await navigator.clipboard.writeText(text);const lab=btn.querySelector("span"),o=lab.textContent;lab.textContent="Kopiert – jetzt einfügen";setTimeout(()=>{lab.textContent=o},2500)}
+  catch{if(box){box.hidden=false;box.value=text;box.focus();box.select()}} // ohne Zwischenablage: Text zum Markieren zeigen
+}
+const mineBtns=(picked)=>`<button class="ds-btn ${picked?"ds-btn-secondary":"ds-btn-primary"} ds-btn-sm" type="button" data-act="pick" aria-pressed="${picked}">${ico("star",16)}<span>${picked?"Meine Wahl ✓":"Das nehm ich"}</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="friends">${ico("share",16)}<span>An Freunde schicken</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="plan">${ico("info",16)}<span>Reiseplan für mich</span></button>`;
 function detailHTML({v,A,B,l}){
   return `<p class="why">${esc(v.risk.why)}</p>
     ${timelineHTML(v)}
     <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
+    ${rightsHTML(v)}
+    <div class="mine">${mineBtns(loadTrip()?.sig===sigOf(v))}<textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea></div>
     <p><a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsFor(v,A,B))}" download="${esc(fileName(A,B,v))}">${ico("cal",16)} In Kalender eintragen</a></p>`;
 }
 /* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
+/* Ersatzbus gleich in der Zeile zeigen (nicht erst in den Details): dauert meist länger, Gepäck/Fahrrad schwieriger */
+function sevHTML(v){const b=v.L.filter(isSEV);if(!b.length)return "";
+  const w=b.map(l=>`${stName(l.from)} → ${stName(l.to)}`).join(", ");
+  return `<span class="ds-badge ds-badge-warn" title="Ersatzbus statt Zug (meist Bauarbeiten): ${esc(w)}. Mehr Zeit einplanen, Fahrrad oft nicht möglich.">${ico("bus",14)}Ersatzbus</span>`}
 function rowHTML(v,A,B,tags){
   const l=linkFor(v,A,B);
   // Spar-Kombi: zum Vergleich die ganze Strecke zur selben Zeit mit normalem Ticket
@@ -1077,10 +1201,10 @@ function rowHTML(v,A,B,tags){
     :v.kind==="A"?`<span class="tk">Ein Ticket für alles</span>`:`<span class="tk">Nur Deutschland-Ticket</span>`;
   const id="d"+Math.random().toString(36).slice(2,9);
   ROWV.set(id,{v,A,B,l}); // Details werden erst beim Aufklappen gebaut
-  return `<li class="row">
+  return `<li class="row" data-sig="${esc(sigOf(v))}">
     <input class="pick" type="checkbox" aria-label="Zum Vergleich auswählen" data-hrefs="${esc(JSON.stringify(hrefs))}"${SEL.has(l.href)?" checked":""}>
     <div class="row-main">
-      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}</div>
+      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
       ${chainHTML(v)}
       <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
       <div class="row-detail" id="${id}" hidden></div>
@@ -1149,11 +1273,25 @@ function pickTop(g){
   for(const v of g){const k=v.kind==="S"?stName(v.ice.from)+"→"+stName(v.ice.to):"ganz";if(seen.has(k))continue;seen.add(k);top.push(v);if(top.length===4)break}
   return top;
 }
+/* „Auch möglich“: Nachtfahrt und FlixBus – eingeklappt, damit die Liste ruhig bleibt */
+function altHTML(r){
+  const alt=r.alt||[];if(!alt.length) return "";
+  const lab=v=>v.kind==="N"?"Nachtfahrt":"FlixBus",when=v=>`${v.kind==="N"?fmtD(v.start)+" ":""}${fmtT(v.start)} → ${fmtT(v.end)}`;
+  const why=v=>v.kind==="N"
+    ?(v.L.some(l=>l.mode==="NIGHT_RAIL"||/^(NJ|EN)\b/.test(legName(l)))?"Mit Schlaf- oder Liegewagen buchbar. ":"Sitzplatz im Zug, kein Bett. ")+
+      (new Date(v.end)<new Date(r.from)?`Du bist schon morgens um ${fmtT(v.end)} da, hast den ganzen Tag – und sparst die Anreise am Vortag mit Übernachtung.`:`Du schläfst im Zug statt im Hotel und bist morgens um ${fmtT(v.end)} da.`)
+    :"FlixBus braucht ein eigenes Ticket (Preis auf flixbus.de, oft günstig). Die Regionalzüge zum und vom Busbahnhof fährst du mit dem Deutschland-Ticket. Verpasst du wegen einer Verspätung den Bus, hilft die DB nicht.";
+  const link=v=>v.kind==="N"?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(dbLink(r.A.st,r.B.st,v.start))}" target="_blank" rel="noopener">bahn.de${ico("open",14)}</a>`
+    :`<a class="ds-btn ds-btn-outline ds-btn-sm" href="https://www.flixbus.de/" target="_blank" rel="noopener">flixbus.de${ico("open",14)}</a>`;
+  return `<details class="alt ds-card"><summary><span><b>Auch möglich:</b> ${alt.map(v=>`${lab(v)} ${when(v)}`).join(" · ")}</span>${ico("down",16)}</summary>
+    <ul>${alt.map(v=>`<li><div><b>${lab(v)}</b> <span class="t">${when(v)}</span> <span class="ds-supporting">${hm(v.dur)} · ${esc(v.name)}</span></div>
+      <div class="alt-route route">${routeHTML(v.L)}</div><p class="ds-supporting">${why(v)}</p>${link(v)}</li>`).join("")}</ul></details>`;
+}
 function dirHTML(r){
   const {A,B}=r,base=r[MODE]||[];
   // Filter nach ICE-Einstieg/-Ausstieg (nur Spar-Kombis)
   const fromOf=v=>v.kind==="S"?stName(v.ice.from):"",toOf=v=>v.kind==="S"?stName(v.ice.to):"";
-  const list=base.filter(v=>MODE!=="spar"||((!FILT.from||fromOf(v)===FILT.from)&&(!FILT.to||toOf(v)===FILT.to))).sort(SORTFN[SORT[MODE]]||SORTFN.dep);
+  const list=base.filter(v=>(MODE!=="spar"||((!FILT.from||fromOf(v)===FILT.from)&&(!FILT.to||toOf(v)===FILT.to)))&&(!FILT.sev||!v.L.some(isSEV))).sort(SORTFN[SORT[MODE]]||SORTFN.dep);
   const chips=(key,label,vals)=>{const c=new Map();for(const v of base){const k=vals(v);if(k)c.set(k,(c.get(k)||0)+1)}
     if(c.size<2&&!FILT[key])return "";
     return `<div class="fchips" role="group" aria-label="${label}"><span class="fl">${label}</span><button type="button" class="ds-chip" data-f="${key}" data-v="" aria-pressed="${!FILT[key]}">Alle</button>${[...c].sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<button type="button" class="ds-chip" data-f="${key}" data-v="${esc(k)}" aria-pressed="${FILT[key]===k}">${esc(k)} <span class="n">${n}</span></button>`).join("")}</div>`};
@@ -1169,7 +1307,10 @@ function dirHTML(r){
   ${helpHTML()}
   <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button"${LOADING?" disabled":""}>${ico("left",16)}${APPEND<0&&LOADING?"Lädt …":"Früher"}</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button"${LOADING?" disabled":""}>${APPEND>0&&LOADING?"Lädt …":"Später"}${ico("right",16)}</button></div>`;
   h+=priceHTML(r);
-  if(MODE==="spar") h+=`<div class="filters">${chips("from","ICE ab",fromOf)}${chips("to","ICE bis",toOf)}</div>`;
+  h+=altHTML(r);
+  const nSev=base.filter(v=>v.L.some(isSEV)).length;
+  const sevChips=nSev?`<div class="fchips" role="group" aria-label="Ersatzbus"><span class="fl">${ico("bus",14)} ${nSev} mit Ersatzbus</span><button type="button" class="ds-chip" data-f="sev" data-v="" aria-pressed="${!FILT.sev}">Zeigen</button><button type="button" class="ds-chip" data-f="sev" data-v="1" aria-pressed="${!!FILT.sev}">Ausblenden</button></div>`:"";
+  if(MODE==="spar"||sevChips) h+=`<div class="filters">${MODE==="spar"?chips("from","ICE ab",fromOf)+chips("to","ICE bis",toOf):""}${sevChips}</div>`;
   if(LOADING&&APPEND<0) h+=`<div class="loadmore" role="status">${ico("left",16)}Suche frühere Verbindungen … <span class="lm-meta"></span></div>${skelRows(1)}`;
   if(!list.length) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   else if(SORT[MODE]==="rec"){
@@ -1205,7 +1346,7 @@ function renderOut(){
   ROWV.clear();
   if(!DIRS.length){$("out").innerHTML="";SEL.clear();paintSelBar();return}
   const rt=DIRS.length>1,d0=DIRS[0];
-  let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div>`;
+  let h=`<section class="res"><div class="res-head"><div><h2 class="ds-section-title">${esc(d0.A.name)} ${rt?"⇄":"→"} ${esc(d0.B.name)}</h2><span class="ds-supporting">${rt?`${esc(fmtD(d0.t))} hin · ${esc(fmtD(DIRS[1].t))} zurück`:esc(fmtD(d0.t))}</span></div><div class="head-btns"><button class="ds-btn ds-btn-secondary ds-btn-sm" id="fav" type="button" aria-pressed="${isFav()}">${ico("star",16)}<span>${isFav()?"Gemerkt":"Merken"}</span></button><button class="ds-btn ds-btn-secondary ds-btn-sm" id="share" type="button">${ico("share",16)}<span>Teilen</span></button></div></div>`;
   if(rt&&MODE==="whole"&&RES[0]?.whole?.length&&RES[1]?.whole?.length){
     const t1=[...RES[0].whole].sort(SORTFN.dep)[0].start,t2=[...RES[1].whole].sort(SORTFN.dep)[0].start;
     h+=`<div class="ds-row"><a class="ds-btn ds-btn-secondary ds-btn-sm" href="${esc(dbLinkRT(d0.A.st,d0.B.st,t1,t2))}" target="_blank" rel="noopener">Hin + Rück zusammen bei bahn.de${ico("open",16)}</a></div>`;
@@ -1216,6 +1357,7 @@ function renderOut(){
   $("out").innerHTML=h;
   if(rt) DIRS.forEach((_,i)=>$("tab"+i).onclick=()=>{TAB=i;SHOWALL=false;renderOut()});
   $("share").onclick=shareSearch;
+  $("fav").onclick=toggleFav;
   $("sort")?.addEventListener("change",e=>{SORT[MODE]=e.target.value;renderOut()});
   $("show-all")?.addEventListener("click",()=>{SHOWALL=true;renderOut()});
   $("more-times")?.addEventListener("click",()=>loadMore(TAB,1));
@@ -1265,7 +1407,7 @@ function loadMore(i,dir){
   return runDirs([i],my,live,{append:true,earlier:dir<0}).finally(()=>{APPEND=0;if(live())renderOut()});
 }
 const minT=(a,b)=>new Date(a)<new Date(b)?a:b,maxT=(a,b)=>new Date(a)>new Date(b)?a:b;
-const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note,failed:[...new Set([...(a.failed||[]),...(b.failed||[])])]});
+const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note,alt:b.alt?.length?b.alt:a.alt,failed:[...new Set([...(a.failed||[]),...(b.failed||[])])]});
 
 /* Teilen: Suche steckt in der Webadresse */
 function searchURL(){
@@ -1290,6 +1432,47 @@ function saveRecent(a,b){
   paintRecent();
 }
 const byEva=e=>IDX.find(s=>String(s.eva)===String(e));
+// Abzeichen und Knopf „Das nehm ich“ an Ort und Stelle aktualisieren (Liste nicht neu bauen, Details bleiben offen)
+function markTrip(){const cur=loadTrip()?.sig;
+  for(const row of document.querySelectorAll(".row[data-sig]")){const on=row.dataset.sig===cur;
+    row.querySelector(".mybadge")?.toggleAttribute("hidden",!on);
+    const b=row.querySelector('[data-act="pick"]');if(b)b.outerHTML=mineBtns(on).split("\n")[0]}}
+function paintTrip(){
+  const t=loadTrip(),box=$("mytrip");box.hidden=!t;if(!t){box.innerHTML="";return}
+  box.innerHTML=`<div class="mt-head"><span>${ico("star",16)} <b>Meine Reise</b> · ${esc(fmtD(t.start))}, ${esc(fmtT(t.start))} → ${esc(fmtT(t.end))} Uhr</span><button class="fav-x" type="button" id="mt-x" aria-label="Meine Reise vergessen">×</button></div>
+    <div class="ds-supporting">${esc(t.A)} → ${esc(t.B)}</div>
+    <details><summary>Reiseplan: worauf achten</summary><pre class="mt-plan">${esc(t.plan)}</pre></details>
+    <div class="mine"><button class="ds-btn ds-btn-outline ds-btn-sm" type="button" id="mt-friends">${ico("share",16)}<span>An Freunde schicken</span></button><button class="ds-btn ds-btn-outline ds-btn-sm" type="button" id="mt-plan">${ico("info",16)}<span>Reiseplan teilen</span></button><textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea></div>`;
+  $("mt-x").onclick=()=>{try{localStorage.removeItem(TRIPKEY)}catch{}paintTrip();markTrip()};
+  $("mt-friends").onclick=e=>shareText(t.friends,e.currentTarget,"Meine Zugreise");
+  $("mt-plan").onclick=e=>shareText(t.plan,e.currentTarget,"Reiseplan");
+}
+/* Meine Strecken: Strecke + Wochentag + Uhrzeit (+ Rückfahrt) merken, später mit einem Tipp fürs nächste Mal suchen */
+const FKEY="bbf-fav",WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+function loadFav(){try{const l=JSON.parse(localStorage.getItem(FKEY));return Array.isArray(l)?l:[]}catch{return []}}
+function saveFav(l){try{localStorage.setItem(FKEY,JSON.stringify(l))}catch{}paintFav()}
+const wdOf=d=>new Date(d+"T12:00:00Z").getUTCDay();
+const curFav=()=>{const d=DIRS[0];if(!d)return null;const r=DIRS[1];
+  return {f:d.A.st.eva,t:d.B.st.eva,wd:wdOf(berlinLocal(d.t).slice(0,10)),tm:berlinLocal(d.t).slice(11,16),
+    rt:r?{off:Math.round((new Date(berlinLocal(r.t).slice(0,10))-new Date(berlinLocal(d.t).slice(0,10)))/864e5),tm:berlinLocal(r.t).slice(11,16)}:null}};
+const sameRoute=(a,b)=>a&&b&&String(a.f)===String(b.f)&&String(a.t)===String(b.t);
+const isFav=()=>loadFav().some(x=>sameRoute(x,curFav()));
+function toggleFav(){const c=curFav();if(!c)return;const l=loadFav();
+  saveFav(l.some(x=>sameRoute(x,c))?l.filter(x=>!sameRoute(x,c)):[c,...l].slice(0,6));renderOut()}
+// nächster passender Wochentag ab heute (heute nur, wenn die Uhrzeit noch nicht vorbei ist)
+function nextDay(wd,tm){const t=today(),now=berlinLocal(new Date().toISOString()).slice(11,16);
+  for(let i=0;i<8;i++){const d=plusDays(t,i);if(wdOf(d)===wd&&(i>0||tm>now))return d}return plusDays(t,7)}
+const favLabel=x=>`${WD[x.wd]} ${x.tm}${x.rt?` ⇄ ${WD[(x.wd+x.rt.off)%7]} ${x.rt.tm}`:""}`;
+function paintFav(){
+  const list=loadFav().map(x=>({x,a:byEva(x.f),b:byEva(x.t)})).filter(e=>e.a&&e.b),box=$("favs");
+  box.hidden=!list.length;
+  box.innerHTML=list.length?`<span class="ds-supporting">${ico("star",14)} Meine Strecken:</span>${list.map((e,i)=>`<span class="fav"><button class="ds-chip" type="button" data-fv="${i}" title="Sucht für den nächsten ${esc(WD[e.x.wd])}.">${esc(e.a.name)} ${e.x.rt?"⇄":"→"} ${esc(e.b.name)} <span class="n">${esc(favLabel(e.x))}</span></button><button class="fav-x" type="button" data-fx="${i}" aria-label="${esc(e.a.name)} → ${esc(e.b.name)} vergessen">×</button></span>`).join("")}`:"";
+  box.querySelectorAll("[data-fv]").forEach(btn=>btn.onclick=()=>{const {x,a,b}=list[+btn.dataset.fv];
+    choose("from",a);choose("to",b);const d=nextDay(x.wd,x.tm);$("date").value=d;$("time").value=x.tm;
+    setTrip(!!x.rt);if(x.rt){$("rdate").value=plusDays(d,x.rt.off);$("rtime").value=x.rt.tm}
+    search()});
+  box.querySelectorAll("[data-fx]").forEach(btn=>btn.onclick=()=>{const x=list[+btn.dataset.fx].x;saveFav(loadFav().filter(y=>!sameRoute(y,x)))});
+}
 function paintRecent(){
   const list=loadRecent().map(x=>[byEva(x.f),byEva(x.t)]).filter(([a,b])=>a&&b),box=$("recent");
   box.hidden=!list.length;
@@ -1443,7 +1626,17 @@ if(q&&q.get("von")&&q.get("nach")){
   if(hasR){$("rdate").value=q.get("rd");if(okT(q.get("rt")))$("rtime").value=q.get("rt")}
   shared=!!(a&&b);
 }
-syncTrip();paintRecent();
+syncTrip();paintRecent();paintFav();paintTrip();
+// Meine Reisewahl: Knöpfe in den aufgeklappten Details (Details werden erst beim Aufklappen gebaut)
+$("out").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;
+  const d=b.closest(".row-detail"),r=d&&ROWV.get(d.id);if(!r)return;const {v,A,B,l}=r;
+  if(b.dataset.act==="pick"){const t=loadTrip(),sig=sigOf(v);
+    if(t?.sig===sig){try{localStorage.removeItem(TRIPKEY)}catch{}}
+    else try{localStorage.setItem(TRIPKEY,JSON.stringify({sig,A:A.name,B:B.name,start:v.start,end:v.end,friends:friendsText(v,A,B),plan:planText(v,A,B,l)}))}catch{}
+    paintTrip();markTrip()}
+  else if(b.dataset.act==="friends") shareText(friendsText(v,A,B),b,"Meine Zugreise");
+  else shareText(planText(v,A,B,l),b,"Reiseplan");
+});
 if(shared) search();
 
 // Installierbar als App (Startbildschirm); offline zeigt die Seite wenigstens die Suchmaske

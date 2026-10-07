@@ -50,3 +50,12 @@ Stand: 06.10.2026 · Methode: Jobs-to-be-done-Brainstorming (Skill `customer-res
 - BahnCard/Alter-Auswahl für Link-Parameter (`r=` im bahn.de-Link).
 - Hin+Rück als **ein** bahn.de-Link – im öffentlich bekannten Linkformat (BetterBahn `utils/createUrl.ts`) nicht nachweisbar, darum aktuell zwei Einzellinks.
 - Echte Nutzer-Interviews/Umfrage (PMF-Frage „Wie enttäuscht wärst du, wenn es die Seite nicht mehr gäbe?“).
+
+## 4. Runde 07.10.2026 abends (Studierende mit D-Ticket, lange Strecken)
+
+Umgesetzt: Nachtfahrt/FlixBus als „Auch möglich“, Lieblingsstrecken (Wochentag + Uhrzeit, ein Tipp), Profil „wird gemerkt“, IC-Abschnitte mit D-Ticket (bahn.de-Liste: Bremen–Norddeich Mole/Emden Außenhafen, Rostock–Stralsund, Rostock–Hamburg nur ICE 1520/1521, Dresden–Chemnitz; Gäubahn steht in den Daten schon als Regionalzug „IC87“), Ersatzbus-Abzeichen + Filter, Fahrgastrechte je Ticketart, Reisewahl „Das nehm ich“ mit Text für Freunde und Reiseplan für mich.
+
+### Vorgemerkt (noch nicht bauen)
+- **Grenz-Tricks international:** Gilt das D-Ticket bis zu einem Grenzbahnhof (z. B. Salzburg Hbf, Basel Bad Bf, ggf. weitere)? Dann Fernverkehr/ÖBB/SBB erst ab dort buchen. Vorher Liste der Grenzstrecken mit D-Ticket-Gültigkeit aus Primärquellen prüfen.
+- **IC-Freigaben prüfen und ggf. ergänzen:** Dortmund–Siegen–Dillenburg (nur bestimmte IC) und Erfurt–Jena–Gera stehen auf Sekundärseiten (inside-digital, wissen.deutschlandticket.de), aber nicht auf der bahn.de-Seite „Nahverkehrsfreigabe“ – erst nach Bestätigung einbauen. Westerland–Niebüll (IC 2075) unsicher. Liste bei jedem Fahrplanwechsel (Dezember) neu prüfen.
+- Feeder-Suche nutzt nur Nahverkehrsmodi: Ein freigegebener IC als Zubringer wird dort (noch) nicht gefunden, nur über die erste Gesamtsuche.
