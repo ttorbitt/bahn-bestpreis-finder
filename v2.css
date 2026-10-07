@@ -440,3 +440,25 @@ footer a{color:var(--muted-foreground)!important}
 .xticket .k .ico{vertical-align:-3px;margin-right:4px}
 .xticket .rail{grid-column:1/-1;height:10px;margin-top:10px;border-block:2px solid var(--perf);
   background:repeating-linear-gradient(90deg,var(--perf) 0 3px,transparent 3px 14px)}
+
+/* ---------- Farbwelt Bahn-Rot (07.10.2026): Rot trägt das bezahlte Stück und die Hauptaktionen, Fahrkarten in hellem Rosé ---------- */
+:root{--background:#f3f3f4;--foreground:#1e1f22;--card:#ffffff;--card-foreground:#1e1f22;--popover:#ffffff;--popover-foreground:#1e1f22;
+  --ticket:#fdeced;--ticket-edge:#f0c3c6;--primary:#c8001a;--primary-foreground:#ffffff;--secondary:#ffffff;--secondary-foreground:#1e1f22;
+  --muted:#e6e6e9;--muted-foreground:#55565c;--accent:rgba(30,31,34,.06);--perf:#7a6164;--input:#ffffff;
+  --border:rgba(30,31,34,.16);--line-strong:rgba(30,31,34,.30)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--background:#121214;--foreground:#ececee;--card:#1b1b1e;--card-foreground:#ececee;
+  --popover:#1e1e22;--popover-foreground:#ececee;--ticket:#2a1719;--ticket-edge:#4a2a2e;--primary:#e5323f;--primary-foreground:#ffffff;
+  --secondary:#1b1b1e;--secondary-foreground:#ececee;--muted:#26262a;--muted-foreground:#b0b1b8;--perf:#b49a9d;--input:#1b1b1e;
+  --border:rgba(236,236,238,.16);--line-strong:rgba(236,236,238,.32)}}
+:root[data-theme="dark"]{--background:#121214;--foreground:#ececee;--card:#1b1b1e;--card-foreground:#ececee;--popover:#1e1e22;--popover-foreground:#ececee;
+  --ticket:#2a1719;--ticket-edge:#4a2a2e;--primary:#e5323f;--primary-foreground:#ffffff;--secondary:#1b1b1e;--secondary-foreground:#ececee;
+  --muted:#26262a;--muted-foreground:#b0b1b8;--perf:#b49a9d;--input:#1b1b1e;--border:rgba(236,236,238,.16);--line-strong:rgba(236,236,238,.32)}
+.xticket .paid,.seg.fv{background-color:var(--primary);color:var(--primary-foreground)}
+.tk:has(>.ico)::before{background:var(--primary);color:var(--primary-foreground)}
+.ds-tab.active,.ds-tab[aria-selected="true"],.ds-tab[aria-pressed="true"]{background:var(--primary);color:var(--primary-foreground)}
+.ds-tabs,.ds-tab+.ds-tab{border-color:var(--primary)}
+.ds-chip[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
+.hhead,.pin-head{border-bottom-color:var(--primary)}
+.selbar{background:var(--primary);color:var(--primary-foreground)}
+.selbar .ds-btn-primary{background:var(--card);border-color:var(--card);color:var(--primary)}
+@media (hover:hover) and (pointer:fine){.ds-btn-primary:hover:not(:disabled){background:color-mix(in oklab,var(--primary) 85%,black);border-color:color-mix(in oklab,var(--primary) 85%,black)}}

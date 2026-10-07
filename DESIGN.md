@@ -274,3 +274,5 @@ The form is a mint ticket blank with a stock edge; the primary action sits on a 
 - **Don't** fall back to the category default: white cards, a blue accent, a price-first list.
 - **Don't** borrow DB branding (DB red, DB logo, DB corporate type).
 - **Don't** let the stamp land more than once per view.
+
+> Stand 07.10.2026: Farbwelt auf Bahn-Rot umgestellt (Primär #c8001a, dunkel #e5323f; Fahrkarten-Stock #fdeced; Grund #f3f3f4). Die Override-Ebene steht am Ende von v2.css; Token-Werte oben in diesem Dokument sind dadurch teilweise überholt.

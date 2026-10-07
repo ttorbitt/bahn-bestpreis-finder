@@ -32,7 +32,7 @@ v2 = v2.replace("</header>", "</header>\n" + (here / "v2-intro.html").read_text(
 for a, b in [('fetch("punct.json"', 'fetch("../punct.json"'), ('register("sw.js")', 'register("../sw.js")')]:
     assert a in v2, a
     v2 = v2.replace(a, b)
-v2 = v2.replace('<meta name="theme-color" content="#faf6f3"', '<meta name="theme-color" content="#e6ece7"')
+v2 = v2.replace('<meta name="theme-color" content="#faf6f3"', '<meta name="theme-color" content="#f3f3f4"')
 (here / "v2").mkdir(exist_ok=True)
-(here / "v2" / "index.html").write_text(page(v2, "../").replace('content="#faf6f3"', 'content="#e6ece7"').replace('content="#1b1614"', 'content="#0d1210"'))
+(here / "v2" / "index.html").write_text(page(v2, "../").replace('content="#faf6f3"', 'content="#f3f3f4"').replace('content="#1b1614"', 'content="#121214"'))
 print("ok", len(body) // 1024, "KB · v2", len(v2) // 1024, "KB")
