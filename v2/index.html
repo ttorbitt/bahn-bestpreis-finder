@@ -473,6 +473,10 @@ footer a{color:var(--muted-foreground)!important}
 .selbar{background:var(--primary);color:var(--primary-foreground)}
 .selbar .ds-btn-primary{background:var(--card);border-color:var(--card);color:var(--primary)}
 @media (hover:hover) and (pointer:fine){.ds-btn-primary:hover:not(:disabled){background:color-mix(in oklab,var(--primary) 85%,black);border-color:color-mix(in oklab,var(--primary) 85%,black)}}
+/* Kein Grün mehr: „sicher“ und gültige Eingaben in Tinte statt Grün (Rot bleibt Gefahr, Gelb bleibt Vorsicht) */
+:root,:root[data-theme="dark"]{--pop-green:var(--muted);--pop-green-foreground:var(--foreground)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pop-green:var(--muted);--pop-green-foreground:var(--foreground)}}
+.ds-input.ok{border-color:var(--line-strong)}
 
 </style>
 
