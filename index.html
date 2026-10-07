@@ -624,9 +624,11 @@ function analyze(it){
   const fv=L.map((l,i)=>isFV(l)?i:-1).filter(i=>i>=0);
   let minTr=null;
   for(let i=1;i<L.length;i++){const m=mins(L[i-1].endTime,L[i].startTime);minTr=minTr==null?m:Math.min(minTr,m)}
+  // Abfahrt/Ankunft des ersten/letzten Zugs – ohne Fußweg zum Gleis, sonst passt die Zeit nicht zu bahn.de (09:08 statt 09:10)
+  const start=L.length?L[0].startTime:it.startTime,end=L.length?L[L.length-1].endTime:it.endTime;
   return {L,first:fv[0],last:fv[fv.length-1],hasFV:fv.length>0,
     flix:L.some(isFlix),
-    start:it.startTime,end:it.endTime,dur:mins(it.startTime,it.endTime),transfers:Math.max(0,L.length-1),minTr,
+    start,end,dur:mins(start,end),transfers:Math.max(0,L.length-1),minTr,
     feederBuf:fv.length&&fv[0]>0?mins(L[fv[0]-1].endTime,L[fv[0]].startTime):null};
 }
 /* Pünktlichkeit pro Zug (Vormonat) aus punct.json – nur auf der eigenständigen Seite, sonst einfach ohne */
@@ -684,6 +686,9 @@ function mkSpar(L,start,end,ice,iceIdx,iceEnd=iceIdx){
 const WIN_MIN=180;
 async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   const soft=e=>{if(e instanceof StopError&&(e.message!=="Frist"||sig.aborted))throw e;return null};
+  // Fehlgeschlagene Abfragen merken (statt still zu schlucken), damit die Liste sagt, wo Kombis fehlen können
+  const failed=new Set();
+  const softAt=label=>e=>{soft(e);if(!(e instanceof StopError))failed.add(label);return null};
   prog(.05,"Verbindungen im Zeitfenster suchen");
   // Der Server arbeitet unsere Anfragen praktisch nacheinander ab (~3 s je Anfrage) – darum wenige, wichtige zuerst.
   const all=await plan(A.place,B.place,tIso,{n:8,sig}); // n:8 deckt meist ~3 h ab; große Zeitfenster sind teuer
@@ -691,7 +696,17 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   const inWin=x=>new Date(x.start)>=t0&&new Date(x.start)<=tEnd;
   const its=all.map(analyze).filter(x=>x.hasFV&&inWin(x));
   let dt=[],dtLoading=true; // „Nur D-Ticket“ wird zuletzt geladen (teuer, am seltensten gebraucht)
-  if(!its.length) throw new Error(`Keine Verbindung ${A.name} → ${B.name} gefunden. Liegt das Datum noch im Fahrplan (meist bis Mitte Dezember)?`);
+  const dtOf=d=>d.filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:"Nur Regionalzüge"}));
+  if(!its.length){
+    // Kein ICE/IC im Fenster (z. B. Lübeck → Hamburg): trotzdem die Regionalzüge zeigen statt „keine Verbindung“
+    prog(.5,"Nur-D-Ticket-Verbindungen suchen");
+    const d=await plan(A.place,B.place,tIso,{nv:true,n:5,sig}).catch(e=>{if(e instanceof StopError)throw e;return []});
+    dt=dtOf(d);
+    if(!dt.length) throw new Error(`Keine Verbindung ${A.name} → ${B.name} gefunden. Liegt das Datum noch im Fahrplan (meist bis Mitte Dezember)?`);
+    prog(1,"Fertig");
+    return {A,B,whole:[],spar:[],dt:uniqV(dt).map(v=>(v.risk=riskOf(v),v)),from:tIso,until:addMin(tIso,WIN_MIN),partial:false,dtLoading:false,failed:[],
+      note:"In diesem Zeitfenster fährt hier kein ICE oder IC – mit dem Deutschland-Ticket kommst du ohne Zusatzkosten hin (Reiter „Nur D-Ticket“)."};
+  }
   const whole=its.map(x=>({...x,kind:"A",name:x.L.filter(isFV).map(legName).join(" + ")}));
   const fastest=Math.min(...its.map(x=>x.dur));
   const spar=[],sparBase=[];
@@ -705,7 +720,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   let buildNow=()=>{};
   let note="";
   const pack=partial=>{const fin=a=>uniqV(a).map(v=>(v.risk=riskOf(v),v));
-    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,dtLoading,note}};
+    return {A,B,whole:fin(whole),dt:fin(dt),spar:fin(spar),from:tIso,until:addMin(tIso,WIN_MIN),partial,dtLoading,note,failed:[...failed]}};
   onPartial(pack(true));
 
   // Ab hier mit Frist: bei langsamem Server zeigen wir, was bis dahin da ist
@@ -720,7 +735,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     const runOf=t=>{const out=[];for(const x of (t.legs||[]).filter(x=>x.mode!=="WALK"))for(const st of [x.from,...(x.intermediateStops||[]),x.to])if(!out.length||out[out.length-1].name!==st.name)out.push(st);return out};
     let done=0;prog(.2,`Laufwege der ICEs (0 von ${legs.length})`);
     const runs=await Promise.all(legs.map(l=>api("/v5/trip",{tripId:l.tripId},ssig).then(runOf)
-      .catch(soft).finally(()=>{done++;prog(.2+.15*done/legs.length,`Laufwege der ICEs (${done} von ${legs.length})`)})));
+      .catch(softAt("Laufwege einzelner ICEs")).finally(()=>{done++;prog(.2+.15*done/legs.length,`Laufwege der ICEs (${done} von ${legs.length})`)})));
     // Lage eines Halts auf der Strecke Start→Ziel (0 = Start, 1 = Ziel)
     const ax=A.st.lon*.63,ay=A.st.lat,bx=B.st.lon*.63,by=B.st.lat,ab=(bx-ax)**2+(by-ay)**2;
     const pos=st=>((st.lon*.63-ax)*(bx-ax)+(st.lat-ay)*(by-ay))/ab;
@@ -734,6 +749,14 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
     runs.forEach(run=>{for(const st of run||[]){
       if(st.lat==null||!st.stopId||hubs.has(st.name))continue;const p=pos(st);
       if(p>=-.02&&p<=.6&&km(st,A.st)<=MAXKM&&offKm(st)<=CORR)hubs.set(st.name,st)}});
+    // Auch jeder Bahnhof, an dem ein ICE der ersten Suche startet – selbst wenn er „hinter“ dem Start liegt
+    // (Lübeck → Berlin: Hamburg Hbf liegt westlich von Lübeck, dort fahren aber die ICEs nach Berlin ab)
+    for(const l of legs)if(l.from?.stopId&&l.from.lat!=null&&!hubs.has(l.from.name)&&pos(l.from)<=.6&&km(l.from,A.st)<=MAXKM)hubs.set(l.from.name,l.from);
+    // Derselbe Zug steckt oft mehrfach in den Daten (z. B. „ICE 175“ und „rj 175“ aus einem anderen Land) –
+    // Zugnummer + Abfahrt am Bahnhof erkennt Doppelte, das spart Abfragen und doppelte Zeilen
+    const trainKey=(name,stName,dep)=>`${String(name||"").replace(/\D/g,"")}@${stName}@${new Date(dep).getTime()}`;
+    const seenTrain=new Set(),byKey=new Map(),isDE=x=>/^de-/.test(x.place?.stopId||"");
+    legs.forEach((l,j)=>{for(const st of runs[j]||[])if(st.departure)seenTrain.add(trainKey(legName(l),st.name,st.departure))});
     const t1=new Date(addMin(tIso,-30)),t2=new Date(addMin(tIso,WIN_MIN+150)),extra=new Map();
     prog(.36,`Weitere ICEs an ${hubs.size} Bahnhöfen`);
     await Promise.all([...hubs.values()].map(h=>api("/v5/stoptimes",{stopId:h.stopId,time:t1.toISOString(),n:80,mode:"HIGHSPEED_RAIL,LONG_DISTANCE,NIGHT_RAIL"},ssig).then(d=>{
@@ -742,11 +765,18 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
         if(dep<t1||dep>t2||x.cancelled||x.tripCancelled||x.place.pickupType==="NOT_ALLOWED")continue;
         if(trips.has(x.tripId)||extra.has(x.tripId)||!isFV(x)||isFlix(x))continue;
         if(x.tripTo?.lat!=null&&pos(x.tripTo)<pos(h)+.15)continue; // fährt nicht Richtung Ziel
+        if(/\d/.test(legName(x))){
+          const tk=trainKey(legName(x),x.place.name,x.place.departure);
+          if(seenTrain.has(tk))continue; // schon aus der ersten Suche bekannt
+          const old=byKey.get(tk);
+          if(old){if(isDE(old)||!isDE(x))continue;extra.delete(old.tripId)} // bei Doppelten den deutschen Datensatz nehmen
+          byKey.set(tk,x);
+        }
         extra.set(x.tripId,x);
-      }}).catch(soft)));
+      }}).catch(softAt(`Abfahrtstafel ${h.name}`))));
     const xs=[...extra.values()];done=0;
     const xruns=await Promise.all(xs.map(x=>api("/v5/trip",{tripId:x.tripId},ssig).then(runOf)
-      .catch(soft).finally(()=>{done++;prog(.38+.07*done/xs.length,`Weitere ICEs prüfen (${done} von ${xs.length})`)})));
+      .catch(softAt("Laufwege einzelner ICEs")).finally(()=>{done++;prog(.38+.07*done/xs.length,`Weitere ICEs prüfen (${done} von ${xs.length})`)})));
     xs.forEach((x,j)=>{
       const run=xruns[j];if(!run||!run.length)return;
       const iF=run.findIndex(st=>st.name===x.place.name);if(iF<0)return;
@@ -824,27 +854,42 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
           add(M,e.st.name,[{legs:[leg],startTime:leg.startTime,endTime:leg.endTime}]);
         }}).catch(soft)));
     };
+    /* a1) Früheste Ankunft vom Start an jedem Einstiegsbahnhof – EINE schnelle Abfrage (one-to-many, < 1 s) für alle.
+           Damit sparen wir Abfragen für ICE-Zeiten, die mit Regionalzügen ab 90 min vor der Wunschzeit gar nicht
+           erreichbar sind. Nur sichere Fälle werden übersprungen (5 min Toleranz); fehlt die Antwort, wird alles gefragt. */
+    const T0=addMin(tIso,-90),reach=new Map();
+    const reachP=preN.length?api("/experimental/one-to-many-intermodal",{one:`${A.st.lat};${A.st.lon}`,many:preN.map(e=>`${e.st.lat};${e.st.lon}`).join(","),
+      time:T0,maxTravelTime:WIN_MIN+240,transitModes:NV},ssig).then(d=>preN.forEach((e,j)=>{const ds=(d.transit_durations?.[j]||[]).map(x=>x.duration).filter(x=>x>0);
+        if(ds.length)reach.set(e.st.name,new Date(T0).getTime()+Math.min(...ds)*1000)})).catch(soft):Promise.resolve();
+    const unreachable=(e,t)=>reach.has(e.st.name)&&reach.get(e.st.name)>new Date(t).getTime()-3*60000; // braucht Ankunft ≤ t−8 min
     prog(.45,"Direkte Regionalzüge");
-    await Promise.all([direct("pre").catch(soft),direct("post").catch(soft)]);
+    // Fehler bei den direkten Zügen sind keine Lücke: Bahnhöfe ohne Treffer bekommen danach die normale Routensuche
+    await Promise.all([reachP,direct("pre").catch(soft),direct("post").catch(soft)]);
     // a) je Bahnhof ohne direkten Zug eine Abfrage (Umsteige-Verbindungen wie RE3 → RE2)
     const has=(M,e)=>(M.get(e.st.name)||[]).length>0;
+    const okA=new Set(); // Abfrage a) hat geantwortet (auch wenn leer)
     await Promise.all([
-      ...preN.map(e=>has(preR,e)?Promise.resolve().then(tick):(()=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mx=Math.max(...ts),n=Math.min(6,e.t.size+1);
-        return plan(A.place,`${e.st.lat},${e.st.lon}`,new Date(mx-8*60000).toISOString(),{arr:true,nv:true,n,sig:ssig}).then(r=>add(preR,e.st.name,r)).catch(soft).finally(tick)})()),
+      ...preN.map(e=>{const ok=[...e.t].filter(t=>!unreachable(e,t));
+        if(has(preR,e))return Promise.resolve().then(tick);
+        if(!ok.length){okA.add("pre"+e.st.name);return Promise.resolve().then(tick)} // kein ICE dort ist rechtzeitig erreichbar
+        const mx=Math.max(...ok.map(t=>new Date(t).getTime())),n=Math.min(6,ok.length+1);
+        return plan(A.place,`${e.st.lat},${e.st.lon}`,new Date(mx-8*60000).toISOString(),{arr:true,nv:true,n,sig:ssig}).then(r=>{okA.add("pre"+e.st.name);add(preR,e.st.name,r)}).catch(softAt(e.st.name)).finally(tick)}),
       ...postN.map(e=>has(postR,e)?Promise.resolve().then(tick):(()=>{const ts=[...e.t].map(t=>new Date(t).getTime()),mn=Math.min(...ts),n=Math.min(6,e.t.size+1);
-        return plan(`${e.st.lat},${e.st.lon}`,B.place,new Date(mn+4*60000).toISOString(),{nv:true,n,sig:ssig}).then(r=>add(postR,e.st.name,r)).catch(soft).finally(tick)})())]);
+        return plan(`${e.st.lat},${e.st.lon}`,B.place,new Date(mn+4*60000).toISOString(),{nv:true,n,sig:ssig}).then(r=>{okA.add("post"+e.st.name);add(postR,e.st.name,r)}).catch(softAt(e.st.name)).finally(tick)})())]);
     // b) Lücken gezielt schließen: für jede ICE-Zeit ohne passenden Regionalzug eine eigene Abfrage
     /* Pro Bahnhof nacheinander: nach jeder Antwort neu prüfen, denn eine Abfrage deckt oft mehrere ICE-Zeiten ab.
-       Bahnhöfe ohne jeden Regionalweg (Abfrage a leer) überspringen – dort findet auch Nachfragen nichts. */
+       Bahnhöfe ohne jeden Regionalweg (Abfrage a hat geantwortet, aber leer) überspringen – dort findet auch Nachfragen nichts.
+       Ist Abfrage a) gescheitert, fragen wir hier je ICE-Zeit nach – das ist zugleich der zweite Versuch. */
     const fillAt=async(e,side)=>{
       const M=side==="pre"?preR:postR,k=e.st.name;
-      if(!(M.get(k)||[]).length) return;
+      if(!(M.get(k)||[]).length&&okA.has(side+k)) return;
       for(const t of [...e.t].sort()){
         if(side==="pre"?fitsPre(M.get(k),t):fitsPost(M.get(k),t)) continue;
+        if(side==="pre"&&unreachable(e,t)) continue; // vom Start aus nicht rechtzeitig erreichbar
         gaps++;
         const q=side==="pre"?plan(A.place,`${e.st.lat},${e.st.lon}`,addMin(t,-8),{arr:true,nv:true,n:3,sig:ssig})
                            :plan(`${e.st.lat},${e.st.lon}`,B.place,addMin(t,4),{nv:true,n:3,sig:ssig});
-        await q.then(r=>add(M,k,r)).catch(soft).finally(tick);
+        await q.then(r=>{add(M,k,r);if((M.get(k)||[]).length)failed.delete(k)}).catch(softAt(k)).finally(tick);
       }
     };
     await Promise.all([...preN.map(e=>fillAt(e,"pre")),...postN.map(e=>fillAt(e,"post"))]);
@@ -885,7 +930,7 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
   onPartial(pack(false));
   // 5) zuletzt: nur Regionalzüge (für den Reiter „Nur D-Ticket“)
   prog(.93,"Nur-D-Ticket-Verbindungen suchen");
-  try{const d=await plan(A.place,B.place,tIso,{nv:true,n:3,sig});dt=d.filter(nvOnlyOk).map(analyze).filter(inWin).map(x=>({...x,kind:"D",name:"Nur Regionalzüge"}))}
+  try{dt=dtOf(await plan(A.place,B.place,tIso,{nv:true,n:3,sig}))}
   catch(e){if(e instanceof StopError)throw e}
   dtLoading=false;
   prog(1,"Fertig");
@@ -1134,6 +1179,8 @@ function dirHTML(r){
     if(list.length>shown.length) h+=`<button class="ds-btn ds-btn-ghost ds-btn-sm" id="show-all" type="button">Alle ${list.length} anzeigen</button>`;
   }
   if(r.note) h+=`<p class="tip" role="status">${esc(r.note)}</p>`;
+  if(r.failed?.length){const f=r.failed,show=f.slice(0,4).join(", ")+(f.length>4?` und ${f.length-4} weitere`:"");
+    h+=`<p class="tip" role="status">Der Fahrplan-Server hat nicht alles beantwortet (${esc(show)}). Dort können Spar-Kombis fehlen. <button class="ds-btn ds-btn-ghost ds-btn-sm" id="retry-search" type="button"${LOADING?" disabled":""}>${ico("refresh",16)}Nochmal suchen</button></p>`}
   if(LOADING&&APPEND>0) h+=`${skelRows(1)}<div class="loadmore" role="status">Suche spätere Verbindungen ab ${fmtT(r.until)} Uhr … <span class="lm-meta"></span></div>`;
   else h+=`<button class="ds-btn ds-btn-outline ds-btn-sm more-times" id="more-times" type="button"${LOADING?" disabled":""}>Spätere Verbindungen (ab ${fmtT(r.until)} Uhr)${ico("right",16)}</button>`;
   return h;
@@ -1171,6 +1218,7 @@ function renderOut(){
     d.hidden=!open;t.setAttribute("aria-expanded",String(open));
   });
   $("later-top")?.addEventListener("click",()=>loadMore(TAB,1));
+  $("retry-search")?.addEventListener("click",()=>search());
   for(const b of document.querySelectorAll("[data-f]")) b.addEventListener("click",()=>{FILT[b.dataset.f]=b.dataset.v;SHOWALL=false;renderOut()});
   paintSelBar();
 }
@@ -1204,7 +1252,7 @@ function loadMore(i,dir){
   return runDirs([i],my,live,{append:true,earlier:dir<0}).finally(()=>{APPEND=0;if(live())renderOut()});
 }
 const minT=(a,b)=>new Date(a)<new Date(b)?a:b,maxT=(a,b)=>new Date(a)>new Date(b)?a:b;
-const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note});
+const mergeRes=(a,b)=>({...b,whole:uniqV([...a.whole,...b.whole]),spar:uniqV([...a.spar,...b.spar]),dt:uniqV([...a.dt,...b.dt]),from:minT(a.from,b.from),until:maxT(a.until,b.until),note:b.note||a.note,failed:[...new Set([...(a.failed||[]),...(b.failed||[])])]});
 
 /* Teilen: Suche steckt in der Webadresse */
 function searchURL(){
@@ -1294,15 +1342,26 @@ async function runDirs(idxs,my,live,opt={}){
   try{
     for(let k=0;k<idxs.length;k++){
       const i=idxs[k];
+      /* Eigenes Zeitlimit je Richtung: Läuft es ab, endet nur diese Richtung – und was bis dahin fertig war, bleibt
+         (früher war dann alles weg, obwohl die Spar-Kombis schon berechnet waren). Abbrechen-Knopf wirkt weiter auf alles. */
+      const dctl=new AbortController(),dsig=dctl.signal;dsig.stats=sig.stats;
+      const onOuter=()=>dctl.abort(sig.reason);sig.addEventListener("abort",onOuter);
       clearTimeout(timer);
-      timer=setTimeout(()=>stop(new StopError(`Der Fahrplan-Server braucht zu lange (über ${TIMEOUT_S} s).`,true)),TIMEOUT_S*1000);
+      timer=setTimeout(()=>dctl.abort(new StopError(`Der Fahrplan-Server braucht zu lange (über ${TIMEOUT_S} s).`,true)),TIMEOUT_S*1000);
       const pre=rt?(i?"Rückfahrt: ":"Hinfahrt: "):"";
       const d=DIRS[i],prev=opt.append?RES[i]:null;
       const t=prev?(opt.earlier?addMin(prev.from,-WIN_MIN):prev.until):d.t;
-      const r=await computeDir(placeOf(d.A.st),placeOf(d.B.st),t,sig,{
-        onPartial:()=>{}, // Zwischenstände nicht zeigen: Ergebnisse erst, wenn sie vollständig geladen sind
-        prog:(f,label)=>{cur={frac:(k+f)/idxs.length,label:pre+label,step:f<.2?0:f<.45?1:f<1?2:(k===idxs.length-1?3:0)};paint()}
-      });
+      let last=null,r;
+      try{
+        r=await computeDir(placeOf(d.A.st),placeOf(d.B.st),t,dsig,{
+          onPartial:p=>{last=p}, // Zwischenstände nicht zeigen (erst, wenn vollständig), aber fürs Zeitlimit aufheben
+          prog:(f,label)=>{cur={frac:(k+f)/idxs.length,label:pre+label,step:f<.2?0:f<.45?1:f<1?2:(k===idxs.length-1?3:0)};paint()}
+        });
+      }catch(err){
+        if(!(err instanceof StopError&&err.timeout&&last&&!sig.aborted)) throw err;
+        r={...last,partial:false,dtLoading:false,note:`Der Fahrplan-Server war sehr langsam, darum wurde die Suche nach ${Math.round(TIMEOUT_S/60)} Minuten beendet. Hier steht alles, was bis dahin fertig war – es können Verbindungen fehlen. Später nochmal suchen lohnt sich.`};
+      }finally{clearTimeout(timer);sig.removeEventListener("abort",onOuter)}
+      if(!live()) return;
       RES[i]=prev?mergeRes(prev,r):r;
       if(!live()) return;
       renderOut();
