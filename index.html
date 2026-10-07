@@ -802,12 +802,27 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
       });
       bi=bi.sort((x,y)=>Math.abs(pos(run[x]))-Math.abs(pos(run[y]))).slice(0,8);
       ai=ai.sort((x,y)=>Math.abs(1-pos(run[x]))-Math.abs(1-pos(run[y]))).slice(0,8);
-      // Zusatz-ICEs (2b) nur an Bahnhöfen, die ohnehin geprüft werden, plus eigener Ein-/Ausstieg –
-      // sonst explodiert die Zahl der Regionalzug-Abfragen und der Server schafft es nicht mehr
-      if(leg.xtra){bi=bi.filter(i=>i===iF||knownB.has(run[i].name));ai=ai.filter(i=>i===iT||knownA.has(run[i].name))}
-      else{for(const i of bi)knownB.add(run[i].name);for(const i of ai)knownA.add(run[i].name)}
-      plans.push({leg,run,bi,ai});
+      if(!leg.xtra){for(const i of bi)knownB.add(run[i].name);for(const i of ai)knownA.add(run[i].name)}
+      plans.push({leg,run,bi,ai,iF,iT});
     });
+    /* Zusatz-ICEs (2b) halten oft an Bahnhöfen, die kein ICE der ersten Suche anfährt (Lübeck → Köln: IC über
+       Bremen–Osnabrück–Münster statt über Hannover). Davon wenige neue Bahnhöfe dazunehmen, über die Strecke verteilt
+       (nah und weit vom Ziel) – alle zu prüfen würde die Zahl der Regionalzug-Abfragen sprengen. */
+    const NEWX=4;
+    const pickNew=(side,known)=>{
+      const P=side==="pre"?A.st:B.st,c=new Map();
+      for(const p of plans)if(p.leg.xtra)for(const i of (side==="pre"?p.bi:p.ai)){const st=p.run[i];
+        // nur zwischen Start und Ziel: sonst z. B. ICE bis Kufstein (an München vorbei) und Regionalzug zurück
+        if(known.has(st.name)||c.has(st.name)||near(st,P)||km(st,P)>MAXKM||offKm(st)>CORR||pos(st)<0||pos(st)>1)continue;c.set(st.name,km(st,P))}
+      const s=[...c].sort((x,y)=>x[1]-y[1]).map(x=>x[0]);
+      if(s.length<=NEWX)return new Set(s);
+      return new Set(Array.from({length:NEWX},(_,k)=>s[Math.round(k*(s.length-1)/(NEWX-1))]));
+    };
+    const newB=pickNew("pre",knownB),newA=pickNew("post",knownA);
+    for(const p of plans)if(p.leg.xtra){
+      p.bi=p.bi.filter(i=>i===p.iF||knownB.has(p.run[i].name)||newB.has(p.run[i].name));
+      p.ai=p.ai.filter(i=>i===p.iT||knownA.has(p.run[i].name)||newA.has(p.run[i].name));
+    }
     /* 3) Regionalzüge – vollständig für JEDE ICE-Abfahrt:
           a) eine Abfrage pro Umstiegsbahnhof (liefert meist schon mehrere Züge),
           b) für jede ICE-Zeit prüfen, ob ein passender Regionalzug dabei ist – sonst gezielt nachfragen.
