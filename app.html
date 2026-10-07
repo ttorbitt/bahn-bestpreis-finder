@@ -161,7 +161,8 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .brand h1{margin:0}
 /* Suchmaske */
 .search .ds-card-body{display:grid;gap:16px;padding:16px}
-.seg{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.tripseg{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.tripseg .ds-tab{padding:.5rem .6rem}
 .ds-field{margin:0}
 .places{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
 .places .stack{display:grid;gap:12px;min-width:0}
@@ -192,7 +193,9 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .fav-x{border:0;background:none;color:var(--muted-foreground);font-size:1.1rem;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px}
 .fav-x:hover{color:var(--foreground)}
 .mybadge[hidden]{display:none}
-.share-menu{padding:6px 0 2px}
+.share-menu{padding:2px 0 4px}
+.row>.share-menu{grid-column:2/-1;margin:0}
+.row>.share-menu[hidden]{display:none}
 .mine{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
 .mine .share-out{flex-basis:100%;min-height:7em;font:inherit;font-size:.82rem;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--foreground)}
 .mytrip{padding:12px 14px;display:grid;gap:6px}
@@ -203,7 +206,8 @@ body{background:var(--background);color:var(--foreground);margin:0}
 #fav[aria-pressed="true"] .ico{fill:currentColor}
 /* Fortschritt */
 .prog{display:grid;gap:8px}
-.prog .ds-progress-bar{width:0;transition:width .35s ease}
+.prog .ds-progress-bar{width:100%;transform-origin:left;transform:scaleX(0);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.search.ds-card{overflow:visible} /* Bahnhofs-Vorschläge dürfen über den Kartenrand hinaus */
 .prog-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .prog-step{font-weight:600;font-size:.9rem}
 .steps{display:flex;gap:6px;flex-wrap:wrap;margin:0;padding:0;list-style:none;font-size:.78rem;color:var(--muted-foreground)}
@@ -218,6 +222,11 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .res{display:grid;gap:16px}
 .res-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .res-head>div{display:grid;gap:2px;min-width:0}
+@media (max-width:480px){
+  .brand h1{font-size:1.1rem;white-space:nowrap}
+  .res-head{flex-wrap:wrap}.res-head>.head-btns{display:flex;justify-content:flex-start}
+  .share-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.share-menu .ds-btn{justify-content:center;min-width:0;padding-inline:.6rem}.share-menu .ds-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.share-menu .share-out{grid-column:1/-1}
+}
 .dirtabs{display:grid;grid-template-columns:1fr 1fr;width:100%}
 .dirtabs .ds-tab{display:grid;gap:1px;padding:.55rem .6rem}
 .dirtabs .ds-tab small{font-size:.75rem;font-weight:400}
@@ -258,7 +267,20 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .others>summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--muted-foreground)}
 .others[open]>summary{margin-bottom:10px}
 /* Filter und Nachlade-Anzeige */
-.filters{display:grid;gap:6px}
+.filters{display:grid;gap:10px;padding:2px 0 12px}
+.filt{border-block:1px solid var(--border)}
+.filt>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-size:.9rem;font-weight:500}
+.filt>summary b{font-weight:600;color:var(--primary)}
+.filt .fchips{flex-wrap:wrap;overflow:visible}
+/* Aufklapp-Pfeil einheitlich statt Browser-Dreieck */
+.faq summary,.rights summary,.mytrip summary,.filt>summary{list-style:none}
+.faq summary::-webkit-details-marker,.rights summary::-webkit-details-marker,.mytrip summary::-webkit-details-marker,.filt>summary::-webkit-details-marker{display:none}
+.faq summary,.rights summary,.mytrip summary{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.faq summary::after,.rights summary::after,.mytrip summary::after,.filt>summary::after{content:"";flex:none;width:7px;height:7px;margin:0 6px 3px 0;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;opacity:.55;transform:rotate(45deg);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+.faq details[open]>summary::after,.rights[open]>summary::after,.mytrip details[open]>summary::after,.filt[open]>summary::after{transform:translateY(3px) rotate(225deg)}
+/* Browser-Flächen im Stil der App */
+.ds{caret-color:var(--primary);scrollbar-color:color-mix(in oklab,var(--foreground) 22%,transparent) transparent}
+.hours,.fchips{scrollbar-width:thin}
 .fchips{display:flex;gap:6px;overflow-x:auto;align-items:center;padding-bottom:2px;scrollbar-width:thin}
 .fchips .fl{flex:none;font-size:.8rem;color:var(--muted-foreground);margin-right:2px}
 .fchips .ds-chip{flex:none;white-space:nowrap}
@@ -297,6 +319,7 @@ body{background:var(--background);color:var(--foreground);margin:0}
 .sw{display:inline-block;width:16px;height:9px;border-radius:3px;vertical-align:1px}
 .sw.nv{background:var(--pop-green)}.sw.fv{background:var(--primary)}.sw.wait{border:1.5px dashed var(--line-strong)}
 .timebar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem;color:var(--muted-foreground)}
+.timebar .win{white-space:nowrap}
 .selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:12px;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:999px;padding:8px 8px 8px 18px;box-shadow:var(--shadow-xl);max-width:calc(100% - 32px)}
 .selbar .tgl{margin-left:0}
 .modes-wrap{display:grid;gap:6px}
@@ -321,7 +344,7 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .row .go{margin-top:2px}
 .more-times{justify-self:start}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .acts{grid-column:2;display:flex;flex-wrap:wrap}}
+@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr);padding:12px}.row .acts{grid-column:2;display:flex;flex-wrap:nowrap;gap:6px;align-items:center}.row .acts .share-btn{margin-left:auto}}
 /* Reiseleiste */
 .chain{display:flex;gap:2px;margin-top:4px;min-width:0;overflow:hidden}
 .seg.fv{min-width:58px}.seg.nv{min-width:14px}.seg.wait{min-width:12px}
@@ -337,11 +360,9 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .seg.flix{background:var(--pop-orange);color:var(--pop-orange-foreground)}
 .seg.wait{border:1.5px dashed var(--line-strong);color:var(--muted-foreground);font-weight:500;background:transparent}
 .seg.wait.bad{border-color:var(--destructive);color:var(--destructive)}
-.chain-st{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--muted-foreground);min-width:0}
-.chain-st>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;gap:3px;min-width:0}
-.chain-st svg{flex:none}
 .row-l3{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:.86rem}
-.tk{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.tk{display:inline;min-width:0;line-height:1.4}
+.tk .ico{vertical-align:-3px;margin-right:4px}
 .tk b{font-weight:600;white-space:nowrap}
 .tgl{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--muted-foreground);font:500 .85rem var(--font-sans);cursor:pointer;min-height:36px;padding:0 4px;margin-left:auto}
 .tgl svg{transition:transform .15s}
@@ -404,7 +425,7 @@ footer a{color:var(--muted-foreground)!important;text-decoration:underline!impor
 
 <form id="f" class="ds-card search" autocomplete="off" novalidate>
   <div class="ds-card-body">
-    <div class="ds-tabs seg" role="group" aria-label="Reiseart">
+    <div class="ds-tabs tripseg" role="group" aria-label="Reiseart">
       <button type="button" class="ds-tab" id="t-one" aria-pressed="false">Nur Hinfahrt</button>
       <button type="button" class="ds-tab active" id="t-rt" aria-pressed="true">Hin und zurück</button>
     </div>
@@ -1116,7 +1137,7 @@ const helpHTML=()=>`<div class="help-card" id="list-help" hidden>
   <p><b>Mehrere Preise vergleichen:</b> Hake Verbindungen an und tippe auf „Alle öffnen“. Beim ersten Mal fragt dein Browser, ob er mehrere Fenster öffnen darf – bitte erlauben.</p>
 </div>`;
 const SEL=new Map();let SHOWALL=false,APPEND=0; // APPEND: -1 lädt frühere, +1 spätere Zeiten
-const FILT={from:"",to:"",sev:""}; // Filter „ICE ab“ / „ICE bis“ im Spar-Reiter // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
+const FILT={from:"",to:"",sev:""};let FILT_OPEN=false; // Filter „ICE ab“ / „ICE bis“ im Spar-Reiter // gewählte Zeile → zu öffnende Links (Spar-Kombi: ICE-Ticket + Normalpreis)
 const SORTFN={rec:(a,b)=>scoreOf(a)-scoreOf(b)||a.dur-b.dur,ice:(a,b)=>a.fvMin-b.fvMin||new Date(a.end)-new Date(b.end),arr:(a,b)=>new Date(a.end)-new Date(b.end)||a.dur-b.dur,
   dep:(a,b)=>new Date(a.start)-new Date(b.start)||a.dur-b.dur,dur:(a,b)=>a.dur-b.dur};
 
@@ -1148,8 +1169,7 @@ function chainHTML(v){
   const segs=items.map(it=>it.l
     ?`<span class="seg ${legType(it.l)}" style="flex:${it.m} 1 ${basis(it)}" title="${esc(legName(it.l))}${isSEV(it.l)?" (Ersatzbus)":isBus(it.l)?" (Bus)":""}: ${fmtT(it.l.startTime)} ${esc(stName(it.l.from))} → ${fmtT(it.l.endTime)} ${esc(stName(it.l.to))}">${legIco(it.l,13)}<span>${esc(shortName(it.l))}</span></span>`
     :`<span class="seg wait${it.bad?" bad":""}" style="flex:${Math.max(it.w,4)} 1 ${basis(it)}" title="${it.w} min Umstieg in ${esc(it.at)}"><span>${it.w}′</span></span>`).join("");
-  return `<div class="chain" role="img" aria-label="${esc(aria)}">${segs}</div>
-    <div class="chain-st"><span>${ico("pin",13)}${esc(stName(L[0].from))}</span><span>${ico("pin",13)}${esc(stName(L[L.length-1].to))}</span></div>`;
+  return `<div class="chain" role="img" aria-label="${esc(aria)}">${segs}</div>`;
 }
 /* Fahrtverlauf (aufgeklappt): Bahnhof – Zug – Bahnhof … */
 function timelineHTML(v){
@@ -1193,20 +1213,19 @@ async function shareText(text,btn,title){
   try{await navigator.clipboard.writeText(text);const lab=btn.querySelector("span"),o=lab.textContent;lab.textContent="Kopiert – jetzt einfügen";setTimeout(()=>{lab.textContent=o},2500)}
   catch{if(box){box.hidden=false;box.value=text;box.focus();box.select()}} // ohne Zwischenablage: Text zum Markieren zeigen
 }
-const mineBtns=(picked)=>`<button class="ds-btn ${picked?"ds-btn-secondary":"ds-btn-primary"} ds-btn-sm" type="button" data-act="pick" aria-pressed="${picked}">${ico("star",16)}<span>${picked?"Meine Wahl ✓":"Das nehm ich"}</span></button>
-  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="friends">${ico("share",16)}<span>An Freunde schicken</span></button>
-  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="plan">${ico("info",16)}<span>Reiseplan für mich</span></button>
-  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="ics">${ico("cal",16)}<span>In Kalender</span></button>`;
+const mineBtns=(picked)=>`<button class="ds-btn ${picked?"ds-btn-secondary":"ds-btn-outline"} ds-btn-sm" type="button" data-act="pick" aria-pressed="${picked}">${ico("star",16)}<span>${picked?"Meine Wahl ✓":"Das nehm ich"}</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="friends">${ico("share",16)}<span>An Freunde</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="plan" title="Reiseplan: worauf du achten musst">${ico("info",16)}<span>Mein Reiseplan</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="ics" title="Mit Hinweisen, Karten und Erinnerungen">${ico("cal",16)}<span>Kalender</span></button>`;
 function detailHTML({v,A,B,l}){
   return `<p class="why">${esc(v.risk.why)}</p>
     ${timelineHTML(v)}
     <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
-    ${rightsHTML(v)}
-    <div class="mine">${mineBtns(loadTrip()?.sig===sigOf(v))}<textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea></div>`;
+    ${rightsHTML(v)}`;
 }
 /* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
 /* Ersatzbus gleich in der Zeile zeigen (nicht erst in den Details): dauert meist länger, Gepäck/Fahrrad schwieriger */
-function sevHTML(v){const b=v.L.filter(isSEV);if(!b.length)return "";
+function sevHTML(v){const b=v.L.filter(isSEV);if(!b.length||/Ersatzbus/.test(v.risk?.t||""))return "";
   const w=b.map(l=>`${stName(l.from)} → ${stName(l.to)}`).join(", ");
   return `<span class="ds-badge ds-badge-warn" title="Ersatzbus statt Zug (meist Bauarbeiten): ${esc(w)}. Mehr Zeit einplanen, Fahrrad oft nicht möglich.">${ico("bus",14)}Ersatzbus</span>`}
 function rowHTML(v,A,B,tags){
@@ -1225,14 +1244,14 @@ function rowHTML(v,A,B,tags){
       <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
       ${chainHTML(v)}
       <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
-      <div class="mine share-menu" id="m${id}" hidden></div>
       <div class="row-detail" id="${id}" hidden></div>
     </div>
     <div class="acts">
       <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?"ICE-Ticket":"bahn.de"}${ico("open",14)}</a>
-      <button class="ds-btn ds-btn-ghost ds-btn-sm" type="button" data-act="menu" aria-expanded="false" aria-controls="m${id}">${ico("share",14)}Teilen</button>
       ${norm?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(norm)}" target="_blank" rel="noopener" title="Dieselbe Fahrt ${esc(stName(A.st))} → ${esc(stName(B.st))} über die gleichen Umsteigebahnhöfe, mit normalem Ticket – zum Preisvergleich">Normal${ico("open",14)}</a>`:""}
+      <button class="ds-btn ds-btn-ghost ds-btn-sm share-btn" type="button" data-act="menu" aria-expanded="false" aria-controls="m${id}" title="Teilen, merken, in den Kalender">${ico("share",16)}<span>Teilen</span></button>
     </div>
+    <div class="mine share-menu" id="m${id}" hidden></div>
   </li>`;
 }
 const skelRows=n=>`<ul class="rows ds-card" aria-hidden="true">${Array.from({length:n},()=>`<li class="row"><span></span><div class="row-main"><div class="sk l1"></div><div class="sk l2"></div><div class="sk l4"></div></div></li>`).join("")}</ul>`;
@@ -1325,12 +1344,15 @@ function dirHTML(r){
     <button class="tgl help-btn" type="button" aria-expanded="false" aria-controls="list-help">${ico("info",16)}Hilfe</button>
   </div>
   ${helpHTML()}
-  <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button"${LOADING?" disabled":""}>${ico("left",16)}${APPEND<0&&LOADING?"Lädt …":"Früher"}</button><span>Abfahrt ${fmtT(r.from)}–${fmtT(r.until)} Uhr</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button"${LOADING?" disabled":""}>${APPEND>0&&LOADING?"Lädt …":"Später"}${ico("right",16)}</button></div>`;
+  <div class="timebar"><button class="ds-btn ds-btn-ghost ds-btn-sm" id="earlier-times" type="button"${LOADING?" disabled":""}>${ico("left",16)}${APPEND<0&&LOADING?"Lädt …":"Früher"}</button><span class="t win">Abfahrt ${fmtT(r.from)}–${fmtT(r.until)}</span><button class="ds-btn ds-btn-ghost ds-btn-sm" id="later-top" type="button"${LOADING?" disabled":""}>${APPEND>0&&LOADING?"Lädt …":"Später"}${ico("right",16)}</button></div>`;
   h+=priceHTML(r);
   h+=altHTML(r);
+  /* Filter eingeklappt: die Liste beginnt sofort, aktive Filter stehen in der Zeile */
   const nSev=base.filter(v=>v.L.some(isSEV)).length;
-  const sevChips=nSev?`<div class="fchips" role="group" aria-label="Ersatzbus"><span class="fl">${ico("bus",14)} ${nSev} mit Ersatzbus</span><button type="button" class="ds-chip" data-f="sev" data-v="" aria-pressed="${!FILT.sev}">Zeigen</button><button type="button" class="ds-chip" data-f="sev" data-v="1" aria-pressed="${!!FILT.sev}">Ausblenden</button></div>`:"";
-  if(MODE==="spar"||sevChips) h+=`<div class="filters">${MODE==="spar"?chips("from","ICE ab",fromOf)+chips("to","ICE bis",toOf):""}${sevChips}</div>`;
+  const sevChip=nSev?`<div class="fchips" role="group" aria-label="Ersatzbus"><span class="fl">Ersatzbus</span><button type="button" class="ds-chip" data-f="sev" data-v="${FILT.sev?"":"1"}" aria-pressed="${!!FILT.sev}">${ico("bus",14)}Ohne Ersatzbus <span class="n">${nSev}</span></button></div>`:"";
+  const fl=(MODE==="spar"?chips("from","ICE ab",fromOf)+chips("to","ICE bis",toOf):"")+sevChip;
+  const act=[FILT.from&&MODE==="spar"&&`ab ${FILT.from}`,FILT.to&&MODE==="spar"&&`bis ${FILT.to}`,FILT.sev&&"ohne Ersatzbus"].filter(Boolean);
+  if(fl) h+=`<details class="filt"${FILT_OPEN?" open":""}><summary><span>Filtern${act.length?`: <b>${esc(act.join(" · "))}</b>`:` <span class="ds-supporting">${MODE==="spar"?"ICE ab / bis":""}${MODE==="spar"&&nSev?" · ":""}${nSev?"Ersatzbus":""}</span>`}</span></summary><div class="filters">${fl}</div></details>`;
   if(LOADING&&APPEND<0) h+=`<div class="loadmore" role="status">${ico("left",16)}Suche frühere Verbindungen … <span class="lm-meta"></span></div>${skelRows(1)}`;
   if(!list.length) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   else if(SORT[MODE]==="rec"){
@@ -1379,6 +1401,7 @@ function renderOut(){
   $("share").onclick=shareSearch;
   $("fav").onclick=toggleFav;
   $("sort")?.addEventListener("change",e=>{SORT[MODE]=e.target.value;renderOut()});
+  document.querySelector(".filt")?.addEventListener("toggle",e=>{FILT_OPEN=e.target.open});
   $("show-all")?.addEventListener("click",()=>{SHOWALL=true;renderOut()});
   $("more-times")?.addEventListener("click",()=>loadMore(TAB,1));
   $("earlier-times")?.addEventListener("click",()=>loadMore(TAB,-1));
@@ -1506,7 +1529,7 @@ const STEPS=["Verbindungen","Laufwege der ICEs","Regionalzüge","Fertig"];
 function showProg(frac,label,stats,stepIdx){
   $("prog").hidden=false;
   const pct=Math.round(Math.min(1,Math.max(0,frac))*100);
-  $("p-bar").firstElementChild.style.width=pct+"%";$("p-bar").setAttribute("aria-valuenow",pct);
+  $("p-bar").firstElementChild.style.transform=`scaleX(${pct/100})`;$("p-bar").setAttribute("aria-valuenow",pct);
   $("p-step").textContent=label;
   $("p-meta").textContent=stats&&stats.total?`${stats.done} von ${stats.total} Abfragen · ${EST()}`:EST();
   for(const m of document.querySelectorAll(".lm-meta")) m.textContent=stats&&stats.total?`${stats.done} von ${stats.total}`:""; // Rückmeldung direkt am „Früher/Später“
