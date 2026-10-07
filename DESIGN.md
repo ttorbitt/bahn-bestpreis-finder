@@ -9,7 +9,7 @@ colors:
   ticket-edge: "#a9cdb9"
   muted-stock: "#dbe3dd"
   faded-ink: "#4a5a52"
-  validation-stamp: "#b00d4f"
+  validation-stamp: "#c8001a"
   stamp-wash: "rgba(176,13,79,.10)"
   perforation: "#4a6558"
   hairline: "rgba(18,21,20,.16)"
@@ -161,7 +161,7 @@ A cool, nearly monochrome ticket palette (green-grey neutrals plus black ink) wi
 - **Thermal Ink** (thermal-ink): the printing color. Text, primary buttons, active tabs and selected chips (ink fill, ground-colored text), the paid piece of every ticket, the sticky hour rule and card hairlines. In dark mode it inverts to #e6eee8.
 
 ### Secondary
-- **Validation Stamp Magenta** (validation-stamp): the one accent. The "TRICK" stamp on the example ticket, the "Unser Tipp" recommendation badge, the focus ring (`--ring`), text selection, caret, pressed toggle buttons, punched selection circles, filter counts, the compare-bar action, and the brand train icon. Dark mode uses #ff4d92. Its pale wash (stamp-wash) backs pressed buttons and input focus halos.
+- **Validation Stamp Magenta** (validation-stamp): the one accent. The "TRICK" stamp on the example ticket, the "Unser Tipp" recommendation badge, the focus ring (`--ring`), text selection, caret, pressed toggle buttons, punched selection circles, filter counts, the compare-bar action, and the brand train icon. Dark mode uses #ff5a5f. Its pale wash (stamp-wash) backs pressed buttons and input focus halos.
 
 ### Neutral
 - **Grey-Green Ground** (ground): page background; also the color punched through notches and the perforation half-circles.

@@ -20,10 +20,10 @@
   --secondary:#f8faf7;--secondary-foreground:#121514;
   --muted:#dbe3dd;--muted-foreground:#4a5a52;
   --accent:rgba(18,21,20,.06);--accent-foreground:#121514;
-  --stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);
+  --stamp:#c8001a;--stamp-soft:rgba(200,0,26,.10);
   --perf:#4a6558;
   --destructive:#b3122e;--destructive-foreground:#fff;
-  --border:rgba(18,21,20,.16);--input:#f8faf7;--ring:#b00d4f;
+  --border:rgba(18,21,20,.16);--input:#f8faf7;--ring:#c8001a;
   --pop-green:#d3ecdd;--pop-green-foreground:#17603c;
   --pop-orange:#f6e2ae;--pop-orange-foreground:#704800;
   --line-strong:rgba(18,21,20,.32);
@@ -41,10 +41,10 @@
   --secondary:#151c19;--secondary-foreground:#e6eee8;
   --muted:#1f2924;--muted-foreground:#a2b3a9;
   --accent:rgba(230,238,232,.07);--accent-foreground:#e6eee8;
-  --stamp:#ff4d92;--stamp-soft:rgba(255,77,146,.14);
+  --stamp:#ff5a5f;--stamp-soft:rgba(255,90,95,.14);
   --perf:#86a596;
   --destructive:#ff5a72;--destructive-foreground:#14070a;
-  --border:rgba(230,238,232,.16);--input:#151c19;--ring:#ff4d92;
+  --border:rgba(230,238,232,.16);--input:#151c19;--ring:#ff5a5f;
   --pop-green:#183626;--pop-green-foreground:#8fe0b3;
   --pop-orange:#3a2d0c;--pop-orange-foreground:#f3c862;
   --line-strong:rgba(230,238,232,.34);
@@ -53,8 +53,8 @@
 :root[data-theme="dark"]{
   --background:#0d1210;--foreground:#e6eee8;--card:#151c19;--card-foreground:#e6eee8;--popover:#18201c;--popover-foreground:#e6eee8;
   --ticket:#1b2a23;--ticket-edge:#2d4438;--primary:#e6eee8;--primary-foreground:#0d1210;--secondary:#151c19;--secondary-foreground:#e6eee8;
-  --muted:#1f2924;--muted-foreground:#a2b3a9;--accent:rgba(230,238,232,.07);--accent-foreground:#e6eee8;--stamp:#ff4d92;--stamp-soft:rgba(255,77,146,.14);
-  --perf:#86a596;--destructive:#ff5a72;--destructive-foreground:#14070a;--border:rgba(230,238,232,.16);--input:#151c19;--ring:#ff4d92;
+  --muted:#1f2924;--muted-foreground:#a2b3a9;--accent:rgba(230,238,232,.07);--accent-foreground:#e6eee8;--stamp:#ff5a5f;--stamp-soft:rgba(255,90,95,.14);
+  --perf:#86a596;--destructive:#ff5a72;--destructive-foreground:#14070a;--border:rgba(230,238,232,.16);--input:#151c19;--ring:#ff5a5f;
   --pop-green:#183626;--pop-green-foreground:#8fe0b3;--pop-orange:#3a2d0c;--pop-orange-foreground:#f3c862;--line-strong:rgba(230,238,232,.34);
   --guilloche:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2240%22%20height%3D%2216%22%20viewBox%3D%220%200%2040%2016%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%230d1210%22%20stroke-width%3D%22.55%22%20stroke-opacity%3D%22.16%22%3E%3Cpath%20d%3D%22M0%205%20C%206%200%2014%200%2020%205%20S%2034%2010%2040%205%22%20/%3E%3Cpath%20d%3D%22M0%208%20C%206%203%2014%203%2020%208%20S%2034%2013%2040%208%22%20/%3E%3Cpath%20d%3D%22M0%2011%20C%206%206%2014%206%2020%2011%20S%2034%2016%2040%2011%22%20/%3E%3Cpath%20d%3D%22M0%205%20C%206%2010%2014%2010%2020%205%20S%2034%200%2040%205%22%20/%3E%3Cpath%20d%3D%22M0%208%20C%206%2013%2014%2013%2020%208%20S%2034%203%2040%208%22%20/%3E%3Cpath%20d%3D%22M0%2011%20C%206%2016%2014%2016%2020%2011%20S%2034%206%2040%2011%22%20/%3E%3C/g%3E%3C/svg%3E");color-scheme:dark}
 
@@ -447,6 +447,11 @@ footer a{color:var(--muted-foreground)!important}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
+/* Bahn-Bezug ohne Lesen: Zug-Symbol je Ticketteil und ein Gleis, das die Teile verbindet */
+.xticket .k .ico{vertical-align:-3px;margin-right:4px}
+.xticket .rail{grid-column:1/-1;height:10px;margin-top:10px;border-block:2px solid var(--perf);
+  background:repeating-linear-gradient(90deg,var(--perf) 0 3px,transparent 3px 14px)}
+
 </style>
 
 <div class="ds" data-v="2">
@@ -459,11 +464,12 @@ footer a{color:var(--muted-foreground)!important}
   <h2 id="intro-h">Kauf nur das Stück, das du brauchst.</h2>
   <p class="lead">Wir suchen Verbindungen, bei denen du nur einen kurzen ICE-Abschnitt kaufst. Den Rest fährst du mit deinem <b>Deutschland-Ticket</b>. Das schlägt dir bahn.de nicht von selbst vor – und spart oft <b>10 € und mehr</b> pro Fahrt.</p>
   <div class="xticket" role="img" aria-label="Beispiel Lübeck Hbf nach Frankfurt (Main) Hbf: Lübeck–Lüneburg mit RE83 und Fulda–Frankfurt mit RE50 fährst du mit dem Deutschland-Ticket, kaufen musst du nur den ICE 585 von Lüneburg nach Fulda.">
-    <div class="part stub"><span class="k">D-Ticket</span><span class="tr">Lübeck → Lüneburg</span><span class="tm">08:10 · RE83</span></div>
-    <div class="part paid"><span class="k">Nur kaufen</span><span class="tr">Lüneburg → Fulda</span><span class="tm">09:30 · ICE 585</span></div>
-    <div class="part stub"><span class="k">D-Ticket</span><span class="tr">Fulda → Frankfurt</span><span class="tm">12:12 · RE50</span></div>
-    <span class="stamp" aria-hidden="true">TRICK</span>
-    <span class="serial" aria-hidden="true">LÜBECK HBF → FRANKFURT (MAIN) HBF · 2. KL. · 1 PERS. · NR 0185-TRICK</span>
+    <div class="part stub"><span class="k"><svg class="ico" width="15" height="15" viewBox="0 0 24 24" stroke-width="1.8" fill="none" aria-hidden="true"><use href="#i-train"/></svg>D-Ticket</span><span class="tr">Lübeck → Lüneburg</span><span class="tm">08:10 · RE83</span></div>
+    <div class="part paid"><span class="k"><svg class="ico" width="15" height="15" viewBox="0 0 24 24" stroke-width="1.8" fill="none" aria-hidden="true"><use href="#i-train"/></svg>Nur kaufen</span><span class="tr">Lüneburg → Fulda</span><span class="tm">09:30 · ICE 585</span></div>
+    <div class="part stub"><span class="k"><svg class="ico" width="15" height="15" viewBox="0 0 24 24" stroke-width="1.8" fill="none" aria-hidden="true"><use href="#i-train"/></svg>D-Ticket</span><span class="tr">Fulda → Frankfurt</span><span class="tm">12:12 · RE50</span></div>
+    <span class="stamp" aria-hidden="true">SPAREN</span>
+    <span class="rail" aria-hidden="true"></span>
+    <span class="serial" aria-hidden="true">LÜBECK HBF → FRANKFURT (MAIN) HBF · 2. KL. · 1 PERS. · NR 0185-SPAREN</span>
   </div>
   <p class="xnote">Beispiel einer gefundenen Kombi. Den Preis zeigt dir immer bahn.de.</p>
 </section>
