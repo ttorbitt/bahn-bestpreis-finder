@@ -1,6 +1,6 @@
 /* Service Worker: Seite und Daten zwischenspeichern, damit die App vom Startbildschirm schnell öffnet.
    Erst Netz, bei Funkloch der gespeicherte Stand. Fahrplan-Abfragen (andere Domain) laufen immer live. */
-const CACHE = "bbf-v22";
+const CACHE = "bbf-v23";
 const CORE = ["./", "./index.html", "./punct.json", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

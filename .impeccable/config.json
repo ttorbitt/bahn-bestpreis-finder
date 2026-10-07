@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "v2.css"
+        ],
+        "createdAt": "2026-10-07T09:23:40.664Z",
+        "reason": "Claude: only hit is the journey timeline rail (.tl-leg .tl-bar, route line between stops; dashed = D-Ticket leg), not a card accent"
+      }
+    ]
+  }
+}

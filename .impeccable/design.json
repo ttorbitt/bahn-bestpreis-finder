@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T09:32:29+00:00",
+  "title": "Design System: Bahn-Bestpreis-Finder v2",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Grey-Green Ground",
+        "canonical": "oklch(93.7% 0.009 151)",
+        "cssVar": "--background",
+        "dark": "#0d1210",
+        "tonalRamp": [
+          "#080c09",
+          "#212522",
+          "#3c413d",
+          "#5a5f5b",
+          "#797f7a",
+          "#9aa09b",
+          "#c0c6c1",
+          "#eaf0eb"
+        ]
+      },
+      "thermal-ink": {
+        "role": "primary",
+        "displayName": "Thermal Ink",
+        "canonical": "oklch(19.2% 0.005 174)",
+        "cssVar": "--foreground",
+        "dark": "#e6eee8",
+        "tonalRamp": [
+          "#090c0b",
+          "#222524",
+          "#3d413f",
+          "#5b5f5d",
+          "#7a7e7d",
+          "#9b9f9e",
+          "#c1c5c4",
+          "#ebf0ee"
+        ]
+      },
+      "card-white": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(98.3% 0.004 135)",
+        "cssVar": "--card",
+        "dark": "#151c19",
+        "tonalRamp": [
+          "#0a0c0a",
+          "#232422",
+          "#3f403e",
+          "#5c5e5c",
+          "#7c7e7b",
+          "#9d9f9c",
+          "#c3c5c2",
+          "#edefec"
+        ]
+      },
+      "ticket-mint": {
+        "role": "neutral",
+        "displayName": "Mint Ticket Stock",
+        "canonical": "oklch(91.1% 0.034 160)",
+        "cssVar": "--ticket",
+        "dark": "#1b2a23",
+        "tonalRamp": [
+          "#000f07",
+          "#14291e",
+          "#30453a",
+          "#4d6457",
+          "#6c8476",
+          "#8da597",
+          "#b2cbbd",
+          "#dcf6e7"
+        ]
+      },
+      "ticket-edge": {
+        "role": "neutral",
+        "displayName": "Stock Edge",
+        "canonical": "oklch(81.6% 0.047 161)",
+        "cssVar": "--ticket-edge",
+        "dark": "#2d4438",
+        "tonalRamp": [
+          "#001105",
+          "#0a2b1c",
+          "#284837",
+          "#456655",
+          "#648674",
+          "#85a895",
+          "#aaceba",
+          "#d4f9e4"
+        ]
+      },
+      "muted-stock": {
+        "role": "neutral",
+        "displayName": "Muted Stock",
+        "canonical": "oklch(90.8% 0.012 154)",
+        "cssVar": "--muted",
+        "dark": "#1f2924",
+        "tonalRamp": [
+          "#080d09",
+          "#202621",
+          "#3b423d",
+          "#59605b",
+          "#787f7a",
+          "#99a19b",
+          "#bfc6c1",
+          "#e9f1eb"
+        ]
+      },
+      "faded-ink": {
+        "role": "neutral",
+        "displayName": "Faded Ink",
+        "canonical": "oklch(45.1% 0.024 164)",
+        "cssVar": "--muted-foreground",
+        "dark": "#a2b3a9",
+        "tonalRamp": [
+          "#030e08",
+          "#192821",
+          "#34443c",
+          "#52625a",
+          "#718279",
+          "#92a39a",
+          "#b7c9c0",
+          "#e1f4ea"
+        ]
+      },
+      "validation-stamp": {
+        "role": "secondary",
+        "displayName": "Validation Stamp Magenta",
+        "canonical": "oklch(53.9% 0.210 7)",
+        "cssVar": "--stamp",
+        "dark": "#ff4d92",
+        "tonalRamp": [
+          "#3e0001",
+          "#650013",
+          "#8c002d",
+          "#b3004a",
+          "#da2c68",
+          "#ff5689",
+          "#ff7fae",
+          "#ffabd7"
+        ]
+      },
+      "perforation": {
+        "role": "neutral",
+        "displayName": "Perforation Slate",
+        "canonical": "oklch(48.1% 0.038 164)",
+        "cssVar": "--perf",
+        "dark": "#86a596",
+        "tonalRamp": [
+          "#001007",
+          "#102a1f",
+          "#2c463a",
+          "#4a6558",
+          "#698577",
+          "#89a698",
+          "#aeccbd",
+          "#d8f7e8"
+        ]
+      },
+      "void-red": {
+        "role": "signal",
+        "displayName": "Void Red",
+        "canonical": "oklch(49.1% 0.189 21)",
+        "cssVar": "--destructive",
+        "dark": "#ff5a72",
+        "tonalRamp": [
+          "#3c0000",
+          "#620000",
+          "#89000a",
+          "#af092b",
+          "#d63d4a",
+          "#fe636a",
+          "#ff8b8e",
+          "#ffb6b7"
+        ]
+      },
+      "signal-green": {
+        "role": "signal",
+        "displayName": "Signal Green",
+        "canonical": "oklch(43.5% 0.092 157)",
+        "cssVar": "--pop-green-foreground",
+        "dark": "#8fe0b3",
+        "tonalRamp": [
+          "#001400",
+          "#003010",
+          "#004e2b",
+          "#276d48",
+          "#4a8e67",
+          "#6bb087",
+          "#91d7ac",
+          "#bbffd6"
+        ]
+      },
+      "signal-amber": {
+        "role": "signal",
+        "displayName": "Signal Amber",
+        "canonical": "oklch(43.7% 0.093 73)",
+        "cssVar": "--pop-orange-foreground",
+        "dark": "#f3c862",
+        "tonalRamp": [
+          "#200000",
+          "#3e1900",
+          "#5d3600",
+          "#7d5414",
+          "#9f7439",
+          "#c2955b",
+          "#e9bb80",
+          "#ffe5a9"
+        ]
+      },
+      "stamp-wash": {
+        "role": "secondary",
+        "displayName": "Stamp Wash",
+        "cssVar": "--stamp-soft",
+        "dark": "rgba(255,77,146,.14)"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "cssVar": "--border",
+        "dark": "rgba(230,238,232,.16)"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "cssVar": "--line-strong",
+        "dark": "rgba(230,238,232,.34)"
+      },
+      "signal-green-wash": {
+        "role": "signal",
+        "displayName": "Signal Green Wash",
+        "cssVar": "--pop-green",
+        "dark": "#183626"
+      },
+      "signal-amber-wash": {
+        "role": "signal",
+        "displayName": "Signal Amber Wash",
+        "cssVar": "--pop-orange",
+        "dark": "#3a2d0c"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Intro headline only; uppercase, balanced, max 12ch."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Results heading (route). Source requests 750, renders at loaded 800."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section titles and brand line."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, 46–62ch caps."
+      },
+      "label": {
+        "displayName": "Ticket Legend",
+        "purpose": "Uppercase field legends on forms and ticket parts."
+      },
+      "numeral": {
+        "displayName": "Thermal Numerals",
+        "purpose": "Times, durations, counts; tabular figures."
+      },
+      "microprint": {
+        "displayName": "Microprint",
+        "purpose": "Serial line under the example ticket."
+      }
+    },
+    "shadows": [
+      {
+        "name": "stock-edge",
+        "value": "inset 0 0 0 1.5px var(--ticket-edge)",
+        "purpose": "Ticket rows; 1px on search blank and example parts."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px var(--stamp-soft)",
+        "purpose": "Focused inputs, with stamp border."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-tear",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Tear, stamp landing, progress, disclosure chevrons."
+      },
+      {
+        "name": "tear",
+        "value": "0.9s (delays .5s/.62s)",
+        "purpose": "Example-ticket stubs tearing outward."
+      },
+      {
+        "name": "stamp-land",
+        "value": "0.5s, scale 1.9→1",
+        "purpose": "TRICK stamp at 1.15s; recommendation badge scale 1.8→1 once."
+      },
+      {
+        "name": "state",
+        "value": "0.15s",
+        "purpose": "Border/background/color changes on controls."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "All transitions and animations off; torn end state shown statically."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "max-width: 480px"
+      },
+      {
+        "name": "desktop",
+        "value": "min-width: 980px"
+      },
+      {
+        "name": "coarse-pointer",
+        "value": "pointer: coarse (44px targets, 48px fields)"
+      }
+    ],
+    "textures": [
+      {
+        "name": "guilloche",
+        "value": "40x16 SVG wave tile, 0.55 stroke at 16% (white on light, ground on dark)",
+        "purpose": "Only on the paid piece."
+      },
+      {
+        "name": "perforation-holes",
+        "value": "radial-gradient mask, 2.6px holes at 9px pitch",
+        "purpose": "Torn edges of example stubs."
+      },
+      {
+        "name": "side-notch",
+        "value": "radial-gradient mask, 7px circles at 50% height",
+        "purpose": "Ticket row punch-outs."
+      }
+    ],
+    "scope": "v2 world only (/v2/). v1 at the root keeps its Romanesque kit and is not documented here."
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-printed main action, e.g. 'Verbindungen finden'.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Verbindungen finden</button>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font:600 .875rem/1.2 var(--font-sans);padding:.6rem 1rem;border-radius:var(--r);border:1.5px solid transparent;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s,transform .1s} .ds-btn-primary{background:var(--foreground);color:var(--card);border-color:var(--foreground)} .ds-btn-primary:hover{background:color-mix(in oklab,var(--foreground) 86%,var(--stamp));border-color:color-mix(in oklab,var(--foreground) 86%,var(--stamp))} .ds-btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px} .ds-btn:active{transform:translateY(1px)}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary actions on tickets and toolbars; pressed toggles take the stamp.",
+      "html": "<button class=\"ds-btn ds-btn-outline\">Details</button> <button class=\"ds-btn ds-btn-outline\" aria-pressed=\"true\">Das nehm ich</button>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-btn{display:inline-flex;align-items:center;font:600 .875rem/1.2 var(--font-sans);padding:.6rem 1rem;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--card);color:var(--foreground);cursor:pointer;transition:border-color .15s} .ds-btn:hover{border-color:var(--foreground)} .ds-btn[aria-pressed=true]{background:var(--stamp-soft);border-color:var(--stamp);color:var(--stamp)} .ds-btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form field with uppercase ticket legend; stamp border and wash halo on focus.",
+      "html": "<label class=\"ds-label\" for=\"v\">Von</label><input id=\"v\" class=\"ds-input\" value=\"Lübeck Hbf\">",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-label{display:block;font:700 .72rem/1.2 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground);margin:0 0 .35rem} .ds-input{width:100%;font:500 1rem/1.3 var(--font-sans);padding:.7rem .8rem;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--card);color:var(--foreground);transition:border-color .15s} .ds-input:hover:not(:focus){border-color:var(--foreground)} .ds-input:focus{outline:none;border-color:var(--stamp);box-shadow:0 0 0 3px var(--stamp-soft)}"
+    },
+    {
+      "name": "Segmented Tabs",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Ink-framed segments; the active one is printed solid.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab\" aria-pressed=\"true\">Spar-Kombi</button><button class=\"ds-tab\">Ganze Reise</button><button class=\"ds-tab\">Nur D-Ticket</button></div>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-tabs{display:inline-flex;border:1.5px solid var(--foreground);border-radius:var(--r);overflow:hidden;background:var(--card)} .ds-tab{font:600 .84rem/1.2 var(--font-sans);padding:.6rem .8rem;border:0;background:transparent;color:var(--foreground);cursor:pointer} .ds-tab+.ds-tab{border-left:1.5px solid var(--foreground)} .ds-tab[aria-pressed=true]{background:var(--foreground);color:var(--background)} .ds-tab:focus-visible{outline:2px solid var(--ring);outline-offset:-4px}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filters and recent searches; selected chips print in ink.",
+      "html": "<button class=\"ds-chip\">ICE ab Hamburg</button> <button class=\"ds-chip\" aria-pressed=\"true\">ohne Ersatzbus</button>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-chip{display:inline-flex;align-items:center;gap:.35rem;font:600 .8125rem/1.2 var(--font-sans);padding:.38rem .7rem;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--card);color:var(--foreground);cursor:pointer} .ds-chip:hover:not([aria-pressed=true]){border-color:var(--foreground)} .ds-chip[aria-pressed=true]{background:var(--foreground);color:var(--background);border-color:var(--foreground)} .ds-chip:focus-visible{outline:2px solid var(--ring);outline-offset:2px}"
+    },
+    {
+      "name": "Route Chain",
+      "kind": "custom",
+      "refersTo": "paid-piece",
+      "description": "Paid piece printed black with guilloche; D-Ticket stubs dashed in perforation slate.",
+      "html": "<div class=\"ds-chain\"><span class=\"ds-seg ds-nv\">RE</span><span class=\"ds-seg ds-fv\">ICE 585</span><span class=\"ds-seg ds-nv\">RE</span></div>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-chain{display:flex;gap:3px;max-width:340px} .ds-seg{display:flex;align-items:center;justify-content:center;height:28px;border-radius:3px;padding:0 6px;font:700 .72rem/1 var(--font-sans)} .ds-fv{flex:2;background:var(--foreground) url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2240%22%20height%3D%2216%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%22.55%22%20stroke-opacity%3D%22.16%22%3E%3Cpath%20d%3D%22M0%205%20C%206%200%2014%200%2020%205%20S%2034%2010%2040%205%22/%3E%3Cpath%20d%3D%22M0%2011%20C%206%2016%2014%2016%2020%2011%20S%2034%206%2040%2011%22/%3E%3C/g%3E%3C/svg%3E\");color:var(--background)} .ds-nv{flex:1;background:color-mix(in oklab,var(--ticket) 40%,var(--card));color:var(--perf);border:1.5px dashed var(--perf)}"
+    },
+    {
+      "name": "Ticket Row",
+      "kind": "card",
+      "refersTo": "ticket-row",
+      "description": "One connection as a mint ticket with punched side notches and actions behind a perforation.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-pick\"></span><div><b class=\"ds-t\">09:09 → 15:14</b><div class=\"ds-buy\"><i>Nur kaufen</i> Hamburg Hbf → Frankfurt (Main) Hbf</div></div><div class=\"ds-acts\"><button class=\"ds-b\">ICE-Ticket</button></div></div>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:14px 14px 14px 12px;background:var(--ticket);border-radius:var(--r);box-shadow:inset 0 0 0 1.5px var(--ticket-edge);font:500 .92rem/1.4 var(--font-sans);color:var(--foreground);-webkit-mask:radial-gradient(circle 7px at 0 50%,transparent 6.5px,#000 7px) left/51% 100% no-repeat,radial-gradient(circle 7px at 100% 50%,transparent 6.5px,#000 7px) right/51% 100% no-repeat;mask:radial-gradient(circle 7px at 0 50%,transparent 6.5px,#000 7px) left/51% 100% no-repeat,radial-gradient(circle 7px at 100% 50%,transparent 6.5px,#000 7px) right/51% 100% no-repeat} .ds-pick{width:22px;height:22px;border-radius:50%;border:1.5px dashed var(--perf)} .ds-t{font:500 1.25rem var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em} .ds-buy i{font:800 .7rem/1.45 var(--font-sans);font-style:normal;text-transform:uppercase;letter-spacing:.07em;color:var(--background);background:var(--foreground);padding:0 .35rem;border-radius:2px;margin-right:6px} .ds-acts{padding-left:12px;border-left:1.5px dashed var(--perf)} .ds-b{font:600 .8125rem var(--font-sans);padding:.45rem .75rem;border-radius:var(--r);border:1.5px solid var(--foreground);background:var(--foreground);color:var(--card);cursor:pointer} .ds-b:focus-visible{outline:2px solid var(--ring);outline-offset:2px}"
+    },
+    {
+      "name": "Validation Stamp",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "The one magenta stamp; lands once on the trick or recommendation.",
+      "html": "<span class=\"ds-stamp\">TRICK</span>",
+      "css": ":host{--background:#e6ece7;--foreground:#121514;--card:#f8faf7;--ticket:#cfe9da;--ticket-edge:#a9cdb9;--muted:#dbe3dd;--muted-foreground:#4a5a52;--stamp:#b00d4f;--stamp-soft:rgba(176,13,79,.10);--perf:#4a6558;--line-strong:rgba(18,21,20,.32);--ring:#b00d4f;--r:6px;--font-sans:'Barlow Semi Condensed',system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace} .ds-stamp{display:inline-block;font:800 1.05rem/1 var(--font-sans);letter-spacing:.1em;color:var(--stamp);border:2.5px solid var(--stamp);border-radius:4px;padding:.28rem .5rem .22rem;transform:rotate(-9deg);mix-blend-mode:multiply;animation:ds-stamp .5s cubic-bezier(.16,1,.3,1) both} @keyframes ds-stamp{0%{opacity:0;transform:rotate(-9deg) scale(1.9)}60%{opacity:1}100%{transform:rotate(-9deg) scale(1)}} @media (prefers-reduced-motion:reduce){.ds-stamp{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Die Fahrkarte",
+    "overview": "Every result is a train ticket for the whole route, but only the piece the traveller actually buys is printed in black; the stretches before and after ride on the Deutschland-Ticket and are torn off at the perforation. The interface is ticket ephemera: cool mint card stock on a grey-green ground, black thermal ink, slate perforations, and exactly one magenta validation stamp that lands on the trick. It is a working tool, not a poster; density is high, type is condensed, and numbers read like a thermal printout.\n\nDepth is printed, not lit. Edges come from hairlines, inset card-stock edges, dashed perforation rules and punched notches, never from soft ambient shadows. The guilloche security tint appears only on the paid piece, so the eye finds \"what to buy\" before anything else. The world refuses the category default of white cards, a blue accent and a price-first list, and it never borrows DB's red corporate identity.\n\nLight and dark are both first-class: dark mode inverts to a near-black ground with dark-green stock and a brighter pink stamp; the ink/stub/stamp roles stay identical.",
+    "keyCharacteristics": [
+      "Mint ticket stock on a grey-green ground; black thermal ink for everything printed.",
+      "The paid piece is the only solid-black, guilloche-tinted surface on a ticket.",
+      "Torn D-Ticket stubs are paler, dashed in perforation slate, slightly displaced.",
+      "One magenta stamp, reserved for the trick/recommendation, focus and selection.",
+      "Hairlines, dashed perforations and punched notches instead of shadows.",
+      "Condensed grotesk for words, tabular monospace for times and minutes."
+    ],
+    "rules": [
+      {
+        "name": "The One Stamp Rule",
+        "body": "Magenta marks the trick, the recommendation, focus and selection, nothing else. One stamp lands per results view, on the pinned recommendation.",
+        "section": "colors"
+      },
+      {
+        "name": "The Printed Piece Rule",
+        "body": "Solid ink plus guilloche is reserved for the segment the user pays for. D-Ticket segments are never filled; they are pale stock with a dashed perforation outline.",
+        "section": "colors"
+      },
+      {
+        "name": "The Thermal Numerals Rule",
+        "body": "Every clock time, duration and count is set in the mono with `font-variant-numeric: tabular-nums`; words never are.",
+        "section": "typography"
+      },
+      {
+        "name": "The Ticket Legend Rule",
+        "body": "Uppercase tracked labels are ticket field legends naming a field or a ticket part. They label content directly below or beside them; they never float above a heading as decoration.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "Separate with lines, not light: 1px ink or ticket-edge for containers, 1.5px dashed perforation for tear lines, 1.5px solid ink for section heads.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do print only the paid segment in solid ink with the guilloche tint; draw D-Ticket segments as pale stock with a 1.5px dashed perforation outline.",
+      "Do set every time, duration and count in JetBrains Mono with tabular figures.",
+      "Do separate with hairlines (1px ink or ticket-edge) and tear lines (1.5px dashed perforation slate).",
+      "Do keep magenta for the trick/recommendation stamp, focus, selection and pressed state.",
+      "Do keep both color schemes; the dark scheme swaps values, never roles.",
+      "Do honour reduced motion by showing the torn/stamped end state statically."
+    ],
+    "donts": [
+      "Don't use soft ambient shadows to lift cards; depth comes from ink, stock edges and punched notches.",
+      "Don't add a second accent hue or use magenta as a generic link or button color.",
+      "Don't fill D-Ticket segments with ink or tint, or put the guilloche anywhere except the paid piece.",
+      "Don't fall back to the category default: white cards, a blue accent, a price-first list.",
+      "Don't borrow DB branding (DB red, DB logo, DB corporate type).",
+      "Don't let the stamp land more than once per view."
+    ]
+  }
+}

@@ -1228,6 +1228,10 @@ function detailHTML({v,A,B,l}){
 function sevHTML(v){const b=v.L.filter(isSEV);if(!b.length||/Ersatzbus/.test(v.risk?.t||""))return "";
   const w=b.map(l=>`${stName(l.from)} → ${stName(l.to)}`).join(", ");
   return `<span class="ds-badge ds-badge-warn" title="Ersatzbus statt Zug (meist Bauarbeiten): ${esc(w)}. Mehr Zeit einplanen, Fahrrad oft nicht möglich.">${ico("bus",14)}Ersatzbus</span>`}
+// Der Stempel auf „Empfohlen“ landet nur einmal pro abgeschlossener Suche (nicht bei jedem Filtern/Sortieren)
+let STAMPED=-1;const stampOnce=()=>!LOADING&&STAMPED!==runId&&(STAMPED=runId,true);
+// Version 2 (Fahrkarten-Design) setzt data-v="2" – dort steht die Empfehlung zusätzlich ganz oben
+const V2=document.querySelector(".ds")?.dataset.v==="2";
 function rowHTML(v,A,B,tags){
   const l=linkFor(v,A,B);
   // Spar-Kombi: zum Vergleich die ganze Strecke zur selben Zeit mit normalem Ticket
@@ -1241,7 +1245,7 @@ function rowHTML(v,A,B,tags){
   return `<li class="row" data-sig="${esc(sigOf(v))}">
     <input class="pick" type="checkbox" aria-label="Zum Vergleich auswählen" data-hrefs="${esc(JSON.stringify(hrefs))}"${SEL.has(l.href)?" checked":""}>
     <div class="row-main">
-      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
+      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary ${t==="Empfohlen"?`tag-rec${stampOnce()?" land":""}`:"tag-fast"}">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
       ${chainHTML(v)}
       <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
       <div class="row-detail" id="${id}" hidden></div>
@@ -1356,6 +1360,7 @@ function dirHTML(r){
   if(LOADING&&APPEND<0) h+=`<div class="loadmore" role="status">${ico("left",16)}Suche frühere Verbindungen … <span class="lm-meta"></span></div>${skelRows(1)}`;
   if(!list.length) h+=`<p class="tip">Keine passende Verbindung in diesem Zeitfenster.</p>`;
   else if(SORT[MODE]==="rec"){
+    if(V2&&rec) h+=`<section class="pin" aria-label="Unser Tipp"><div class="pin-head"><b>Unser Tipp</b><span class="ds-supporting">beste Mischung aus Preis, Zeit und Risiko</span></div><ul class="rows ds-card">${rowHTML(rec,A,B,tagsOf(rec))}</ul></section>`;
     /* „Empfohlen“: nach Abfahrtsstunde gruppiert – je Stunde die beste zuerst, Rest eingeklappt.
        Oben eine Stundenübersicht, um 8, 10 oder 11 Uhr ohne Scrollen zu vergleichen. */
     const hourOf=v=>berlinLocal(v.start).slice(11,13),groups=new Map();
