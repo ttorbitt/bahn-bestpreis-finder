@@ -215,6 +215,54 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .mt-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mt-head .ico{color:var(--stamp)}
 .mt-plan{white-space:pre-wrap;font:inherit;font-size:.82rem;margin:6px 0 0;color:var(--muted-foreground)}
+/* Spar-Konto: kleine Quittung auf Fahrkartenpapier, Summe in Thermodruck-Ziffern; die Liste hängt hinter einer Perforation */
+.spar{padding:12px 14px;display:grid;gap:6px;background:var(--ticket);border:0;box-shadow:inset 0 0 0 1.5px var(--ticket-edge)}
+.spar-sum{font-size:.95rem}
+.spar-sum .ico{color:var(--primary)}
+.spar-sum b{font-weight:700}
+.spar-sum b.t{font-size:1.02rem;color:var(--primary)}
+.spar .mine{margin:4px 0 0}
+.spar .mine .ds-btn-outline{background:var(--card)}
+.spar details{margin-top:6px;padding-top:8px;border-top:1.5px dashed var(--perf)}
+.spar summary{cursor:pointer;font:700 .72rem/1.2 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground);list-style:none;display:flex;align-items:center;gap:8px}
+.spar summary::-webkit-details-marker{display:none}
+.spar summary::after{content:"";width:6px;height:6px;margin-bottom:3px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+.spar details[open]>summary::after{transform:translateY(2px) rotate(225deg)}
+.sav-list{list-style:none;margin:8px 0 0;padding:0;display:grid}
+.sav-list li{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--ticket-edge);font-size:.9rem}
+.sav-list .sv-main{flex:1;min-width:0;display:grid;gap:1px}
+.sav-list .sv-route{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sav-list .sv-sub{color:var(--muted-foreground);font-size:.74rem}
+.savebadge[hidden]{display:none}
+/* Preis eintragen: Formularfelder wie im Teilen-Menü, durch Perforation abgesetzt */
+.pr-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;flex-basis:100%;margin:8px 0 2px;padding:10px 0 0;border-top:1.5px dashed var(--perf)}
+.pr-form[hidden]{display:none}
+.share-menu .pr-form{grid-column:1/-1}
+.pr-form .ds-label{margin-bottom:3px}
+.pr-form .ds-input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.pr-form .pr-acts{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pr-form .hint{grid-column:1/-1;margin:0}
+.eur{font:700 .95rem/1 var(--font-mono);width:16px;text-align:center;flex:none}
+/* Krasse Funde: Aushang auf Fahrkartenpapier; nur der Preis ist rot, Ziffern in Thermodruck */
+.funde{padding:0;display:block;background:var(--ticket);border:0;box-shadow:inset 0 0 0 1.5px var(--ticket-edge);overflow:visible}
+.funde>summary{list-style:none;cursor:pointer;display:grid;gap:3px;padding:12px 38px 12px 14px;position:relative}
+.funde>summary::-webkit-details-marker{display:none}
+.funde>summary::after{content:"";position:absolute;right:16px;top:17px;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+.funde[open]>summary::after{transform:translateY(3px) rotate(225deg)}
+.fund-h{font:700 .72rem/1.2 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground)}
+.fund-teaser{font-size:.98rem;font-weight:600;display:flex;align-items:baseline;gap:10px;min-width:0}
+.fund-tr{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.funde[open] .fund-teaser,.funde[open]>summary>.ds-supporting{display:none}
+.fund-price{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700;color:var(--primary);letter-spacing:-.01em;white-space:nowrap}
+.fund-body{display:grid;gap:10px;padding:10px 14px 14px;margin-top:-2px;border-top:1.5px dashed var(--perf)}
+.fund-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.fund-item{display:grid;gap:4px}
+.fund-item+.fund-item{padding-top:12px;border-top:1.5px dashed var(--perf)}
+.fund-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fund-top .fund-price{font-size:1.15rem}
+.fund-route{font-weight:700;min-width:0}
+.fund-item .tip{font-size:.88rem;color:var(--foreground)}
+.fund-item .ds-btn{justify-self:start;margin-top:4px;background:var(--card)}
 
 /* ---------- Fortschritt: die Fahrkarte wird gedruckt ---------- */
 .prog{display:grid;gap:8px}
@@ -432,7 +480,7 @@ footer a{color:var(--muted-foreground)!important}
   .wrap>.head{grid-column:1/-1}
   .wrap>.intro{grid-column:1;padding-top:12px}
   .wrap>.search{grid-column:2}
-  .wrap>#prog,.wrap>#err,.wrap>#out,.wrap>.faq,.wrap>footer,.wrap>#blocked{grid-column:1/-1;max-width:780px;width:100%;justify-self:start}
+  .wrap>#prog,.wrap>#err,.wrap>#out,.wrap>#funde,.wrap>.faq,.wrap>footer,.wrap>#blocked{grid-column:1/-1;max-width:780px;width:100%;justify-self:start}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 

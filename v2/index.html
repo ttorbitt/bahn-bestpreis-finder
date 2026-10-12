@@ -226,6 +226,54 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .mt-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mt-head .ico{color:var(--stamp)}
 .mt-plan{white-space:pre-wrap;font:inherit;font-size:.82rem;margin:6px 0 0;color:var(--muted-foreground)}
+/* Spar-Konto: kleine Quittung auf Fahrkartenpapier, Summe in Thermodruck-Ziffern; die Liste hängt hinter einer Perforation */
+.spar{padding:12px 14px;display:grid;gap:6px;background:var(--ticket);border:0;box-shadow:inset 0 0 0 1.5px var(--ticket-edge)}
+.spar-sum{font-size:.95rem}
+.spar-sum .ico{color:var(--primary)}
+.spar-sum b{font-weight:700}
+.spar-sum b.t{font-size:1.02rem;color:var(--primary)}
+.spar .mine{margin:4px 0 0}
+.spar .mine .ds-btn-outline{background:var(--card)}
+.spar details{margin-top:6px;padding-top:8px;border-top:1.5px dashed var(--perf)}
+.spar summary{cursor:pointer;font:700 .72rem/1.2 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground);list-style:none;display:flex;align-items:center;gap:8px}
+.spar summary::-webkit-details-marker{display:none}
+.spar summary::after{content:"";width:6px;height:6px;margin-bottom:3px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+.spar details[open]>summary::after{transform:translateY(2px) rotate(225deg)}
+.sav-list{list-style:none;margin:8px 0 0;padding:0;display:grid}
+.sav-list li{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--ticket-edge);font-size:.9rem}
+.sav-list .sv-main{flex:1;min-width:0;display:grid;gap:1px}
+.sav-list .sv-route{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sav-list .sv-sub{color:var(--muted-foreground);font-size:.74rem}
+.savebadge[hidden]{display:none}
+/* Preis eintragen: Formularfelder wie im Teilen-Menü, durch Perforation abgesetzt */
+.pr-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;flex-basis:100%;margin:8px 0 2px;padding:10px 0 0;border-top:1.5px dashed var(--perf)}
+.pr-form[hidden]{display:none}
+.share-menu .pr-form{grid-column:1/-1}
+.pr-form .ds-label{margin-bottom:3px}
+.pr-form .ds-input{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.pr-form .pr-acts{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pr-form .hint{grid-column:1/-1;margin:0}
+.eur{font:700 .95rem/1 var(--font-mono);width:16px;text-align:center;flex:none}
+/* Krasse Funde: Aushang auf Fahrkartenpapier; nur der Preis ist rot, Ziffern in Thermodruck */
+.funde{padding:0;display:block;background:var(--ticket);border:0;box-shadow:inset 0 0 0 1.5px var(--ticket-edge);overflow:visible}
+.funde>summary{list-style:none;cursor:pointer;display:grid;gap:3px;padding:12px 38px 12px 14px;position:relative}
+.funde>summary::-webkit-details-marker{display:none}
+.funde>summary::after{content:"";position:absolute;right:16px;top:17px;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+.funde[open]>summary::after{transform:translateY(3px) rotate(225deg)}
+.fund-h{font:700 .72rem/1.2 var(--font-sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted-foreground)}
+.fund-teaser{font-size:.98rem;font-weight:600;display:flex;align-items:baseline;gap:10px;min-width:0}
+.fund-tr{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.funde[open] .fund-teaser,.funde[open]>summary>.ds-supporting{display:none}
+.fund-price{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700;color:var(--primary);letter-spacing:-.01em;white-space:nowrap}
+.fund-body{display:grid;gap:10px;padding:10px 14px 14px;margin-top:-2px;border-top:1.5px dashed var(--perf)}
+.fund-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.fund-item{display:grid;gap:4px}
+.fund-item+.fund-item{padding-top:12px;border-top:1.5px dashed var(--perf)}
+.fund-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fund-top .fund-price{font-size:1.15rem}
+.fund-route{font-weight:700;min-width:0}
+.fund-item .tip{font-size:.88rem;color:var(--foreground)}
+.fund-item .ds-btn{justify-self:start;margin-top:4px;background:var(--card)}
 
 /* ---------- Fortschritt: die Fahrkarte wird gedruckt ---------- */
 .prog{display:grid;gap:8px}
@@ -443,7 +491,7 @@ footer a{color:var(--muted-foreground)!important}
   .wrap>.head{grid-column:1/-1}
   .wrap>.intro{grid-column:1;padding-top:12px}
   .wrap>.search{grid-column:2}
-  .wrap>#prog,.wrap>#err,.wrap>#out,.wrap>.faq,.wrap>footer,.wrap>#blocked{grid-column:1/-1;max-width:780px;width:100%;justify-self:start}
+  .wrap>#prog,.wrap>#err,.wrap>#out,.wrap>#funde,.wrap>.faq,.wrap>footer,.wrap>#blocked{grid-column:1/-1;max-width:780px;width:100%;justify-self:start}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
@@ -549,6 +597,7 @@ footer a{color:var(--muted-foreground)!important}
       <button class="ds-btn ds-btn-ghost ds-btn-sm" id="reset" type="button">Zurücksetzen</button>
     </div>
     <div class="mytrip ds-card" id="mytrip" hidden></div>
+    <div class="spar ds-card" id="spar" hidden></div>
     <div class="recent favs" id="favs" hidden></div>
     <div class="recent" id="recent" hidden></div>
   </div>
@@ -563,6 +612,8 @@ footer a{color:var(--muted-foreground)!important}
 <div class="ds-alert bad" id="err" role="alert" hidden><p class="ds-alert-title" id="err-title">Suche fehlgeschlagen</p><p class="ds-supporting" id="err-msg"></p><button class="ds-btn ds-btn-primary ds-btn-sm" id="retry" type="button"><span data-ico="refresh"></span>Nochmal versuchen</button></div>
 
 <div id="out"></div>
+
+<details class="funde ds-card" id="funde" hidden></details>
 
 <section class="faq" aria-labelledby="faq-h">
   <h2 class="ds-section-title" id="faq-h">Kurz erklärt</h2>
@@ -1319,7 +1370,8 @@ async function shareText(text,btn,title){
 const mineBtns=(picked)=>`<button class="ds-btn ${picked?"ds-btn-secondary":"ds-btn-outline"} ds-btn-sm" type="button" data-act="pick" aria-pressed="${picked}">${ico("star",16)}<span>${picked?"Meine Wahl ✓":"Das nehm ich"}</span></button>
   <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="friends">${ico("share",16)}<span>An Freunde</span></button>
   <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="plan" title="Reiseplan: worauf du achten musst">${ico("info",16)}<span>Mein Reiseplan</span></button>
-  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="ics" title="Mit Hinweisen, Karten und Erinnerungen">${ico("cal",16)}<span>Kalender</span></button>`;
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="ics" title="Mit Hinweisen, Karten und Erinnerungen">${ico("cal",16)}<span>Kalender</span></button>
+  <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-act="price" aria-expanded="false" title="Trag ein, was du bezahlt hast – für dein Spar-Konto"><span class="eur" aria-hidden="true">€</span><span>Preis eintragen</span></button>`;
 function detailHTML({v,A,B,l}){
   return `<p class="why">${esc(v.risk.why)}</p>
     ${timelineHTML(v)}
@@ -1349,7 +1401,7 @@ function rowHTML(v,A,B,tags){
   return `<li class="row" data-sig="${esc(sigOf(v))}">
     <input class="pick" type="checkbox" aria-label="Zum Vergleich auswählen" data-hrefs="${esc(JSON.stringify(hrefs))}"${SEL.has(l.href)?" checked":""}>
     <div class="row-main">
-      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${tags.map(t=>`<span class="ds-badge ds-badge-primary ${t==="Empfohlen"?`tag-rec${stampOnce()?" land":""}`:"tag-fast"}">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
+      <div class="row-l1"><span class="t tm2">${fmtT(v.start)} → ${fmtT(v.end)}</span><span class="ds-supporting t">${hm(v.dur)}</span><span class="ds-badge ds-badge-safe mybadge"${loadTrip()?.sig===sigOf(v)?"":" hidden"}>${ico("star",14)}Meine Wahl</span>${savBadgeHTML(sigOf(v))}${tags.map(t=>`<span class="ds-badge ds-badge-primary ${t==="Empfohlen"?`tag-rec${stampOnce()?" land":""}`:"tag-fast"}">${esc(t)}</span>`).join("")}${sevHTML(v)}</div>
       ${chainHTML(v)}
       <div class="row-l3">${ticket}${ampHTML(v.risk)}<button class="tgl" type="button" aria-expanded="false" aria-controls="${id}">Details${ico("down",16)}</button></div>
       <div class="row-detail" id="${id}" hidden></div>
@@ -1600,6 +1652,67 @@ function paintTrip(){
   $("mt-plan").onclick=e=>shareText(t.plan,e.currentTarget,"Reiseplan");
   if(t.ics)$("mt-ics").onclick=()=>downloadICS(t.ics,t.file||"zugreise.ics");
 }
+/* Spar-Konto: zählt nur, was du selbst einträgst (Bezahlt + Normalpreis). Es gibt noch keine Live-Preise,
+   also schätzen oder prüfen wir nichts – die Zahl ist so ehrlich wie die Eingabe. */
+const SAVKEY="bbf-savings";
+function loadSav(){try{const l=JSON.parse(localStorage.getItem(SAVKEY));return Array.isArray(l)?l.filter(x=>x&&x.sig&&Number.isFinite(x.paid)):[]}catch{return []}}
+function saveSav(l){let ok=true;try{localStorage.setItem(SAVKEY,JSON.stringify(l))}catch{ok=false}paintSav();markSav();return ok}
+// Komma oder Punkt als Dezimalzeichen; „1.234,50“ wird mit Komma als Tausenderpunkt gelesen. null = leer, NaN = keine Zahl
+function parseEur(t){t=String(t??"").replace(/[€\s]/g,"");if(!t)return null;
+  const n=Number(t.includes(",")?t.replace(/\./g,"").replace(",","."):t);return Number.isFinite(n)&&n>=0&&n<10000?n:NaN}
+const numDE=n=>n.toFixed(2).replace(".",",");
+const eur=n=>{n=Math.round(n*100)/100;return n.toLocaleString("de-DE",{minimumFractionDigits:Number.isInteger(n)?0:2,maximumFractionDigits:2})+" €"};
+const savGain=e=>e.normal>0&&e.paid<e.normal?Math.round((e.normal-e.paid)*100)/100:0;
+const savLabel=e=>savGain(e)>0?`Gespart ${eur(savGain(e))}`:`Bezahlt ${eur(e.paid)}`;
+function savBadgeHTML(sig){const e=loadSav().find(x=>x.sig===sig);
+  return `<span class="ds-badge ds-badge-safe savebadge"${e?"":" hidden"}>${e?esc(savLabel(e)):""}</span>`}
+// Abzeichen in der Liste an Ort und Stelle aktualisieren (Details bleiben offen)
+function markSav(){const all=loadSav();
+  for(const row of document.querySelectorAll(".row[data-sig]")){const e=all.find(x=>x.sig===row.dataset.sig),b=row.querySelector(".savebadge");
+    if(!b)continue;b.hidden=!e;b.textContent=e?savLabel(e):""}}
+const priceFormHTML=()=>`<form class="pr-form" hidden novalidate>
+    <label><span class="ds-label">Bezahlt (€)</span><input class="ds-input" name="paid" inputmode="decimal" autocomplete="off" placeholder="29,90"></label>
+    <label><span class="ds-label">Normalpreis (€)</span><input class="ds-input" name="normal" inputmode="decimal" autocomplete="off" placeholder="59,90"></label>
+    <span class="hint bad" role="status"></span>
+    <div class="pr-acts"><button class="ds-btn ds-btn-primary ds-btn-sm" type="submit">Speichern</button><button class="ds-btn ds-btn-ghost ds-btn-sm" type="button" data-act="price-del" hidden>Löschen</button><span class="ds-supporting">Nur für dich – nichts wird geprüft.</span></div>
+  </form>`;
+function paintSav(){
+  const list=loadSav(),box=$("spar"),wasOpen=box.querySelector("details")?.open;
+  box.hidden=!list.length;if(!list.length){box.innerHTML="";return}
+  const total=Math.round(list.reduce((a,e)=>a+savGain(e),0)*100)/100,n=list.filter(e=>savGain(e)>0).length;
+  box.innerHTML=`<div class="spar-head"><span class="spar-sum">${ico("star",16)} Dein Spar-Konto: ${total>0?`<b class="t">${esc(eur(total))}</b> gespart in ${n} ${n===1?"Fahrt":"Fahrten"}`:`<b>${list.length} ${list.length===1?"Fahrt":"Fahrten"}</b> eingetragen`}</span></div>
+    <div class="ds-supporting">Berechnet aus deinen eigenen Eingaben (Normalpreis minus bezahlt) – nicht von der Bahn geprüft.</div>
+    ${total>0?`<div class="mine"><button class="ds-btn ds-btn-outline ds-btn-sm" type="button" id="sv-share">${ico("share",16)}<span>Teilen</span></button><textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea></div>`:""}
+    <details${wasOpen?" open":""}><summary>Liste</summary><ul class="sav-list">${list.map((e,i)=>`<li><span class="sv-main"><span class="sv-route">${esc(e.route||"")}</span><span class="sv-sub t">${esc(e.date?fmtD(e.date):"")} · bezahlt ${esc(eur(e.paid))}${e.normal>0?` · normal ${esc(eur(e.normal))}`:""}</span></span><button class="fav-x" type="button" data-sx="${i}" aria-label="${esc(e.route||"Eintrag")} aus dem Spar-Konto löschen">×</button></li>`).join("")}</ul></details>`;
+  $("sv-share")?.addEventListener("click",ev=>shareText(`Ich habe mit dem Bahn-Bestpreis-Finder schon ${eur(total)} gespart 🚆 ${appURL()}`,ev.currentTarget,"Mein Spar-Konto"));
+  box.querySelectorAll("[data-sx]").forEach(btn=>btn.onclick=()=>saveSav(loadSav().filter(x=>x.sig!==list[+btn.dataset.sx].sig)));
+}
+
+/* Krasse Funde: von Hand gepflegte Tipps. SPÄTER kommen sie aus der Preis-Datenbank des Servers
+   (echte Funde, automatisch geprüft) – bis dahin bleibt das Feld bewusst eine kleine statische Liste. */
+const TIPS=[
+  {from:8000105,to:8002549,price:3.73,found:"2026-10",time:"21:00",kind:"Nachtzug",
+   note:"Echter Fund eines Nutzers. Sparpreise ändern sich: früh buchen und nachts fahren."}
+];
+const tipStations=t=>({a:byEva(t.from),b:byEva(t.to)});
+function paintFunde(){
+  const box=$("funde"),list=TIPS.filter(t=>{const {a,b}=tipStations(t);return a&&b}).sort((x,y)=>x.price-y.price);
+  box.hidden=!list.length;if(!list.length){box.innerHTML="";return}
+  const nm=t=>{const {a,b}=tipStations(t);return `${esc(a.name)} → ${esc(b.name)}`},when=t=>new Date(t.found+"-15T12:00:00Z").toLocaleDateString("de-DE",{month:"short",year:"numeric",timeZone:"UTC"});
+  box.innerHTML=`<summary><span class="fund-h">Krasse Funde</span>
+      <span class="fund-teaser"><span class="fund-price t">${esc(eur(list[0].price))}</span><span class="fund-tr">${nm(list[0])}</span></span>
+      <span class="ds-supporting">Von Nutzern gefunden – Preise ändern sich</span></summary>
+    <div class="fund-body"><p class="ds-supporting">Von Nutzern gefunden – Preise ändern sich. Ob es den Preis gerade gibt, siehst du erst bei bahn.de.</p>
+    <ul class="fund-list">${list.map((t,i)=>`<li class="fund-item"><div class="fund-top"><span class="fund-route">${nm(t)}</span><span class="fund-price t">${esc(eur(t.price))}</span></div>
+      <div class="ds-supporting">${esc(t.kind)} · gefunden ${esc(when(t))}</div><p class="tip">${esc(t.note)}</p>
+      <button class="ds-btn ds-btn-outline ds-btn-sm" type="button" data-tip="${i}"><span>So suchen</span></button></li>`).join("")}</ul></div>`;
+  box.querySelectorAll("[data-tip]").forEach(btn=>btn.onclick=()=>{const t=list[+btn.dataset.tip],{a,b}=tipStations(t);
+    choose("from",a);choose("to",b);setTrip(false);$("time").value=t.time;
+    // Datum: wie eingestellt, außer es liegt in der Vergangenheit oder die Abfahrtszeit ist heute schon vorbei
+    const now=berlinLocal(new Date().toISOString()).slice(11,16),d=$("date").value;
+    if(!d||d<today()||(d===today()&&t.time<=now))$("date").value=t.time<=now?plusDays(today(),1):today();
+    document.querySelector(".search")?.scrollIntoView({block:"start"});search()});
+}
 /* Meine Strecken: Strecke + Wochentag + Uhrzeit (+ Rückfahrt) merken, später mit einem Tipp fürs nächste Mal suchen */
 const FKEY="bbf-fav",WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
 function loadFav(){try{const l=JSON.parse(localStorage.getItem(FKEY));return Array.isArray(l)?l:[]}catch{return []}}
@@ -1779,14 +1892,21 @@ if(q&&q.get("von")&&q.get("nach")){
   if(hasR){$("rdate").value=q.get("rd");if(okT(q.get("rt")))$("rtime").value=q.get("rt")}
   shared=!!(a&&b);
 }
-syncTrip();paintRecent();paintFav();paintTrip();
+syncTrip();paintRecent();paintFav();paintTrip();paintSav();paintFunde();
 // Meine Reisewahl: Knöpfe in den aufgeklappten Details (Details werden erst beim Aufklappen gebaut)
 $("out").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;
   const row=b.closest(".row"),d=row?.querySelector(".row-detail"),r=d&&ROWV.get(d.id);if(!r)return;const {v,A,B,l}=r;
   if(b.dataset.act==="menu"){const m=row.querySelector(".share-menu"),open=m.hidden;
-    if(open&&!m.innerHTML)m.innerHTML=`${mineBtns(loadTrip()?.sig===sigOf(v))}<textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea>`;
+    if(open&&!m.innerHTML)m.innerHTML=`${mineBtns(loadTrip()?.sig===sigOf(v))}${priceFormHTML()}<textarea class="share-out" readonly hidden aria-label="Text zum Kopieren"></textarea>`;
     m.hidden=!open;b.setAttribute("aria-expanded",String(open));return}
   if(b.dataset.act==="ics"){downloadICS(icsFor(v,A,B),fileName(A,B,v));return}
+  if(b.dataset.act==="price"){const f=row.querySelector(".pr-form"),open=f.hidden,e=loadSav().find(x=>x.sig===sigOf(v));
+    f.hidden=!open;b.setAttribute("aria-expanded",String(open));
+    if(open){f.paid.value=e?numDE(e.paid):"";f.normal.value=e?.normal>0?numDE(e.normal):"";f.querySelector(".hint").textContent="";
+      f.querySelector('[data-act="price-del"]').hidden=!e;f.paid.focus()}
+    return}
+  if(b.dataset.act==="price-del"){saveSav(loadSav().filter(x=>x.sig!==sigOf(v)));row.querySelector(".pr-form").hidden=true;
+    row.querySelector('[data-act="price"]')?.setAttribute("aria-expanded","false");return}
   if(b.dataset.act==="pick"){const t=loadTrip(),sig=sigOf(v);
     if(t?.sig===sig){try{localStorage.removeItem(TRIPKEY)}catch{}}
     else try{localStorage.setItem(TRIPKEY,JSON.stringify({sig,A:A.name,B:B.name,start:v.start,end:v.end,friends:friendsText(v,A,B),plan:planText(v,A,B,l),ics:icsFor(v,A,B),file:fileName(A,B,v)}))}catch{}
@@ -1794,6 +1914,15 @@ $("out").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(b.dataset.act==="friends") shareText(friendsText(v,A,B),b,"Meine Zugreise");
   else shareText(planText(v,A,B,l),b,"Reiseplan");
 });
+// „Speichern“ im Preis-Formular (auch mit Enter): Eingabe prüfen und im Spar-Konto ablegen
+$("out").addEventListener("submit",e=>{const f=e.target.closest(".pr-form");if(!f)return;e.preventDefault();
+  const row=f.closest(".row"),d=row?.querySelector(".row-detail"),r=d&&ROWV.get(d.id);if(!r)return;
+  const {v,A,B}=r,paid=parseEur(f.paid.value),normal=parseEur(f.normal.value),hint=f.querySelector(".hint");
+  if(paid===null||Number.isNaN(paid)){hint.textContent="Bitte trag ein, was du bezahlt hast, z. B. 29,90.";f.paid.focus();return}
+  if(Number.isNaN(normal)){hint.textContent="Den Normalpreis bitte als Zahl, z. B. 59,90 – oder leer lassen.";f.normal.focus();return}
+  const sig=sigOf(v),ok=saveSav([{sig,route:`${A.name} → ${B.name}`,date:v.start,paid,normal},...loadSav().filter(x=>x.sig!==sig)].slice(0,200));
+  if(!ok){hint.textContent="Konnte nicht gespeichert werden (Browser-Speicher gesperrt).";return}
+  f.hidden=true;row.querySelector('[data-act="price"]')?.setAttribute("aria-expanded","false")});
 if(shared) search();
 
 // Installierbar als App (Startbildschirm); offline zeigt die Seite wenigstens die Suchmaske
