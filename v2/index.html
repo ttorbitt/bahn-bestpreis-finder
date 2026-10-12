@@ -539,6 +539,7 @@ footer a{color:var(--muted-foreground)!important}
         <div class="ds-field"><label class="ds-label" for="t-age">Alter</label><select class="ds-input ds-select" id="t-age"><option value="k0">Kind (0–5 Jahre)</option><option value="k">Kind (6–14 Jahre)</option><option value="j">15–26 Jahre</option><option value="e" selected>27–64 Jahre</option><option value="s">ab 65 Jahre</option></select></div>
         <div class="ds-field"><label class="ds-label" for="t-bc">BahnCard</label><select class="ds-input ds-select" id="t-bc"><option value="0" selected>Keine</option><option value="25">BahnCard 25</option><option value="50">BahnCard 50</option></select></div>
         <div class="ds-field"><label class="ds-label" for="t-kl">Klasse</label><select class="ds-input ds-select" id="t-kl"><option value="2" selected>2. Klasse</option><option value="1">1. Klasse</option></select></div>
+        <div class="ds-field"><label class="ds-label" for="t-dt">Deutschland-Ticket</label><select class="ds-input ds-select" id="t-dt"><option value="1" selected>Vorhanden – Haken auf bahn.de setzen</option><option value="0">Nicht vorhanden</option></select></div>
 
       </div>
     </div>
@@ -738,12 +739,14 @@ function berlinLocal(iso){
 const TKEY="bbf-travel";
 const AGES={k0:{code:8,label:"Kind 0–5 Jahre"},k:{code:11,label:"Kind 6–14 Jahre"},j:{code:9,label:"15–26 Jahre"},e:{code:13,label:"27–64 Jahre"},s:{code:12,label:"ab 65 Jahre"}};
 const BCS={"0":{code:16,label:"keine BahnCard"},"25":{code:17,label:"BahnCard 25"},"50":{code:23,label:"BahnCard 50"}};
-const TRAV={age:"e",bc:"0",kl:"2"};
-try{const t=JSON.parse(localStorage.getItem(TKEY));if(t&&AGES[t.age]&&BCS[t.bc]&&/^[12]$/.test(t.kl))Object.assign(TRAV,t)}catch{}
+const TRAV={age:"e",bc:"0",kl:"2",dt:"1"}; // dt: Deutschland-Ticket vorhanden → Haken auf bahn.de automatisch setzen
+try{const t=JSON.parse(localStorage.getItem(TKEY));if(t&&AGES[t.age]&&BCS[t.bc]&&/^[12]$/.test(t.kl))Object.assign(TRAV,t,{dt:t.dt==="0"?"0":"1"})}catch{}
 const rParam=()=>`${AGES[TRAV.age].code}:${BCS[TRAV.bc].code}:${TRAV.bc==="0"?"KLASSENLOS":"KLASSE_"+TRAV.kl}:1`;
-const travLabel=()=>`1 Person, ${AGES[TRAV.age].label}${TRAV.bc!=="0"?", "+BCS[TRAV.bc].label:""}${TRAV.kl==="1"?", 1. Klasse":""}`;
+const travLabel=()=>`1 Person, ${AGES[TRAV.age].label}${TRAV.bc!=="0"?", "+BCS[TRAV.bc].label:""}${TRAV.kl==="1"?", 1. Klasse":""}${TRAV.dt==="1"?", mit D-Ticket":", ohne D-Ticket"}`;
+// Hat die Person ein D-Ticket? Steuert den Haken auf bahn.de und welcher Buchungsweg der Hauptknopf ist
+const hasDT=()=>TRAV.dt==="1";
 const stId=s=>`A=1@O=${s.name}@X=${Math.round(s.lon*1e6)}@Y=${Math.round(s.lat*1e6)}@U=80@L=${s.eva}@B=1@`;
-function dbLink(from,to,iso,{dltv=false,dlt=false,via=[],bp=false}={}){
+function dbLink(from,to,iso,{dltv=hasDT(),dlt=false,via=[],bp=false}={}){ // Haken „Deutschland-Ticket vorhanden“ folgt dem Profil
   const id=s=>encodeURIComponent(`A=1@O=${s.name}@L=${s.eva}@`);
   return "https://www.bahn.de/buchung/fahrplan/suche#"+[
     "sts=true",`so=${encodeURIComponent(from.name)}`,`zo=${encodeURIComponent(to.name)}`,`kl=${TRAV.kl}`,`r=${rParam()}`,
@@ -796,7 +799,13 @@ function punctOf(l){
 const taktOf=list=>{const d=[...new Set((list||[]).map(x=>new Date(x.start).getTime()))].sort((a,b)=>a-b),g=[];
   for(let i=1;i<d.length;i++)g.push((d[i]-d[i-1])/60000);g.sort((a,b)=>a-b);return g.length?Math.round(g[Math.floor(g.length/2)]):null};
 const shortName=l=>legName(l).replace(/\s*\(\d+\)$/,"");
-function riskOf(v){
+// Ankunft zwischen 1 und 5 Uhr: vor Ort fährt kaum noch etwas (bis 1 Uhr geht es meist noch)
+const lateArr=v=>{const h=+berlinLocal(v.end).slice(11,13),m=+berlinLocal(v.end).slice(14,16);return (h>=1&&h<5)&&!(h===1&&m===0)};
+function riskOf(v){const r=riskBase(v);
+  if(!lateArr(v)) return r; // die eigentliche Bewertung bleibt unverändert, nur die Nachtregel kommt dazu
+  const why=`${r.why} Ankunft um ${fmtT(v.end)}: nach 1 Uhr nachts kommst du vor Ort kaum noch weiter.`;
+  return r.lvl>=1?{...r,why}:{lvl:1,t:`Ankunft ${fmtT(v.end)}`,why}}
+function riskBase(v){
   if(v.kind==="A"){
     if(v.flix) return {lvl:1,t:"Enthält FlixTrain",why:"Ein Teil ist FlixTrain: eigenes Ticket, das Deutschland-Ticket gilt dort nicht, und verpasst du deshalb einen Anschluss, hilft die DB nicht."};
     if(v.minTr!=null&&v.minTr<8) return {lvl:1,t:`Nur ${v.minTr} min Umstieg`,why:`Knapper Umstieg (${v.minTr} min). Weil alles ein Ticket ist, darfst du bei Verspätung aber einfach den nächsten Zug nehmen.`};
@@ -835,7 +844,7 @@ async function altWays(A,B,tIso,fastest,sig){
   const nightStart=hr<13?addMin(tIso,-dayMin-240):hr>=17?addMin(tIso,20*60-dayMin):null; // 20:00 Uhr am Vortag bzw. am selben Tag
   if(fastest>=240&&nightStart) jobs.push(plan(A.place,B.place,nightStart,{n:5,sig}).then(d=>d.map(analyze).filter(x=>{
     const s=berlinLocal(x.start),e=berlinLocal(x.end),sh=+s.slice(11,13),eh=+e.slice(11,13);
-    return !x.flix&&s.slice(0,10)!==e.slice(0,10)&&(sh>=19||sh<2)&&eh>=4&&eh<11&&mins(x.start,x.end)>=180
+    return !x.flix&&s.slice(0,10)!==e.slice(0,10)&&(sh>=19||sh<2)&&(berlinLocal(x.end).slice(11,16)<="01:00"||(eh>=5&&eh<11))&&mins(x.start,x.end)>=180
       &&(hr>=17||new Date(x.end)<=new Date(addMin(tIso,fastest)));
   }).slice(0,2).map(x=>({...x,kind:"N",name:x.L.filter(isFV).map(legName).join(" + ")||"Regionalzüge"}))));
   // FlixBus: Bus + Regionalzüge (D-Ticket) zum/vom Busbahnhof, ohne Fernzug
@@ -1131,11 +1140,20 @@ async function computeDir(A,B,tIso,sig,{onPartial,prog}){
 }
 
 /* ---------- Anzeige ---------- */
-function linkFor(v,A,B){
-  if(v.kind==="A") return {href:dbLink(A.st,B.st,v.start),note:"Öffnet die Gesamtstrecke, ohne D-Ticket-Häkchen."};
-  if(v.kind==="D") return {href:dbLink(A.st,B.st,v.start,{dlt:true,dltv:true}),note:"Öffnet bahn.de mit dem Filter „nur Deutschland-Ticket“."};
+/* Nur der ICE-Abschnitt (alter Weg: Teilstrecke einzeln kaufen). Mit D-Ticket bleibt er als Ausweichlink in den Details,
+   falls bahn.de die Route mit Zwischenhalten anders zusammenstellt. */
+function iceOnly(v){
   const s1=nearestStation(v.ice.from.lat,v.ice.from.lon),s2=nearestStation(v.ice.to.lat,v.ice.to.lon);
-  if(s1&&s2) return {href:dbLink(s1,s2,v.ice.dep),note:`Öffnet nur die ICE-Teilstrecke ${s1.name} → ${s2.name}.`};
+  return s1&&s2?{href:dbLink(s1,s2,v.ice.dep,{dltv:false}),note:`Öffnet nur die ICE-Teilstrecke ${s1.name} → ${s2.name}.`,s1,s2}:null;
+}
+function linkFor(v,A,B){
+  if(v.kind==="A") return {href:dbLink(A.st,B.st,v.start),note:hasDT()?"Öffnet die Gesamtstrecke mit Haken „Deutschland-Ticket vorhanden“.":"Öffnet die Gesamtstrecke."};
+  if(v.kind==="D") return {href:dbLink(A.st,B.st,v.start,{dlt:true,dltv:true}),note:"Öffnet bahn.de mit dem Filter „nur Deutschland-Ticket“."};
+  // Mit D-Ticket: ganze Strecke, unsere Umstiege als Zwischenhalte, Haken gesetzt – bahn.de berechnet dann nur den Fernverkehr dieser Route
+  if(hasDT()) return {href:dbLink(A.st,B.st,v.start,{via:viaOf(v,A,B),dltv:true}),note:"Öffnet bahn.de mit genau dieser Route (Umstiege als Zwischenhalte) und Haken „Deutschland-Ticket vorhanden“ – bezahlt wird nur der Fernverkehr."};
+  // Ohne D-Ticket: wie bisher nur den ICE-Abschnitt; fehlt ein Bahnhof dafür, die ganze Strecke mit Haken
+  const ice=iceOnly(v);
+  if(ice) return {href:ice.href,note:ice.note};
   return {href:dbLink(A.st,B.st,v.start,{dltv:true}),note:"Öffnet bahn.de mit Häkchen „Deutschland-Ticket vorhanden“ – berechnet nur den ICE-Teil."};
 }
 /* Fahrgastrechte kurz, je Ticketart (bahn.de-FAQ und EVO, geprüft 07.10.2026) */
@@ -1150,6 +1168,8 @@ function rightsHTML(v){
   return `<details class="rights"><summary>Verspätet? Das steht dir zu</summary><p class="ds-supporting">${t} <a href="${FGR}" target="_blank" rel="noopener">Fahrgastrechte bei bahn.de</a></p></details>`;
 }
 function howTo(v){
+  // Mit D-Ticket: bahn.de ist schon auf genau diese Route eingestellt, bezahlt wird nur der Fernverkehr
+  if(v.kind==="S"&&hasDT()) return `Auf bahn.de ist genau diese Route eingestellt (Umstiege als Zwischenhalte, Haken „Deutschland-Ticket vorhanden“). Wähle dort die Verbindung um ${fmtT(v.start)} – du zahlst nur ${esc(v.ice.name)} ${esc(stName(v.ice.from))} → ${esc(stName(v.ice.to))}, Super Sparpreis.`;
   if(v.kind==="A") return `Auf bahn.de die Verbindung ab ${fmtT(v.start)} wählen (${esc(v.name)}), Super Sparpreis.`;
   if(v.kind==="D"){const s=v.L.map(freeIC).find(Boolean);
     return s?`Kein Ticket nötig: Auf ${esc(s.name)} gilt das Deutschland-Ticket auch im IC (nur 2. Klasse, Fahrrad nur mit Stellplatz-Reservierung). Im DB Navigator darum nicht „Nur Nahverkehr“ wählen.`
@@ -1264,12 +1284,15 @@ function timelineHTML(v){
 }
 /* Normalpreis für GENAU diese Fahrt: ganze Strecke mit durchgehendem Ticket, über die Umsteigebahnhöfe zum/vom ICE
    als Zwischenhalt – sonst schlägt bahn.de evtl. einen anderen Weg vor. */
-function normalLink(v,A,B){
+/* Zwischenhalte für bahn.de: Ein- und Ausstieg des ICE, damit bahn.de genau unsere Kombi rechnet
+   (sonst schlägt es den schnellsten Weg vor und der ICE fährt wieder die ganze Strecke). */
+function viaOf(v,A,B){
   const via=[];
   if(v.iceIdx>0){const s=nearestStation(v.ice.from.lat,v.ice.from.lon);if(s&&s.eva!==A.st.eva)via.push(s)}
   if(v.iceEnd<v.L.length-1){const s=nearestStation(v.ice.to.lat,v.ice.to.lon);if(s&&s.eva!==B.st.eva&&!via.some(x=>x.eva===s.eva))via.push(s)}
-  return dbLink(A.st,B.st,v.start,{via});
+  return via;
 }
+const normalLink=(v,A,B)=>dbLink(A.st,B.st,v.start,{via:viaOf(v,A,B),dltv:false}); // Vergleich: dieselbe Route ohne D-Ticket
 const ROWV=new Map();
 /* Meine Reisewahl: markieren, gespeichert bleiben, teilen – kurz für Freunde (mit Link zur App), ausführlich für mich */
 const TRIPKEY="bbf-trip",appURL=()=>location.origin+location.pathname;
@@ -1301,6 +1324,7 @@ function detailHTML({v,A,B,l}){
   return `<p class="why">${esc(v.risk.why)}</p>
     ${timelineHTML(v)}
     <p class="ds-supporting"><b>So buchen:</b> ${howTo(v)} ${esc(l.note)} Reisende: ${esc(travLabel())}.</p>
+    ${v.kind==="S"&&hasDT()&&iceOnly(v)?`<p class="ds-supporting">Klappt die Route auf bahn.de nicht? <a href="${esc(iceOnly(v).href)}" target="_blank" rel="noopener">Nur den ICE-Abschnitt ${esc(iceOnly(v).s1.name)} → ${esc(iceOnly(v).s2.name)} öffnen</a>.</p>`:""}
     ${rightsHTML(v)}`;
 }
 /* Eine Zeile: das Wichtigste sichtbar, Rest hinter dem Pfeil */
@@ -1331,7 +1355,7 @@ function rowHTML(v,A,B,tags){
       <div class="row-detail" id="${id}" hidden></div>
     </div>
     <div class="acts">
-      <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?"ICE-Ticket":"bahn.de"}${ico("open",14)}</a>
+      <a class="ds-btn ds-btn-primary ds-btn-sm" href="${esc(l.href)}" target="_blank" rel="noopener" title="${esc(l.note)}">${v.kind==="S"?(hasDT()?"Buchen":"ICE-Ticket"):"bahn.de"}${ico("open",14)}</a>
       ${norm?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(norm)}" target="_blank" rel="noopener" title="Dieselbe Fahrt ${esc(stName(A.st))} → ${esc(stName(B.st))} über die gleichen Umsteigebahnhöfe, mit normalem Ticket – zum Preisvergleich">Normal${ico("open",14)}</a>`:""}
       <button class="ds-btn ds-btn-ghost ds-btn-sm share-btn" type="button" data-act="menu" aria-expanded="false" aria-controls="m${id}" title="Teilen, merken, in den Kalender">${ico("share",16)}<span>Teilen</span></button>
     </div>
@@ -1402,7 +1426,7 @@ function altHTML(r){
   const lab=v=>v.kind==="N"?"Nachtfahrt":"FlixBus",when=v=>`${v.kind==="N"?fmtD(v.start)+" ":""}${fmtT(v.start)} → ${fmtT(v.end)}`;
   const why=v=>v.kind==="N"
     ?(v.L.some(l=>l.mode==="NIGHT_RAIL"||/^(NJ|EN)\b/.test(legName(l)))?"Mit Schlaf- oder Liegewagen buchbar. ":"Sitzplatz im Zug, kein Bett. ")+
-      (new Date(v.end)<new Date(r.from)?`Du bist schon morgens um ${fmtT(v.end)} da, hast den ganzen Tag – und sparst die Anreise am Vortag mit Übernachtung.`:`Du schläfst im Zug statt im Hotel und bist morgens um ${fmtT(v.end)} da.`)
+      (+berlinLocal(v.end).slice(11,13)<5?`Du kommst um ${fmtT(v.end)} an – bis 1 Uhr kommst du vor Ort meist noch weiter.`:new Date(v.end)<new Date(r.from)?`Du bist schon morgens um ${fmtT(v.end)} da, hast den ganzen Tag – und sparst die Anreise am Vortag mit Übernachtung.`:`Du schläfst im Zug statt im Hotel und bist morgens um ${fmtT(v.end)} da.`)
     :"FlixBus braucht ein eigenes Ticket (Preis auf flixbus.de, oft günstig). Die Regionalzüge zum und vom Busbahnhof fährst du mit dem Deutschland-Ticket. Verpasst du wegen einer Verspätung den Bus, hilft die DB nicht.";
   const link=v=>v.kind==="N"?`<a class="ds-btn ds-btn-outline ds-btn-sm" href="${esc(dbLink(r.A.st,r.B.st,v.start))}" target="_blank" rel="noopener">bahn.de${ico("open",14)}</a>`
     :`<a class="ds-btn ds-btn-outline ds-btn-sm" href="https://www.flixbus.de/" target="_blank" rel="noopener">flixbus.de${ico("open",14)}</a>`;
@@ -1714,11 +1738,11 @@ $("retry").onclick=()=>search();
 $("cancel").onclick=()=>stop(new StopError("abgebrochen"));
 $("swap").onclick=()=>{const a=chosen.from,b=chosen.to,va=$("from").value;$("from").value=$("to").value;$("to").value=va;choose("from",b);choose("to",a)};
 function paintTrav(){
-  $("t-age").value=TRAV.age;$("t-bc").value=TRAV.bc;$("t-kl").value=TRAV.kl;
+  $("t-age").value=TRAV.age;$("t-bc").value=TRAV.bc;$("t-kl").value=TRAV.kl;$("t-dt").value=TRAV.dt;
   $("trav-sum").textContent=travLabel();
 }
 $("trav-btn").onclick=()=>{const open=$("trav-panel").hidden;$("trav-panel").hidden=!open;$("trav-btn").setAttribute("aria-expanded",String(open))};
-for(const [id,k] of [["t-age","age"],["t-bc","bc"],["t-kl","kl"]]) $(id).addEventListener("change",()=>{
+for(const [id,k] of [["t-age","age"],["t-bc","bc"],["t-kl","kl"],["t-dt","dt"]]) $(id).addEventListener("change",()=>{
   TRAV[k]=$(id).value;try{localStorage.setItem(TKEY,JSON.stringify(TRAV))}catch{}
   paintTrav();if(DIRS.length)renderOut(); // Links in den Ergebnissen sofort anpassen
 });
