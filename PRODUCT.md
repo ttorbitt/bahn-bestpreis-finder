@@ -38,5 +38,6 @@ The search engine finds combinations bahn.de does not offer on its own: buy only
 
 ## Versions
 
-- v1 (current design, "Romanesque" design-system kit) stays live at the root.
-- v2 redesign lives at `/v2/` next to it, same engine and functions; the owner compares and decides later.
+- Since 12.10.2026 the main page (root) is v2 "Die Fahrkarte" (v2.css, v2-intro.html, fonts in v2/fonts).
+- `/v2/` only redirects to the root (keeps the search query) because links with /v2 were shared.
+- v1 (old Romanesque look) stays archived at `/v1/`, not linked.

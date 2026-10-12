@@ -8,7 +8,7 @@ Kleine Web-App für Zugreisen in Deutschland: Start, Ziel, Datum und ungefähre 
 
 ## Entwicklung
 
-`app.html` ist die Quelle, `stations.json` die Bahnhofsliste (DB-Stationsdaten über [db-stations](https://github.com/public-transport/db-stations)). `python3 build.py` erzeugt daraus `index.html` (GitHub Pages) und `artifact.html`.
+`app.html` ist die Quelle, `stations.json` die Bahnhofsliste (DB-Stationsdaten über [db-stations](https://github.com/public-transport/db-stations)). `python3 build.py` erzeugt daraus `index.html` (Hauptseite im Fahrkarten-Design, Stylesheet `v2.css`), `v1/index.html` (altes Design, Archiv), `v2/index.html` (Weiterleitung) und `artifact.html`.
 
 ## Pünktlichkeit aktualisieren (einmal im Monat)
 
