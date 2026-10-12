@@ -191,6 +191,8 @@ kbd{font:600 .75rem var(--font-mono);border:1px solid var(--border);border-radiu
 .places .stack{display:grid;gap:12px;min-width:0}
 .swap{width:44px;height:44px;padding:0;border-radius:50%}
 .grid2{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.ds-field.off{display:none}
+#tmode-f .ds-select{font-weight:600}
 .combo{position:relative;min-width:0}
 .sugg{position:absolute;z-index:6;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--popover);border:1.5px solid var(--foreground);
   border-radius:var(--r);max-height:280px;overflow:auto}
